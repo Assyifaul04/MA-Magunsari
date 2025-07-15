@@ -1,11 +1,7 @@
 <?php
 
+use App\Http\Controllers\AbsensiController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
-// routes/web.php
-Route::get('/scan-test', function () {
-    return view('scan-test');
-});
+Route::get('/', [AbsensiController::class, 'index'])->name('import.form');
+Route::post('/import', [AbsensiController::class, 'importExcel'])->name('import.excel');

@@ -11,7 +11,7 @@ class Siswa extends Model
 {
     use HasFactory, HasUlids;
     protected $table = 'siswas';
-    protected $fillable = ['name', 'nis', 'rfid_uid', 'kelas'];
+    protected $fillable = ['name', 'rfid_uid', 'kelas'];
 
     public function absensi(): HasMany
     {

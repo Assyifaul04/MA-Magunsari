@@ -14,9 +14,8 @@ return new class extends Migration
         Schema::create('siswas', function (Blueprint $table) {
             $table->ulid('id')->primary();
             $table->string('name');
-            $table->string('nis')->unique();
-            $table->string('rfid_uid')->unique();
-            $table->string('kelas');
+            $table->char('kelas');
+            $table->string('rfid_uid')->unique()->nullable();
             $table->timestamps();
         });
     }
