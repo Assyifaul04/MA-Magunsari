@@ -16,6 +16,31 @@ class AbsensiController extends Controller
         return view('import', ['data' => $data]);
     }
 
+    public function updateRfid(Request $request, $id)
+    {
+
+        $request->validate([
+            'rfid' => 'required|unique:siswas,rfid_uid'
+        ], [
+            'rfid.unique' => 'RFID Sudah digunakan.'
+        ]);
+
+        try {
+            Siswa::where('id', $id)->update([
+                'rfid_uid' => $request->rfid
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'RFID UUID BERHASIL DIPASANGKAN'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal error' . $e->getMessage()
+            ], 500);
+        }
+    }
 
     public function importExcel(Request $request)
     {
