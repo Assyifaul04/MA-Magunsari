@@ -62,7 +62,7 @@
                     <form id="rfid-form">
                         @csrf
                         @method('PUT')
-                        <input type="hidden" id="rfid-input">
+                        <input type="text" id="rfid-input">
                     </form>
                 </div>
             </div>

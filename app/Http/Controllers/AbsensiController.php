@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Imports\SiswaImport;
+use App\Models\Absensi;
 use App\Models\Siswa;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -14,6 +15,12 @@ class AbsensiController extends Controller
     {
         $data = Siswa::all();
         return view('import', ['data' => $data]);
+    }
+
+    public function absensi()
+    {
+        $data = Absensi::all();
+        return view('absensi', ['data' => $data]);
     }
 
     public function updateRfid(Request $request, $id)
@@ -34,6 +41,40 @@ class AbsensiController extends Controller
                 'status' => 'success',
                 'message' => 'RFID UUID BERHASIL DIPASANGKAN'
             ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Gagal error' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function createAbsensi(Request $request)
+    {
+        $request->validate([
+            'rfid' => 'required'
+        ], [
+            'rfid.required' => 'Silahkan tempel kartu.'
+        ]);
+
+        try {
+            $siswa = Siswa::where('rfid_uid', $request->rfid)->first();
+
+            if ($siswa) {
+                Absensi::create([
+                    'siswa_id' => $siswa->id,
+                    'status' => 'Hadir'
+                ]);
+                return response()->json([
+                    'status' => 'success',
+                    'message' =>  $siswa->name . ' berhasil absen.'
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 'Gagal',
+                    'message' =>  'Siswa dengan rfid uid ' . $request->rfid . 'tidak ditemukan'
+                ]);
+            }
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'error',
