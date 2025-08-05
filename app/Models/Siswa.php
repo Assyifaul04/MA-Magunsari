@@ -2,19 +2,20 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUlids;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class Siswa extends Model
 {
-    use HasFactory, HasUlids;
-    protected $table = 'siswas';
-    protected $fillable = ['name', 'rfid_uid', 'kelas'];
+    use HasFactory, HasUuids;
 
-    public function absensi(): HasMany
+    protected $table = 'siswas';
+    protected $fillable = ['nama', 'kelas', 'rfid_uid'];
+
+    public function absensi()
     {
-        return $this->hasMany(Absensi::class, 'siswa_id');
+        return $this->hasMany(Absensi::class);
     }
 }
+
