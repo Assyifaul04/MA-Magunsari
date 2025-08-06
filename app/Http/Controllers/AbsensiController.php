@@ -116,7 +116,8 @@ class AbsensiController extends Controller
             ->first();
     
         if (!$absensi) {
-            $keterangan = $now->hour >= 7 ? 'terlambat' : 'hadir';
+            $waktuMasukTepat = Carbon::createFromTimeString('07:00:00', 'Asia/Jakarta');
+            $keterangan = $now->greaterThan($waktuMasukTepat) ? 'terlambat' : 'hadir';
             $absensi = Absensi::create([
                 'id' => Str::uuid(),
                 'siswa_id' => $siswa->id,
@@ -132,20 +133,25 @@ class AbsensiController extends Controller
             ]);
         } else {
             if (!$absensi->waktu_pulang) {
+                $jamPulangMin = Carbon::createFromTime(13, 0, 0, 'Asia/Jakarta');
+                $jamPulangMax = Carbon::createFromTime(15, 0, 0, 'Asia/Jakarta');
+            
+                if ($now->lessThan($jamPulangMin) || $now->greaterThan($jamPulangMax)) {
+                    return response()->json([
+                        'status' => 'warning',
+                        'message' => 'Absen pulang hanya diperbolehkan antara jam 13:00 - 15:00',
+                        'absensi' => $this->formatAbsensiForResponse($absensi)
+                    ], 400);
+                }
+            
                 $absensi->update([
                     'waktu_pulang' => $now->format('H:i:s')
                 ]);
-    
+            
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Absen pulang dicatat',
                     'absensi' => $this->formatAbsensiForResponse($absensi->refresh())
-                ]);
-            } else {
-                return response()->json([
-                    'status' => 'info',
-                    'message' => 'Kamu sudah absen masuk dan pulang hari ini',
-                    'absensi' => $this->formatAbsensiForResponse($absensi)
                 ]);
             }
         }

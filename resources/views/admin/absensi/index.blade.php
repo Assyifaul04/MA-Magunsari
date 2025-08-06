@@ -76,12 +76,15 @@
                             <div class="card card-body py-2">
                                 <ul class="mb-0 small">
                                     <li><strong>Tanggal:</strong> Pilih tanggal absensi yang ingin dilihat. <em>Contoh:</em>
-                                        <code>2025-08-06</code></li>
+                                        <code>2025-08-06</code>
+                                    </li>
                                     <li><strong>Nama:</strong> Cari siswa berdasarkan nama (partial match). <em>Contoh:</em>
-                                        <code>ani</code> akan mencocokkan "Anita", "Rani", dll.</li>
+                                        <code>ani</code> akan mencocokkan "Anita", "Rani", dll.
+                                    </li>
                                     <li><strong>Keterangan:</strong> Filter berdasarkan status seperti <code>hadir</code>,
                                         <code>terlambat</code>, <code>izin</code>, atau <code>alfa</code>. <em>Contoh:</em>
-                                        pilih <code>terlambat</code> untuk melihat yang datang terlambat.</li>
+                                        pilih <code>terlambat</code> untuk melihat yang datang terlambat.
+                                    </li>
                                     <li><strong>Masuk dari / sampai:</strong> Batasi siswa yang mencatat waktu masuk dalam
                                         rentang tertentu. <em>Contoh:</em> <code>07:00</code> sampai <code>08:30</code>
                                         hanya menampilkan yang masuk di antara jam itu.</li>
@@ -91,7 +94,8 @@
                                     <li><strong>Terapkan:</strong> Terapkan semua kriteria sekaligus. <br><em>Contoh
                                             gabungan:</em> Tanggal <code>2025-08-06</code>, nama berisi <code>rah</code>,
                                         keterangan <code>hadir</code>, masuk dari <code>07:00</code> sampai
-                                        <code>08:00</code>.</li>
+                                        <code>08:00</code>.
+                                    </li>
                                     <li><strong>Reset:</strong> Kembalikan semua filter ke default (kosongkan semua) untuk
                                         melihat seluruh daftar absensi.</li>
                                 </ul>
@@ -133,12 +137,13 @@
                                     <div class="col-6">
                                         <label for="masuk_from" class="form-label small mb-1">Masuk dari</label>
                                         <input type="time" name="masuk_from" id="masuk_from"
-                                            class="form-control form-control-sm" value="{{ $masuk_from ?? '' }}">
+                                            class="form-control form-control-sm"
+                                            value="{{ old('masuk_from', $masuk_from) }}">
                                     </div>
                                     <div class="col-6">
                                         <label for="masuk_to" class="form-label small mb-1">Masuk sampai</label>
                                         <input type="time" name="masuk_to" id="masuk_to"
-                                            class="form-control form-control-sm" value="{{ $masuk_to ?? '' }}">
+                                            class="form-control form-control-sm" value="{{ old('masuk_to', $masuk_to) }}">
                                     </div>
                                 </div>
                             </div>
@@ -148,12 +153,14 @@
                                     <div class="col-6">
                                         <label for="pulang_from" class="form-label small mb-1">Pulang dari</label>
                                         <input type="time" name="pulang_from" id="pulang_from"
-                                            class="form-control form-control-sm" value="{{ $pulang_from ?? '' }}">
+                                            class="form-control form-control-sm"
+                                            value="{{ old('pulang_from', $pulang_from) }}">
                                     </div>
                                     <div class="col-6">
                                         <label for="pulang_to" class="form-label small mb-1">Pulang sampai</label>
                                         <input type="time" name="pulang_to" id="pulang_to"
-                                            class="form-control form-control-sm" value="{{ $pulang_to ?? '' }}">
+                                            class="form-control form-control-sm"
+                                            value="{{ old('pulang_to', $pulang_to) }}">
                                     </div>
                                 </div>
                             </div>
@@ -177,6 +184,33 @@
             <div class="card-body position-relative">
                 <h5 class="card-title mb-3">Daftar Absensi: <span
                         class="text-primary">{{ \Carbon\Carbon::parse($tanggal)->translatedFormat('d F Y') }}</span></h5>
+
+                @if ($masuk_from || $masuk_to || $pulang_from || $pulang_to)
+                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                        <i class="bi bi-clock me-2"></i>
+                        <div>
+                            <strong>Filter Waktu Diterapkan:</strong>
+                            <ul class="mb-0">
+                                @if ($masuk_from || $masuk_to)
+                                    <li>
+                                        <strong>Jam Masuk:</strong>
+                                        {{ $masuk_from ? 'Dari ' . $masuk_from : '' }}
+                                        {{ $masuk_from && $masuk_to ? ' - ' : '' }}
+                                        {{ $masuk_to ? 'Sampai ' . $masuk_to : '' }}
+                                    </li>
+                                @endif
+                                @if ($pulang_from || $pulang_to)
+                                    <li>
+                                        <strong>Jam Pulang:</strong>
+                                        {{ $pulang_from ? 'Dari ' . $pulang_from : '' }}
+                                        {{ $pulang_from && $pulang_to ? ' - ' : '' }}
+                                        {{ $pulang_to ? 'Sampai ' . $pulang_to : '' }}
+                                    </li>
+                                @endif
+                            </ul>
+                        </div>
+                    </div>
+                @endif
                 <div class="table-responsive">
                     <table id="absensiTable" class="table table-hover table-bordered align-middle">
                         <thead class="table-light">
@@ -232,9 +266,24 @@
                                         @endif
                                     </td>
                                     <td class="status">
-                                        @if ($absen->waktu_masuk && $absen->waktu_pulang)
+                                        @php
+                                            $jamPulang = $absen->waktu_pulang
+                                                ? \Carbon\Carbon::parse($absen->waktu_pulang)
+                                                : null;
+                                            $isJamPulangValid =
+                                                $jamPulang &&
+                                                $jamPulang->between(
+                                                    \Carbon\Carbon::createFromTime(13, 0),
+                                                    \Carbon\Carbon::createFromTime(15, 0),
+                                                );
+                                        @endphp
+
+                                        @if ($absen->waktu_masuk && $absen->waktu_pulang && $isJamPulangValid)
                                             <span class="badge bg-success"><i
                                                     class="bi bi-check-circle me-1"></i>Lengkap</span>
+                                        @elseif ($absen->waktu_masuk && $absen->waktu_pulang)
+                                            <span class="badge bg-warning"><i
+                                                    class="bi bi-exclamation-circle me-1"></i>Tidak Lengkap</span>
                                         @elseif ($absen->waktu_masuk)
                                             <span class="badge bg-info"><i
                                                     class="bi bi-arrow-right-circle me-1"></i>Masuk</span>
@@ -300,23 +349,6 @@
         </div>
     </div>
 @endsection
-
-@push('styles')
-    <style>
-        .zebra-bg {
-            background-image: linear-gradient(45deg,
-                    #ffffff 25%, #f1f3f5 25%,
-                    #f1f3f5 50%, #ffffff 50%,
-                    #ffffff 75%, #f1f3f5 75%, #f1f3f5);
-            background-size: 20px 20px;
-        }
-
-        .zebra-bg input::placeholder {
-            color: #999;
-            font-style: italic;
-        }
-    </style>
-@endpush
 
 @push('scripts')
     {{-- Pastikan bootstrap JS sudah ter-include di layout utama --}}
