@@ -57,11 +57,13 @@
                         data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-funnel-fill me-1"></i> Pengaturan Filter <i class="bi bi-caret-down-fill ms-1"></i>
                     </button>
-                    <div class="dropdown-menu p-3 shadow" style="min-width: 420px;" aria-labelledby="filterDropdown">
+                    <div class="dropdown-menu p-3 shadow" style="min-width: 420px; max-height: 400px; overflow-y: auto;"
+                        aria-labelledby="filterDropdown">
+
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
-                                <small class="text-muted">Saring berdasarkan tanggal, nama, keterangan, dan jam
-                                    masuk/pulang.</small>
+                                <small class="text-muted">Saring berdasarkan rentang tanggal, kelas, nama, dan status
+                                    absensi.</small>
                             </div>
                             <div>
                                 <button class="btn btn-sm btn-outline-info p-1" type="button" data-bs-toggle="collapse"
@@ -73,65 +75,101 @@
                         </div>
 
                         <div class="collapse mb-3" id="filter-help">
-                            <div class="card card-body py-2">
+                            <div class="card card-body py-2" style="max-height: 300px; overflow-y: auto;">
                                 <ul class="mb-0 small">
-                                    <li><strong>Tanggal:</strong> Pilih tanggal absensi yang ingin dilihat. <em>Contoh:</em>
-                                        <code>2025-08-06</code>
+                                    <li><strong>Tanggal:</strong> Pilih salah satu opsi:
+                                        <ul>
+                                            <li><code>hari_ini</code>: Menampilkan absensi siswa hari ini.</li>
+                                            <li><code>kemarin</code>: Menampilkan absensi siswa kemarin.</li>
+                                            <li><code>7_hari</code>: Menampilkan absensi 7 hari terakhir (termasuk hari ini).</li>
+                                            <li><code>1_bulan</code>: Menampilkan absensi selama 30 hari terakhir (termasuk hari ini).</li>
+                                        </ul>
+                                        Filter ini digunakan untuk menentukan rentang waktu pencarian absensi.
                                     </li>
-                                    <li><strong>Nama:</strong> Cari siswa berdasarkan nama (partial match). <em>Contoh:</em>
-                                        <code>ani</code> akan mencocokkan "Anita", "Rani", dll.
+                                    <li><strong>Kelas:</strong> Filter siswa berdasarkan kelas. Contoh: <code>XA</code>,
+                                        <code>XIB</code>, <code>XIIA</code>, dll.
                                     </li>
-                                    <li><strong>Keterangan:</strong> Filter berdasarkan status seperti <code>hadir</code>,
-                                        <code>terlambat</code>, <code>izin</code>, atau <code>alfa</code>. <em>Contoh:</em>
-                                        pilih <code>terlambat</code> untuk melihat yang datang terlambat.
+                                    <li><strong>Nama:</strong> Cari siswa berdasarkan nama. Pencarian bersifat sebagian
+                                        (tidak harus nama lengkap).
+                                        <br>Contoh: <code>ani</code> akan mencocokkan <code>Rani</code>, <code>Anita</code>,
+                                        dll.
                                     </li>
-                                    <li><strong>Masuk dari / sampai:</strong> Batasi siswa yang mencatat waktu masuk dalam
-                                        rentang tertentu. <em>Contoh:</em> <code>07:00</code> sampai <code>08:30</code>
-                                        hanya menampilkan yang masuk di antara jam itu.</li>
-                                    <li><strong>Pulang dari / sampai:</strong> Batasi siswa yang mencatat waktu pulang dalam
-                                        rentang tertentu. <em>Contoh:</em> <code>13:00</code> sampai <code>15:00</code>.
+                                    <li><strong>Keterangan:</strong> Filter siswa berdasarkan status kehadiran, seperti:
+                                        <ul>
+                                            <li><code>hadir</code></li>
+                                            <li><code>terlambat</code></li>
+                                            <li><code>izin</code></li>
+                                            <li><code>sakit</code></li>
+                                        </ul>
                                     </li>
-                                    <li><strong>Terapkan:</strong> Terapkan semua kriteria sekaligus. <br><em>Contoh
-                                            gabungan:</em> Tanggal <code>2025-08-06</code>, nama berisi <code>rah</code>,
-                                        keterangan <code>hadir</code>, masuk dari <code>07:00</code> sampai
-                                        <code>08:00</code>.
+                                    <li><strong>Jam Masuk/Pulang:</strong> Digunakan hanya sebagai pembatas waktu
+                                        <strong>pencatatan absensi</strong> (pada saat scan RFID).
+                                        <br><strong>Tidak mempengaruhi</strong> hasil filter atau pencarian data siswa.
+                                        <br>Contoh:
+                                        <ul>
+                                            <li>Jika diatur <code>masuk_from: 06:30</code> dan <code>masuk_to: 07:30</code>,
+                                                maka siswa hanya bisa absen masuk pada rentang jam tersebut.</li>
+                                            <li>Jika <code>pulang_from: 13:00</code> dan <code>pulang_to: 15:00</code>, maka
+                                                absen pulang hanya diterima dalam rentang tersebut.</li>
+                                        </ul>
                                     </li>
-                                    <li><strong>Reset:</strong> Kembalikan semua filter ke default (kosongkan semua) untuk
-                                        melihat seluruh daftar absensi.</li>
                                 </ul>
                             </div>
                         </div>
+                        
 
                         <form id="filter-form" method="GET" action="{{ route('absensi.index') }}" class="row g-2">
+
+                            {{-- Filter Tanggal --}}
                             <div class="col-12">
                                 <label for="tanggal" class="form-label small mb-1">Tanggal</label>
-                                <input type="date" name="tanggal" id="tanggal" class="form-control form-control-sm"
-                                    value="{{ $tanggal }}">
+                                <select name="tanggal" id="tanggal" class="form-select form-select-sm">
+                                    <option value="hari_ini" {{ $tanggalFilter == 'hari_ini' ? 'selected' : '' }}>Hari Ini
+                                    </option>
+                                    <option value="kemarin" {{ $tanggalFilter == 'kemarin' ? 'selected' : '' }}>Kemarin
+                                    </option>
+                                    <option value="7_hari" {{ $tanggalFilter == '7_hari' ? 'selected' : '' }}>7 Hari
+                                        Terakhir</option>
+                                    <option value="1_bulan" {{ $tanggalFilter == '1_bulan' ? 'selected' : '' }}>1 Bulan
+                                        Terakhir</option>
+                                </select>
                             </div>
 
+                            {{-- Filter Kelas --}}
+                            <div class="col-12">
+                                <label for="kelas" class="form-label small mb-1">Kelas</label>
+                                <select name="kelas" id="kelas" class="form-select form-select-sm">
+                                    <option value="">Semua Kelas</option>
+                                    <option value="XA" {{ $kelas == 'XA' ? 'selected' : '' }}>XA</option>
+                                    <option value="XB" {{ $kelas == 'XB' ? 'selected' : '' }}>XB</option>
+                                    <option value="XIA" {{ $kelas == 'XIA' ? 'selected' : '' }}>XIA</option>
+                                    <option value="XIB" {{ $kelas == 'XIB' ? 'selected' : '' }}>XIB</option>
+                                    <option value="XIIA" {{ $kelas == 'XIIA' ? 'selected' : '' }}>XIIA</option>
+                                    <option value="XIIB" {{ $kelas == 'XIIB' ? 'selected' : '' }}>XIIB</option>
+                                </select>
+                            </div>
+
+                            {{-- Filter Nama --}}
                             <div class="col-12">
                                 <label for="nama" class="form-label small mb-1">Nama</label>
                                 <input type="text" name="nama" id="nama" placeholder="Cari nama..."
                                     class="form-control form-control-sm" value="{{ $nama ?? '' }}">
                             </div>
 
+                            {{-- Filter Keterangan --}}
                             <div class="col-12">
                                 <label for="keterangan" class="form-label small mb-1">Keterangan</label>
                                 <select name="keterangan" id="keterangan" class="form-select form-select-sm">
                                     <option value="">Semua</option>
-                                    <option value="hadir"
-                                        {{ isset($keterangan) && $keterangan === 'hadir' ? 'selected' : '' }}>Hadir
-                                    </option>
-                                    <option value="terlambat"
-                                        {{ isset($keterangan) && $keterangan === 'terlambat' ? 'selected' : '' }}>
+                                    <option value="hadir" {{ $keterangan === 'hadir' ? 'selected' : '' }}>Hadir</option>
+                                    <option value="terlambat" {{ $keterangan === 'terlambat' ? 'selected' : '' }}>
                                         Terlambat</option>
-                                    <option value="izin"
-                                        {{ isset($keterangan) && $keterangan === 'izin' ? 'selected' : '' }}>Izin</option>
-                                    <option value="alfa"
-                                        {{ isset($keterangan) && $keterangan === 'alfa' ? 'selected' : '' }}>Alfa</option>
+                                    <option value="izin" {{ $keterangan === 'izin' ? 'selected' : '' }}>Izin</option>
+                                    <option value="alfa" {{ $keterangan === 'alfa' ? 'selected' : '' }}>Alfa</option>
                                 </select>
                             </div>
 
+                            {{-- Batasan Jam Masuk --}}
                             <div class="col-12">
                                 <div class="row g-2">
                                     <div class="col-6">
@@ -143,11 +181,13 @@
                                     <div class="col-6">
                                         <label for="masuk_to" class="form-label small mb-1">Masuk sampai</label>
                                         <input type="time" name="masuk_to" id="masuk_to"
-                                            class="form-control form-control-sm" value="{{ old('masuk_to', $masuk_to) }}">
+                                            class="form-control form-control-sm"
+                                            value="{{ old('masuk_to', $masuk_to) }}">
                                     </div>
                                 </div>
                             </div>
 
+                            {{-- Batasan Jam Pulang --}}
                             <div class="col-12">
                                 <div class="row g-2">
                                     <div class="col-6">
@@ -165,8 +205,9 @@
                                 </div>
                             </div>
 
+                            {{-- Tombol --}}
                             <div class="col-12 d-flex gap-2 mt-2">
-                                <button type="submit" class="btn btn-sm btn-primary flex-grow-1" id="apply-filter">
+                                <button type="submit" class="btn btn-sm btn-primary flex-grow-1">
                                     <i class="bi bi-funnel-fill me-1"></i> Terapkan
                                 </button>
                                 <a href="{{ route('absensi.index') }}" class="btn btn-sm btn-outline-secondary">
@@ -510,13 +551,28 @@
             });
 
             function submitRfid(uid) {
+                const tanggal = $('#tanggal').val();
+                const masukFrom = $('#masuk_from').val();
+                const pulangFrom = $('#pulang_from').val();
+
+                if (!tanggal || (!masukFrom && !pulangFrom)) {
+                    showToast('Harap pilih tanggal dan atur jam masuk/pulang terlebih dahulu.', false);
+                    return;
+                }
+
                 $spinner.show();
+
                 $.ajax({
                     url: "{{ route('absensi.scanRfid') }}",
                     type: 'POST',
                     data: {
                         _token: '{{ csrf_token() }}',
-                        rfid_uid: uid
+                        rfid_uid: uid,
+                        tanggal: tanggal,
+                        masuk_from: masukFrom,
+                        masuk_to: $('#masuk_to').val(),
+                        pulang_from: pulangFrom,
+                        pulang_to: $('#pulang_to').val()
                     },
                     success: function(res) {
                         showToast(res.message, true);
@@ -531,7 +587,6 @@
                     },
                     complete: function() {
                         $spinner.hide();
-                        // tetap fokus agar scan beruntun tidak terhenti
                         $input.focus();
                     }
                 });
