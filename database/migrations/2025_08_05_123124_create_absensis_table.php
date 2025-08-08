@@ -16,8 +16,8 @@ return new class extends Migration
             $table->uuid('siswa_id');
             $table->date('tanggal');
             $table->time('waktu_masuk')->nullable();
-            $table->time('waktu_pulang')->nullable(); // <--- Tambahan
-            $table->enum('keterangan', ['hadir', 'terlambat', 'izin', 'alfa']);
+            $table->time('waktu_pulang')->nullable();
+            $table->enum('keterangan', ['hadir', 'terlambat'])->nullable();
             $table->index(['siswa_id', 'tanggal']);
             $table->timestamps();
         

@@ -13,17 +13,13 @@
                     </ol>
                 </nav>
             </div>
-            <div class="mt-2">
-                <button class="btn btn-success" id="btn-export"><i class="bi bi-file-earmark-excel me-1"></i> Export
-                    Rekap</button>
-            </div>
         </div>
     </div>
 
     <section class="section">
-        {{-- Scan + Filter --}}
         <div class="card mb-4">
             <div class="card-body d-flex flex-wrap align-items-center justify-content-between gap-3">
+
                 {{-- Scan RFID --}}
                 <div class="d-flex align-items-center gap-3 flex-grow-1 min-w-0">
                     <div class="me-2">
@@ -31,8 +27,9 @@
                     </div>
                     <div class="flex-grow-1 min-w-0">
                         <div class="fw-semibold mb-1">Scan RFID untuk mencatat absen</div>
-                        <div class="text-muted small">Tempelkan kartu RFID, sistem otomatis mencatat masuk/pulang dan
-                            memperbarui tampilan.</div>
+                        <div class="text-muted small">
+                            Tempelkan kartu RFID, sistem otomatis mencatat masuk/pulang dan memperbarui tampilan.
+                        </div>
                     </div>
                     <div class="position-relative" style="min-width: 260px;">
                         <div class="input-group shadow-sm border border-primary-subtle rounded-pill overflow-hidden">
@@ -50,76 +47,17 @@
                     </div>
                 </div>
 
-
-                {{-- Dropdown filter --}}
+                {{-- Dropdown Filter Data Absensi --}}
                 <div class="dropdown">
                     <button class="btn btn-outline-secondary d-flex align-items-center" type="button" id="filterDropdown"
                         data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-funnel-fill me-1"></i> Pengaturan Filter <i class="bi bi-caret-down-fill ms-1"></i>
+                        <i class="bi bi-funnel-fill me-1"></i> Pengaturan Filter Data <i
+                            class="bi bi-caret-down-fill ms-1"></i>
                     </button>
-                    <div class="dropdown-menu p-3 shadow" style="min-width: 420px; max-height: 400px; overflow-y: auto;"
+                    <div class="dropdown-menu p-3 shadow" style="min-width: 380px; max-height: 400px; overflow-y: auto;"
                         aria-labelledby="filterDropdown">
 
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                                <small class="text-muted">Saring berdasarkan rentang tanggal, kelas, nama, dan status
-                                    absensi.</small>
-                            </div>
-                            <div>
-                                <button class="btn btn-sm btn-outline-info p-1" type="button" data-bs-toggle="collapse"
-                                    data-bs-target="#filter-help" aria-expanded="false" aria-controls="filter-help"
-                                    title="Panduan penggunaan">
-                                    <i class="bi bi-info-circle-fill"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="collapse mb-3" id="filter-help">
-                            <div class="card card-body py-2" style="max-height: 300px; overflow-y: auto;">
-                                <ul class="mb-0 small">
-                                    <li><strong>Tanggal:</strong> Pilih salah satu opsi:
-                                        <ul>
-                                            <li><code>hari_ini</code>: Menampilkan absensi siswa hari ini.</li>
-                                            <li><code>kemarin</code>: Menampilkan absensi siswa kemarin.</li>
-                                            <li><code>7_hari</code>: Menampilkan absensi 7 hari terakhir (termasuk hari ini).</li>
-                                            <li><code>1_bulan</code>: Menampilkan absensi selama 30 hari terakhir (termasuk hari ini).</li>
-                                        </ul>
-                                        Filter ini digunakan untuk menentukan rentang waktu pencarian absensi.
-                                    </li>
-                                    <li><strong>Kelas:</strong> Filter siswa berdasarkan kelas. Contoh: <code>XA</code>,
-                                        <code>XIB</code>, <code>XIIA</code>, dll.
-                                    </li>
-                                    <li><strong>Nama:</strong> Cari siswa berdasarkan nama. Pencarian bersifat sebagian
-                                        (tidak harus nama lengkap).
-                                        <br>Contoh: <code>ani</code> akan mencocokkan <code>Rani</code>, <code>Anita</code>,
-                                        dll.
-                                    </li>
-                                    <li><strong>Keterangan:</strong> Filter siswa berdasarkan status kehadiran, seperti:
-                                        <ul>
-                                            <li><code>hadir</code></li>
-                                            <li><code>terlambat</code></li>
-                                            <li><code>izin</code></li>
-                                            <li><code>sakit</code></li>
-                                        </ul>
-                                    </li>
-                                    <li><strong>Jam Masuk/Pulang:</strong> Digunakan hanya sebagai pembatas waktu
-                                        <strong>pencatatan absensi</strong> (pada saat scan RFID).
-                                        <br><strong>Tidak mempengaruhi</strong> hasil filter atau pencarian data siswa.
-                                        <br>Contoh:
-                                        <ul>
-                                            <li>Jika diatur <code>masuk_from: 06:30</code> dan <code>masuk_to: 07:30</code>,
-                                                maka siswa hanya bisa absen masuk pada rentang jam tersebut.</li>
-                                            <li>Jika <code>pulang_from: 13:00</code> dan <code>pulang_to: 15:00</code>, maka
-                                                absen pulang hanya diterima dalam rentang tersebut.</li>
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                        
-
-                        <form id="filter-form" method="GET" action="{{ route('absensi.index') }}" class="row g-2">
-
+                        <form id="filter-data-form" method="GET" action="{{ route('absensi.index') }}" class="row g-2">
                             {{-- Filter Tanggal --}}
                             <div class="col-12">
                                 <label for="tanggal" class="form-label small mb-1">Tanggal</label>
@@ -162,70 +100,84 @@
                                 <select name="keterangan" id="keterangan" class="form-select form-select-sm">
                                     <option value="">Semua</option>
                                     <option value="hadir" {{ $keterangan === 'hadir' ? 'selected' : '' }}>Hadir</option>
-                                    <option value="terlambat" {{ $keterangan === 'terlambat' ? 'selected' : '' }}>
-                                        Terlambat</option>
+                                    <option value="terlambat" {{ $keterangan === 'terlambat' ? 'selected' : '' }}>Terlambat
+                                    </option>
                                     <option value="izin" {{ $keterangan === 'izin' ? 'selected' : '' }}>Izin</option>
                                     <option value="alfa" {{ $keterangan === 'alfa' ? 'selected' : '' }}>Alfa</option>
                                 </select>
                             </div>
 
-                            {{-- Batasan Jam Masuk --}}
-                            <div class="col-12">
-                                <div class="row g-2">
-                                    <div class="col-6">
-                                        <label for="masuk_from" class="form-label small mb-1">Masuk dari</label>
-                                        <input type="time" name="masuk_from" id="masuk_from"
-                                            class="form-control form-control-sm"
-                                            value="{{ old('masuk_from', $masuk_from) }}">
-                                    </div>
-                                    <div class="col-6">
-                                        <label for="masuk_to" class="form-label small mb-1">Masuk sampai</label>
-                                        <input type="time" name="masuk_to" id="masuk_to"
-                                            class="form-control form-control-sm"
-                                            value="{{ old('masuk_to', $masuk_to) }}">
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Batasan Jam Pulang --}}
-                            <div class="col-12">
-                                <div class="row g-2">
-                                    <div class="col-6">
-                                        <label for="pulang_from" class="form-label small mb-1">Pulang dari</label>
-                                        <input type="time" name="pulang_from" id="pulang_from"
-                                            class="form-control form-control-sm"
-                                            value="{{ old('pulang_from', $pulang_from) }}">
-                                    </div>
-                                    <div class="col-6">
-                                        <label for="pulang_to" class="form-label small mb-1">Pulang sampai</label>
-                                        <input type="time" name="pulang_to" id="pulang_to"
-                                            class="form-control form-control-sm"
-                                            value="{{ old('pulang_to', $pulang_to) }}">
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Tombol --}}
+                            {{-- Tombol submit filter data --}}
                             <div class="col-12 d-flex gap-2 mt-2">
                                 <button type="submit" class="btn btn-sm btn-primary flex-grow-1">
-                                    <i class="bi bi-funnel-fill me-1"></i> Terapkan
+                                    <i class="bi bi-funnel-fill me-1"></i> Terapkan Filter Data
                                 </button>
                                 <a href="{{ route('absensi.index') }}" class="btn btn-sm btn-outline-secondary">
-                                    <i class="bi bi-x-circle me-1"></i> Reset
+                                    <i class="bi bi-x-circle me-1"></i> Reset Filter
                                 </a>
                             </div>
                         </form>
                     </div>
                 </div>
+
+                {{-- Dropdown Pengaturan Jam Masuk/Pulang --}}
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary d-flex align-items-center" type="button" id="jamDropdown"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-clock-fill me-1"></i> Pengaturan Jam Masuk/Pulang <i
+                            class="bi bi-caret-down-fill ms-1"></i>
+                    </button>
+                    <div class="dropdown-menu p-3 shadow" style="min-width: 360px;" aria-labelledby="jamDropdown">
+                        <form id="filter-jam-form" method="GET" action="{{ route('absensi.index') }}"
+                            class="row g-3">
+
+                            {{-- Batasan Jam Masuk --}}
+                            <div class="col-6">
+                                <label for="masuk_from" class="form-label small mb-1">Masuk dari</label>
+                                <input type="time" name="masuk_from" id="masuk_from"
+                                    class="form-control form-control-sm" value="{{ old('masuk_from', $masuk_from) }}">
+                            </div>
+                            <div class="col-6">
+                                <label for="masuk_to" class="form-label small mb-1">Masuk sampai</label>
+                                <input type="time" name="masuk_to" id="masuk_to"
+                                    class="form-control form-control-sm" value="{{ old('masuk_to', $masuk_to) }}">
+                            </div>
+
+                            {{-- Batasan Jam Pulang --}}
+                            <div class="col-6">
+                                <label for="pulang_from" class="form-label small mb-1">Pulang dari</label>
+                                <input type="time" name="pulang_from" id="pulang_from"
+                                    class="form-control form-control-sm" value="{{ old('pulang_from', $pulang_from) }}">
+                            </div>
+                            <div class="col-6">
+                                <label for="pulang_to" class="form-label small mb-1">Pulang sampai</label>
+                                <input type="time" name="pulang_to" id="pulang_to"
+                                    class="form-control form-control-sm" value="{{ old('pulang_to', $pulang_to) }}">
+                            </div>
+
+                            {{-- Tombol submit pengaturan jam --}}
+                            <div class="col-12 d-flex gap-2 mt-3">
+                                <button type="submit" class="btn btn-sm btn-primary flex-grow-1">
+                                    Terapkan Batasan Jam
+                                </button>
+                                <a href="{{ route('absensi.reset_jam') }}" class="btn btn-sm btn-outline-secondary">
+                                    Reset Jam
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
             </div>
         </div>
+
 
         {{-- Tabel absensi --}}
         <div class="card">
             <div class="card-body position-relative">
                 <h5 class="card-title mb-3">Daftar Absensi: <span
                         class="text-primary">{{ \Carbon\Carbon::parse($tanggal)->translatedFormat('d F Y') }}</span></h5>
-
+                {{-- Tampilkan filter aktif --}}
                 @if ($masuk_from || $masuk_to || $pulang_from || $pulang_to)
                     <div class="alert alert-info d-flex align-items-center" role="alert">
                         <i class="bi bi-clock me-2"></i>

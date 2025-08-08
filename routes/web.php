@@ -41,5 +41,6 @@ Route::middleware(['auth', 'chaceLogout'])->group(function () {
 
         // scan RFID dalam grup agar namanya absensi.scanRfid
         Route::post('/scan-rfid', [AbsensiController::class, 'scanRfid'])->name('scanRfid');
+        Route::get('/reset-jam', [AbsensiController::class, 'resetJam'])->name('reset_jam');
     });
 });
