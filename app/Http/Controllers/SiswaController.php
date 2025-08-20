@@ -2,77 +2,82 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Siswa;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use App\Models\Siswa;
+use App\Models\Kelas;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\SiswaExport;
+use App\Imports\SiswaImport;
 
 class SiswaController extends Controller
 {
     public function index()
     {
-        $siswas = Siswa::all();
-        return view('admin.siswa.index', compact('siswas'));
+        $siswas = Siswa::with('kelas')->get();
+        $kelas = Kelas::all();
+        return view('master.siswa.index', compact('siswas', 'kelas'));
     }
 
     public function create()
     {
-        return view('admin.siswa.create');
+        $kelas = Kelas::all();
+        return view('master.siswa.create', compact('kelas'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'nama' => 'required|string',
-            'kelas' => 'required|string',
-            'rfid_uid' => 'required|string|unique:siswas,rfid_uid',
+            'nama' => 'required|string|max:255',
+            'kelas_id' => 'required|exists:kelas,id',
+            'rfid' => 'required|unique:siswas,rfid',
+            'status' => 'required|in:aktif,pending',
         ]);
 
-        Siswa::create([
-            'id' => Str::uuid(),
-            'nama' => $request->nama,
-            'kelas' => $request->kelas,
-            'rfid_uid' => $request->rfid_uid,
-        ]);
-
+        Siswa::create($request->all());
         return redirect()->route('siswa.index')->with('success', 'Siswa berhasil ditambahkan.');
     }
 
     public function edit(Siswa $siswa)
     {
-        return view('admin.siswa.edit', compact('siswa'));
+        $kelas = Kelas::all();
+        return view('master.siswa.edit', compact('siswa', 'kelas'));
     }
+    
 
     public function update(Request $request, Siswa $siswa)
     {
-        // Cek apakah hanya update RFID
-        if ($request->has('rfid_uid')) {
+        if ($request->ajax()) {
             $request->validate([
-                'rfid_uid' => 'required|string|unique:siswas,rfid_uid,' . $siswa->id,
+                'rfid' => 'required|unique:siswas,rfid,' . $siswa->id,
             ]);
     
-            $siswa->update([
-                'rfid_uid' => $request->rfid_uid,
-            ]);
+            $siswa->rfid = $request->rfid;
+            $siswa->save();
     
-            return response()->json(['status' => 'success']);
+            return response()->json([
+                'success' => true,
+                'message' => 'RFID berhasil disimpan untuk ' . $siswa->nama,
+                'siswa_id' => $siswa->id,
+                'rfid' => $siswa->rfid,
+            ]);
         }
     
-        // Update data lengkap siswa (misalnya dari form edit)
+        // request biasa (form)
         $request->validate([
-            'nama' => 'required|string',
-            'kelas' => 'required|string',
-            'rfid_uid' => 'nullable|string|unique:siswas,rfid_uid,' . $siswa->id,
+            'nama' => 'required|string|max:255',
+            'kelas_id' => 'required|exists:kelas,id',
+            'rfid' => 'required|unique:siswas,rfid,' . $siswa->id,
+            'status' => 'required|in:aktif,pending',
         ]);
     
-        $siswa->update([
-            'nama' => $request->nama,
-            'kelas' => $request->kelas,
-            'rfid_uid' => $request->rfid_uid ?? $siswa->rfid_uid,
-        ]);
-    
-        return redirect()->route('siswa.index')->with('success', 'Data siswa diperbarui.');
+        $siswa->update($request->all());
+        return redirect()->route('siswa.index')->with('success', 'Siswa berhasil diperbarui.');
     }
-    
+
+    public function show(Siswa $siswa)
+    {
+        return view('master.siswa.show', compact('siswa'));
+    }
 
     public function destroy(Siswa $siswa)
     {
@@ -80,26 +85,46 @@ class SiswaController extends Controller
         return redirect()->route('siswa.index')->with('success', 'Siswa berhasil dihapus.');
     }
 
+    public function scan(Request $request)
+    {
+        $request->validate([
+            'siswa_id' => 'required|exists:siswas,id',
+            'rfid' => 'required',
+        ]);
+    
+        $exists = Siswa::where('rfid', $request->rfid)
+                        ->where('id', '<>', $request->siswa_id)
+                        ->exists();
+        if($exists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'RFID sudah digunakan oleh siswa lain.'
+            ], 422);
+        }
+    
+        $siswa = Siswa::findOrFail($request->siswa_id);
+        $siswa->rfid = $request->rfid;
+        $siswa->status = 'aktif';
+        $siswa->save();
+    
+        return response()->json([
+            'success' => true,
+            'message' => 'RFID berhasil disimpan dan status diubah menjadi aktif untuk ' . $siswa->nama,
+            'siswa_id' => $siswa->id,
+            'rfid' => $siswa->rfid,
+            'status' => $siswa->status,
+        ]);
+    }
+    
+
+    // Import Excel
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xls,xlsx',
+            'file' => 'required|mimes:xlsx,xls,csv'
         ]);
 
-        $file = $request->file('file');
-        $data = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath())->getActiveSheet()->toArray();
-
-        foreach ($data as $key => $row) {
-            if ($key === 0) continue; // skip header
-
-            Siswa::create([
-                'id' => Str::uuid(),
-                'nama' => $row[1] ?? 'Tanpa Nama',
-                'kelas' => $row[2] ?? '-',
-                'rfid_uid' => null, // Kosongkan dulu, biar diinput nanti
-            ]);
-        }
-
-        return response()->json(['status' => 'success']);
+        Excel::import(new SiswaImport, $request->file('file'));
+        return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil diimport.');
     }
 }

@@ -5,17 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Absensi extends Model
+class Kelas extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'siswa_id', 'jenis', 'status', 'rfid', 'keterangan', 'tanggal', 'jam'
-    ];
+    protected $fillable = ['nama'];
 
     public function siswa()
     {
-        return $this->belongsTo(Siswa::class);
+        return $this->hasMany(Siswa::class);
     }
 }
-
