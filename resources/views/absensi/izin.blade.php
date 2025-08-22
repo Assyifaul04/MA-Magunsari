@@ -46,9 +46,6 @@
                                 <div class="col-sm-10">
                                     <select name="status" class="form-select" aria-label="Default select example" required>
                                         <option selected disabled value="">-- Pilih Status --</option>
-                                        <option value="hadir">Hadir</option>
-                                        <option value="terlambat">Terlambat</option>
-                                        <option value="pulang">Pulang</option>
                                         <option value="izin">Izin</option>
                                         <option value="sakit">Sakit</option>
                                     </select>
@@ -77,63 +74,62 @@
                     <div class="card-body">
                         <h5 class="card-title">Data Absensi Izin</h5>
 
-                        <!-- Table with stripped rows -->
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">Keterangan</th>
-                                    <th scope="col">Status</th>
-                                    <th scope="col">RFID</th>
-                                    <th scope="col">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($absensi as $i => $a)
+                        <!-- Table with stripped rows, responsive -->
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover align-middle">
+                                <thead class="table-light">
                                     <tr>
-                                        <th scope="row">{{ $i + 1 }}</th>
-                                        <td>{{ $a->keterangan }}</td>
-                                        <td>
-                                            @if ($a->status == 'hadir')
-                                                <span class="badge bg-success">{{ ucfirst($a->status) }}</span>
-                                            @elseif($a->status == 'terlambat')
-                                                <span class="badge bg-warning">{{ ucfirst($a->status) }}</span>
-                                            @elseif($a->status == 'izin')
-                                                <span class="badge bg-info">{{ ucfirst($a->status) }}</span>
-                                            @elseif($a->status == 'sakit')
-                                                <span class="badge bg-secondary">{{ ucfirst($a->status) }}</span>
-                                            @else
-                                                <span class="badge bg-primary">{{ ucfirst($a->status) }}</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <code>{{ $a->rfid }}</code>
-                                        </td>
-                                        <td>
-                                            <button type="button" class="btn btn-outline-primary btn-sm" title="Detail">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-outline-warning btn-sm" title="Edit">
-                                                <i class="bi bi-pencil"></i>
-                                            </button>
-                                            <button type="button" class="btn btn-outline-danger btn-sm" title="Hapus">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </td>
+                                        <th scope="col">#</th>
+                                        <th scope="col">Nama</th>
+                                        <th scope="col">Keterangan</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">RFID</th>
+                                        <th scope="col">Aksi</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                        <!-- End Table with stripped rows -->
-
-                        @if (count($absensi) == 0)
-                            <div class="alert alert-info d-flex align-items-center" role="alert">
-                                <i class="bi bi-info-circle flex-shrink-0 me-2"></i>
-                                <div>
-                                    Belum ada data absensi yang tersedia.
-                                </div>
-                            </div>
-                        @endif
+                                </thead>
+                                <tbody>
+                                    @forelse ($absensi as $i => $a)
+                                        <tr>
+                                            <th scope="row">{{ $i + 1 }}</th>
+                                            <td>{{ $a->siswa->nama ?? '-' }}</td>
+                                            <td>{{ $a->keterangan ?? '-' }}</td>
+                                            <td>
+                                                @php
+                                                    $statusClass = match ($a->status) {
+                                                        'hadir' => 'bg-success',
+                                                        'terlambat' => 'bg-warning',
+                                                        'izin' => 'bg-info',
+                                                        'sakit' => 'bg-secondary',
+                                                        default => 'bg-primary',
+                                                    };
+                                                @endphp
+                                                <span class="badge {{ $statusClass }}">{{ ucfirst($a->status) }}</span>
+                                            </td>
+                                            <td><code>{{ $a->rfid }}</code></td>
+                                            <td>
+                                                <button type="button" class="btn btn-outline-primary btn-sm"
+                                                    title="Detail">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-warning btn-sm"
+                                                    title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" title="Hapus">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    @empty
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted">Belum ada data absensi yang
+                                                tersedia.</td>
+                                        </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- End Table Responsive -->
 
                     </div>
                 </div><!-- End Data Table Card -->

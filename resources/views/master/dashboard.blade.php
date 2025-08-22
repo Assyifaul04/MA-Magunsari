@@ -71,7 +71,7 @@
                 <div class="col-xxl-4 col-xl-12">
                     <div class="card info-card customers-card">
                         <div class="card-body">
-                            <h5 class="card-title">Alpha <span>| Hari Ini</span></h5>
+                            <h5 class="card-title">Tidak Hadir <span>| Hari Ini</span></h5>
                             <div class="d-flex align-items-center">
                                 <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
                                     <i class="bi bi-person-x"></i>

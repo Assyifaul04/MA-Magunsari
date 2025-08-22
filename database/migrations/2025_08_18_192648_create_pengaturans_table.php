@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('pengaturans', function (Blueprint $table) {
             $table->id();
-            $table->time('jam_masuk_awal')->default('05:00'); // batas awal boleh masuk
-            $table->time('jam_masuk_akhir')->default('07:00'); // batas akhir masuk
-            $table->time('jam_pulang')->default('15:00'); // hanya satu
+            $table->date('tanggal');
+            $table->time('jam_masuk_awal');
+            $table->time('jam_masuk_akhir');
+            $table->time('jam_pulang');
             $table->timestamps();
         });
+        
     }
 
     /**

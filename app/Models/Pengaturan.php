@@ -9,7 +9,9 @@ class Pengaturan extends Model
 {
     use HasFactory;
 
+    protected $table = 'pengaturans';
     protected $fillable = [
+        'tanggal',
         'jam_masuk_awal',
         'jam_masuk_akhir',
         'jam_pulang'

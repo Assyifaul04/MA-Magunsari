@@ -115,9 +115,7 @@ class SiswaController extends Controller
             'status' => $siswa->status,
         ]);
     }
-    
 
-    // Import Excel
     public function import(Request $request)
     {
         $request->validate([

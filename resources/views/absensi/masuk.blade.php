@@ -37,6 +37,27 @@
                     </div>
 
                     <div class="card-body p-0">
+                        {{-- Alert Filter Jadwal Hari Ini --}}
+                        @if ($pengaturan)
+                            <div
+                                class="alert alert-info d-flex align-items-center justify-content-between mb-3 shadow-sm border-0">
+                                <div>
+                                    <i class="bi bi-funnel-fill me-2"></i>
+                                    <strong>Filter Hari Ini:</strong>
+                                    <span class="ms-2">
+                                        {{ \Carbon\Carbon::parse($pengaturan->tanggal)->format('d M Y') }}
+                                        | Jam Masuk:
+                                        <span class="fw-semibold text-primary">{{ $pengaturan->jam_masuk_awal }}</span> -
+                                        <span class="fw-semibold text-danger">{{ $pengaturan->jam_masuk_akhir }}</span>
+                                    </span>
+                                </div>
+                                <span class="badge bg-primary">
+                                    <i class="bi bi-calendar-event me-1"></i>
+                                    {{ \Carbon\Carbon::parse($pengaturan->tanggal)->format('l') }}
+                                </span>
+                            </div>
+                        @endif
+
                         <!-- Responsive Table Wrapper -->
                         <div class="table-responsive">
                             <table class="table table-hover mb-0 align-middle">
@@ -73,11 +94,13 @@
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <div class="avatar-initial bg-light-primary text-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; font-size: 14px; font-weight: 600;">
+                                                    <div class="avatar-initial bg-light-primary text-primary rounded-circle me-2 d-flex align-items-center justify-content-center"
+                                                        style="width: 35px; height: 35px; font-size: 14px; font-weight: 600;">
                                                         {{ strtoupper(substr($a->siswa->nama ?? 'N', 0, 1)) }}{{ strtoupper(substr($a->siswa->nama ?? 'A', 1, 1)) }}
                                                     </div>
                                                     <div>
-                                                        <div class="fw-semibold text-dark">{{ $a->siswa->nama ?? '-' }}</div>
+                                                        <div class="fw-semibold text-dark">{{ $a->siswa->nama ?? '-' }}
+                                                        </div>
                                                         <small class="text-muted">Siswa Aktif</small>
                                                     </div>
                                                 </div>
@@ -88,36 +111,40 @@
                                                 </span>
                                             </td>
                                             <td class="text-center">
-                                                <div class="fw-medium text-dark">{{ \Carbon\Carbon::parse($a->tanggal)->format('d M Y') }}</div>
-                                                <small class="text-muted">{{ \Carbon\Carbon::parse($a->tanggal)->format('l') }}</small>
+                                                <div class="fw-medium text-dark">
+                                                    {{ \Carbon\Carbon::parse($a->tanggal)->format('d M Y') }}</div>
+                                                <small
+                                                    class="text-muted">{{ \Carbon\Carbon::parse($a->tanggal)->format('l') }}</small>
                                             </td>
                                             <td class="text-center">
                                                 <div class="fw-bold text-success">{{ $a->jam }}</div>
                                                 <small class="text-muted">WIB</small>
                                             </td>
                                             <td class="text-center">
-                                                <span class="badge {{ $a->jenis == 'masuk' ? 'bg-primary' : 'bg-secondary' }} px-2 py-1">
-                                                    <i class="bi bi-{{ $a->jenis == 'masuk' ? 'box-arrow-in-right' : 'box-arrow-right' }} me-1"></i>
+                                                <span
+                                                    class="badge {{ $a->jenis == 'masuk' ? 'bg-primary' : 'bg-secondary' }} px-2 py-1">
+                                                    <i
+                                                        class="bi bi-{{ $a->jenis == 'masuk' ? 'box-arrow-in-right' : 'box-arrow-right' }} me-1"></i>
                                                     {{ ucfirst($a->jenis) }}
                                                 </span>
                                             </td>
                                             <td class="text-center">
                                                 @php
-                                                    $statusClass = match($a->status) {
+                                                    $statusClass = match ($a->status) {
                                                         'hadir' => 'bg-success',
                                                         'terlambat' => 'bg-warning',
                                                         'alpha' => 'bg-danger',
                                                         'izin' => 'bg-info',
                                                         'sakit' => 'bg-secondary',
-                                                        default => 'bg-dark'
+                                                        default => 'bg-dark',
                                                     };
-                                                    $statusIcon = match($a->status) {
+                                                    $statusIcon = match ($a->status) {
                                                         'hadir' => 'check-circle-fill',
                                                         'terlambat' => 'clock-fill',
                                                         'alpha' => 'x-circle-fill',
                                                         'izin' => 'info-circle-fill',
                                                         'sakit' => 'heart-pulse-fill',
-                                                        default => 'question-circle-fill'
+                                                        default => 'question-circle-fill',
                                                     };
                                                 @endphp
                                                 <span class="badge {{ $statusClass }} px-2 py-1">
@@ -148,74 +175,76 @@
 @endsection
 
 @push('styles')
-<style>
-    .bg-gradient-primary {
-        background: linear-gradient(135deg, #6f42c1 0%, #007bff 100%);
-    }
-    
-    .bg-light-primary {
-        background-color: rgba(13, 110, 253, 0.1);
-    }
-    
-    .bg-light-info {
-        background-color: rgba(13, 202, 240, 0.1);
-    }
-    
-    .table-hover tbody tr:hover {
-        background-color: rgba(13, 110, 253, 0.05);
-        transform: translateY(-1px);
-        transition: all 0.2s ease;
-    }
-    
-    .card {
-        border-radius: 15px;
-        overflow: hidden;
-    }
-    
-    .card-header {
-        border: none;
-        padding: 1.5rem;
-    }
-    
-    .badge {
-        font-size: 0.75rem;
-        font-weight: 500;
-    }
-    
-    .avatar-initial {
-        background: linear-gradient(135deg, rgba(13, 110, 253, 0.1), rgba(13, 110, 253, 0.2));
-        border: 2px solid rgba(13, 110, 253, 0.1);
-    }
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #6f42c1 0%, #007bff 100%);
+        }
 
-    .table th {
-        border-top: none;
-        border-bottom: 2px solid #e9ecef;
-        padding: 1rem 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 0.5px;
-    }
-    
-    .table td {
-        padding: 1rem 0.75rem;
-        vertical-align: middle;
-        border-bottom: 1px solid #f0f0f0;
-    }
+        .bg-light-primary {
+            background-color: rgba(13, 110, 253, 0.1);
+        }
 
-    @media (max-width: 768px) {
+        .bg-light-info {
+            background-color: rgba(13, 202, 240, 0.1);
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: rgba(13, 110, 253, 0.05);
+            transform: translateY(-1px);
+            transition: all 0.2s ease;
+        }
+
+        .card {
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
         .card-header {
-            padding: 1rem;
+            border: none;
+            padding: 1.5rem;
         }
-        .card-header .d-flex {
-            flex-direction: column;
-            align-items: flex-start !important;
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 500;
         }
-        .card-header .text-end {
-            margin-top: 0.5rem;
+
+        .avatar-initial {
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.1), rgba(13, 110, 253, 0.2));
+            border: 2px solid rgba(13, 110, 253, 0.1);
         }
-    }
-</style>
+
+        .table th {
+            border-top: none;
+            border-bottom: 2px solid #e9ecef;
+            padding: 1rem 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+
+        .table td {
+            padding: 1rem 0.75rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        @media (max-width: 768px) {
+            .card-header {
+                padding: 1rem;
+            }
+
+            .card-header .d-flex {
+                flex-direction: column;
+                align-items: flex-start !important;
+            }
+
+            .card-header .text-end {
+                margin-top: 0.5rem;
+            }
+        }
+    </style>
 @endpush
 
 @push('scripts')

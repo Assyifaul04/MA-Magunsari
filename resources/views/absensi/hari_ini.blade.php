@@ -6,29 +6,71 @@
 </div>
 
 <div class="card shadow-sm p-4">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>RFID</th>
-                <th>Nama</th>
-                <th>Jenis</th>
-                <th>Status</th>
-                <th>Jam</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($absensi as $i => $a)
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
                 <tr>
-                    <td>{{ $i + 1 }}</td>
-                    <td>{{ $a->rfid }}</td>
-                    <td>{{ $a->siswa->nama }}</td>
-                    <td>{{ ucfirst($a->jenis) }}</td>
-                    <td>{{ ucfirst($a->status) }}</td>
-                    <td>{{ $a->jam }}</td>
+                    <th scope="col">#</th>
+                    <th scope="col">RFID</th>
+                    <th scope="col">Nama</th>
+                    <th scope="col">Kelas</th>
+                    <th scope="col">Jenis</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Jam</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse ($absensi as $i => $a)
+                    <tr>
+                        <th scope="row">{{ $i + 1 }}</th>
+                        <td>{{ $a->rfid }}</td>
+                        <td>{{ $a->siswa->nama }}</td>
+                        <td>
+                            @if ($a->siswa->kelas)
+                                <span class="badge bg-secondary">{{ $a->siswa->kelas->nama }}</span>
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if ($a->jenis == 'masuk')
+                                <span class="badge bg-success">{{ ucfirst($a->jenis) }}</span>
+                            @elseif($a->jenis == 'pulang')
+                                <span class="badge bg-warning text-dark">{{ ucfirst($a->jenis) }}</span>
+                            @else
+                                <span class="badge bg-info">{{ ucfirst($a->jenis) }}</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if ($a->status == 'hadir')
+                                <span class="badge bg-success">{{ ucfirst($a->status) }}</span>
+                            @elseif($a->status == 'terlambat')
+                                <span class="badge bg-warning text-dark">{{ ucfirst($a->status) }}</span>
+                            @elseif($a->status == 'izin')
+                                <span class="badge bg-info">{{ ucfirst($a->status) }}</span>
+                            @elseif($a->status == 'sakit')
+                                <span class="badge bg-danger">{{ ucfirst($a->status) }}</span>
+                            @else
+                                <span class="badge bg-primary">{{ ucfirst($a->status) }}</span>
+                            @endif
+                        </td>
+                        <td>{{ $a->jam }}</td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                <br>
+                                <strong>Tidak ada data absensi</strong>
+                                <br>
+                                <small>Silakan ubah filter atau periode tanggal untuk menampilkan data</small>
+                            </div>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection

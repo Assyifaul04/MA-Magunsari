@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\AbsensiExport;
 use Illuminate\Http\Request;
 use App\Models\Absensi;
 use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\Pengaturan;
 use Carbon\Carbon;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AbsensiController extends Controller
 {
@@ -20,32 +22,36 @@ class AbsensiController extends Controller
     // Halaman scan RFID untuk masuk
     public function masuk()
     {
+        $pengaturan = Pengaturan::where('tanggal', Carbon::today()->toDateString())->first();
+
         $absensi = Absensi::with(['siswa.kelas'])
             ->where('jenis', 'masuk')
-            ->orderBy('tanggal', 'desc')
+            ->whereDate('tanggal', Carbon::today()->toDateString()) // filter hari ini
+            ->orderBy('jam', 'asc')
             ->get();
 
-
-        return view('absensi.masuk', compact('absensi'));
+        return view('absensi.masuk', compact('absensi', 'pengaturan'));
     }
 
-    // Halaman scan RFID untuk keluar
     public function keluar()
     {
+        $pengaturan = Pengaturan::where('tanggal', Carbon::today()->toDateString())->first();
+
         $absensi = Absensi::with('siswa')
             ->where('jenis', 'pulang')
-            ->orderBy('tanggal', 'desc')
+            ->whereDate('tanggal', Carbon::today()->toDateString())
+            ->orderBy('jam', 'asc')
             ->get();
 
-        return view('absensi.keluar', compact('absensi'));
+        return view('absensi.keluar', compact('absensi', 'pengaturan'));
     }
 
-    // Halaman izin
     public function izin()
     {
         $absensi = Absensi::with('siswa')
             ->where('jenis', 'izin')
-            ->orderBy('tanggal', 'desc')
+            ->whereDate('tanggal', Carbon::today()->toDateString())
+            ->orderBy('jam', 'asc')
             ->get();
 
         return view('absensi.izin', compact('absensi'));
@@ -70,10 +76,17 @@ class AbsensiController extends Controller
             ], 404);
         }
 
-        $pengaturan = Pengaturan::first();
         $now = Carbon::now();
+        $pengaturan = Pengaturan::firstOrCreate(
+            ['tanggal' => $now->toDateString()],
+            [
+                'jam_masuk_awal' => '05:00',
+                'jam_masuk_akhir' => '07:00',
+                'jam_pulang' => '15:00',
+            ]
+        );
 
-        $jamMasuk = $pengaturan->jam_masuk ?? '07:00:00';
+        $jamMasuk = $pengaturan->jam_masuk_akhir ?? '07:00:00';
         $jamPulang = $pengaturan->jam_pulang ?? '15:00:00';
 
         $jenis = $request->jenis;
@@ -105,20 +118,19 @@ class AbsensiController extends Controller
         if ($jenis === 'masuk') {
             $jamMasukAwal  = $pengaturan->jam_masuk_awal ?? '05:00:00';
             $jamMasukAkhir = $pengaturan->jam_masuk_akhir ?? '07:00:00';
-
+        
             if ($now->format('H:i:s') < $jamMasukAwal) {
-                $status = 'belum masuk';
-                $jenis = 'masuk';
+                return response()->json([
+                    'success' => false,
+                    'message' => "Belum waktunya absen masuk",
+                ], 400);
             } elseif ($now->format('H:i:s') >= $jamMasukAwal && $now->format('H:i:s') <= $jamMasukAkhir) {
                 $status = 'hadir';
             } else {
                 $status = 'terlambat';
             }
-        } elseif ($jenis === 'pulang') {
-            $status = 'pulang';
-        } elseif ($jenis === 'izin') {
-            $status = $status ?? 'izin';
         }
+
 
         $absensi = Absensi::create([
             'siswa_id'   => $siswa->id,
@@ -140,34 +152,46 @@ class AbsensiController extends Controller
 
     public function checkJenis()
     {
-        $pengaturan = Pengaturan::first();
+        $pengaturan = Pengaturan::firstOrCreate(
+            ['tanggal' => Carbon::today()->toDateString()],
+            [
+                'jam_masuk_awal' => '05:00',
+                'jam_masuk_akhir' => '07:00',
+                'jam_pulang' => '15:00',
+            ]
+        );
+
         $now = Carbon::now();
 
-        // Ambil jam dari pengaturan, atau default
         $jamMasukAwal  = $pengaturan->jam_masuk_awal ?? '05:00:00';
         $jamMasukAkhir = $pengaturan->jam_masuk_akhir ?? '07:00:00';
         $jamPulang     = $pengaturan->jam_pulang ?? '15:00:00';
         $current       = $now->format('H:i:s');
 
-        // Logika status absen
         if ($current < $jamMasukAwal) {
-            $jenis = 'belum masuk';
+            $jenis = 'masuk';
+            $status = 'belum masuk';
         } elseif ($current >= $jamMasukAwal && $current <= $jamMasukAkhir) {
             $jenis = 'masuk';
+            $status = 'hadir';
         } elseif ($current > $jamMasukAkhir && $current < $jamPulang) {
-            $jenis = 'masuk terlambat';
+            $jenis = 'masuk';
+            $status = 'terlambat';
         } else {
             $jenis = 'pulang';
+            $status = 'pulang';
         }
 
         return response()->json([
             'jenis'          => $jenis,
+            'status'         => $status,      // tambahkan status
             'jam_masuk_awal' => $jamMasukAwal,
             'jam_masuk_akhir' => $jamMasukAkhir,
             'jam_pulang'     => $jamPulang,
             'now'            => $current
         ]);
     }
+
 
     public function hariIni()
     {
@@ -217,6 +241,51 @@ class AbsensiController extends Controller
         $absensi = $query->orderBy('tanggal', 'desc')->orderBy('jam', 'asc')->get();
 
         return view('absensi.by_range', compact('absensi'));
+    }
+
+    public function export(Request $request)
+    {
+        return Excel::download(new AbsensiExport($request), 'absensi.xlsx');
+    }
+
+
+    public function print(Request $request)
+    {
+
+        $query = Absensi::with('siswa.kelas');
+        if ($request->kelas) {
+            $query->whereHas(
+                'siswa.kelas',
+                fn($q) => $q->where('id', $request->kelas)
+            );
+        }
+        if ($request->tanggal_mulai && $request->tanggal_selesai) {
+            $query->whereBetween(
+                'tanggal',
+                [
+                    $request->tanggal_mulai,
+                    $request->tanggal_selesai
+                ]
+            );
+        }
+        if ($request->jenis) $query->where(
+            'jenis',
+            $request->jenis
+        );
+        if ($request->nama) {
+            $query->whereHas(
+                'siswa',
+                fn($q) => $q->where('nama', 'like', "%{$request->nama}%")
+            );
+        }
+        if ($request->status) $query->where(
+            'status',
+            $request->status
+        );
+
+        $absensi = $query->orderBy('tanggal', 'desc')->orderBy('jam', 'asc')->get();
+
+        return view('absensi.print', compact('absensi'));
     }
 
     public function performa(Request $request)

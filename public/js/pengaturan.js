@@ -3,13 +3,13 @@ $(document).ready(function () {
     function checkJamMasuk() {
         $.get("/pengaturan/check-jam-masuk", function(res) {
             if (res.jam_masuk_locked) {
-                $("#jam_masuk_awal, #jam_masuk_akhir").prop('readonly', true)
+                $("#jam_masuk_awal, #jam_masuk_akhir").prop('disabled', true)
                     .addClass('is-invalid');
                 $("#jamMasukAlert").removeClass('d-none');
                 $("#btnSimpan").html('<i class="bi bi-save"></i> Update jam pulang saja');
                 $("#jamMasukInfo").text('Jam masuk terkunci karena siswa sudah mulai absen hari ini');
             } else {
-                $("#jam_masuk_awal, #jam_masuk_akhir").prop('readonly', false)
+                $("#jam_masuk_awal, #jam_masuk_akhir").prop('disabled', false)
                     .removeClass('is-invalid');
                 $("#jamMasukAlert").addClass('d-none');
                 $("#btnSimpan").html('<i class="bi bi-save"></i> Simpan / Update');
