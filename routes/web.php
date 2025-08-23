@@ -22,14 +22,20 @@ Route::middleware('guest')->group(function () {
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
 Route::middleware(['auth', 'chaceLogout'])->group(function () {
-    Route::get('master/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::prefix('master')->group(function () {
+        Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('dashboard/realtime', [DashboardController::class, 'getRealtimeData'])
+            ->name('dashboard.realtime');
+    });
+    
 
     Route::prefix('kelas')->group(function () {
         Route::get('/', [KelasController::class, 'index'])->name('kelas.index');
         Route::post('store', [KelasController::class, 'store'])->name('kelas.store');
-        Route::post('update/{id}', [KelasController::class, 'update'])->name('kelas.update');
-        Route::delete('delete/{id}', [KelasController::class, 'destroy'])->name('kelas.destroy');
+        Route::put('update/{kelas}', [KelasController::class, 'update'])->name('kelas.update');
+        Route::delete('delete/{kelas}', [KelasController::class, 'destroy'])->name('kelas.destroy');
     });
+
 
     Route::prefix('siswa')->group(function () {
         Route::get('/', [SiswaController::class, 'index'])->name('siswa.index');

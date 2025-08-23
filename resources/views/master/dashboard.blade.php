@@ -1,5 +1,4 @@
 @extends('layouts.app')
-
 @section('title', 'Dashboard')
 
 @section('content')
@@ -14,235 +13,199 @@
 </div>
 
 <section class="section dashboard">
-    <div class="row">
+    <div class="row g-4">
+
         <!-- Left side columns -->
         <div class="col-lg-8">
-            <div class="row">
-                <!-- Statistik Hari Ini -->
-                <div class="col-xxl-4 col-md-6">
-                    <div class="card info-card sales-card">
-                        <div class="filter">
-                            <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                <li class="dropdown-header text-start">
-                                    <h6>Filter</h6>
-                                </li>
-                                <li><a class="dropdown-item" href="#">Hari Ini</a></li>
-                                <li><a class="dropdown-item" href="#">Minggu Ini</a></li>
-                                <li><a class="dropdown-item" href="#">Bulan Ini</a></li>
-                            </ul>
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Kehadiran <span>| Hari Ini</span></h5>
+            <div class="row g-4">
+
+                <!-- Statistik Cards -->
+                <div class="col-xxl-3 col-md-6 col-sm-6">
+                    <div class="card info-card sales-card shadow-sm border-0">
+                        <div class="card-body pt-3">
                             <div class="d-flex align-items-center">
-                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                    <i class="bi bi-people"></i>
+                                <div class="icon-container rounded-circle me-3 d-flex align-items-center justify-content-center"
+                                     style="width: 56px; height: 56px; background: linear-gradient(135deg, #4e73df, #224abe); color: white;">
+                                    <i class="bi bi-people fs-3"></i>
                                 </div>
-                                <div class="ps-3">
-                                    <h6>{{ $hariIni['hadir'] }}/{{ $hariIni['total_siswa'] }}</h6>
-                                    <span class="text-success small pt-1 fw-bold">{{ $hariIni['persentase_kehadiran'] }}%</span> 
-                                    <span class="text-muted small pt-2 ps-1">kehadiran</span>
+                                <div>
+                                    <p class="mb-1 text-muted small">Total Siswa</p>
+                                    <h5 class="mb-0 fw-bold" id="total-siswa">{{ $totalSiswa }}</h5>
+                                    <small class="text-success fw-semibold"><i class="bi bi-arrow-up"></i> {{ $siswaAktif }} aktif</small>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-xxl-4 col-md-6">
-                    <div class="card info-card revenue-card">
-                        <div class="card-body">
-                            <h5 class="card-title">Terlambat <span>| Hari Ini</span></h5>
+                <div class="col-xxl-3 col-md-6 col-sm-6">
+                    <div class="card info-card revenue-card shadow-sm border-0">
+                        <div class="card-body pt-3">
                             <div class="d-flex align-items-center">
-                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                    <i class="bi bi-clock"></i>
+                                <div class="icon-container rounded-circle me-3 d-flex align-items-center justify-content-center"
+                                     style="width: 56px; height: 56px; background: linear-gradient(135deg, #1cc88a, #17a673); color: white;">
+                                    <i class="bi bi-check-circle fs-3"></i>
                                 </div>
-                                <div class="ps-3">
-                                    <h6>{{ $hariIni['terlambat'] }}</h6>
-                                    <span class="text-danger small pt-1 fw-bold">
-                                        {{ $hariIni['total_siswa'] > 0 ? round(($hariIni['terlambat'] / $hariIni['total_siswa']) * 100, 1) : 0 }}%
-                                    </span> 
-                                    <span class="text-muted small pt-2 ps-1">dari total siswa</span>
+                                <div>
+                                    <p class="mb-1 text-muted small">Hadir Hari Ini</p>
+                                    <h5 class="mb-0 fw-bold" id="masuk-hari-ini">{{ $masukHariIni }}</h5>
+                                    <small class="text-success fw-semibold"><i class="bi bi-percent"></i> {{ $persentaseHadir }}% hadir</small>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-xxl-4 col-xl-12">
-                    <div class="card info-card customers-card">
-                        <div class="card-body">
-                            <h5 class="card-title">Tidak Hadir <span>| Hari Ini</span></h5>
+                <div class="col-xxl-3 col-md-6 col-sm-6">
+                    <div class="card info-card customers-card shadow-sm border-0">
+                        <div class="card-body pt-3">
                             <div class="d-flex align-items-center">
-                                <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                                    <i class="bi bi-person-x"></i>
+                                <div class="icon-container rounded-circle me-3 d-flex align-items-center justify-content-center"
+                                     style="width: 56px; height: 56px; background: linear-gradient(135deg, #f6c23e, #f4a100); color: white;">
+                                    <i class="bi bi-clock fs-3"></i>
                                 </div>
-                                <div class="ps-3">
-                                    <h6>{{ $hariIni['alpha'] }}</h6>
-                                    <span class="text-warning small pt-1 fw-bold">
-                                        {{ $hariIni['total_siswa'] > 0 ? round(($hariIni['alpha'] / $hariIni['total_siswa']) * 100, 1) : 0 }}%
-                                    </span> 
-                                    <span class="text-muted small pt-2 ps-1">tidak hadir</span>
+                                <div>
+                                    <p class="mb-1 text-muted small">Terlambat</p>
+                                    <h5 class="mb-0 fw-bold">{{ $terlambatHariIni }}</h5>
+                                    <small class="text-danger fw-semibold"><i class="bi bi-exclamation-triangle"></i> {{ $izinHariIni }} izin</small>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Chart Kehadiran 7 Hari -->
-                <div class="col-12">
-                    <div class="card">
-                        <div class="filter">
-                            <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                <li class="dropdown-header text-start">
-                                    <h6>Filter</h6>
-                                </li>
-                                <li><a class="dropdown-item" href="#">7 Hari</a></li>
-                                <li><a class="dropdown-item" href="#">30 Hari</a></li>
-                                <li><a class="dropdown-item" href="#">90 Hari</a></li>
-                            </ul>
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Grafik Kehadiran <span>/7 Hari Terakhir</span></h5>
-                            <div id="reportsChart"></div>
+                <div class="col-xxl-3 col-md-6 col-sm-6">
+                    <div class="card info-card shadow-sm border-0">
+                        <div class="card-body pt-3">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-container rounded-circle me-3 d-flex align-items-center justify-content-center"
+                                     style="width: 56px; height: 56px; background: linear-gradient(135deg, #4e73df, #224abe); color: white;">
+                                    <i class="bi bi-box-arrow-right fs-3"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-1 text-muted small">Pulang</p>
+                                    <h5 class="mb-0 fw-bold" id="pulang-hari-ini">{{ $pulangHariIni }}</h5>
+                                    <small class="text-muted">siswa pulang</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Chart Status Absensi -->
+                <!-- Chart Absensi -->
                 <div class="col-12">
-                    <div class="card">
+                    <div class="card shadow-sm border-0">
+                        <div class="filter">
+                            <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                <li><h6 class="dropdown-header">Filter</h6></li>
+                                <li><a class="dropdown-item" href="#" onclick="updateChart('week')">Minggu Ini</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="updateChart('month')">Bulan Ini</a></li>
+                            </ul>
+                        </div>
                         <div class="card-body">
-                            <h5 class="card-title">Status Absensi <span>| Bulan Ini</span></h5>
-                            <div id="trafficChart" style="min-height: 400px;" class="echart"></div>
+                            <h5 class="card-title fw-semibold">Statistik Absensi <span class="text-muted">| 7 Hari Terakhir</span></h5>
+                            <div id="reportsChart" class="chart-container" style="height: 350px;"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Siswa Terlambat Hari Ini -->
+                <!-- Status Distribution -->
                 <div class="col-12">
-                    <div class="card recent-sales overflow-auto">
-                        <div class="filter">
-                            <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                <li class="dropdown-header text-start">
-                                    <h6>Filter</h6>
-                                </li>
-                                <li><a class="dropdown-item" href="#">Hari Ini</a></li>
-                                <li><a class="dropdown-item" href="#">Kemarin</a></li>
-                                <li><a class="dropdown-item" href="#">Minggu Ini</a></li>
-                            </ul>
-                        </div>
+                    <div class="card shadow-sm border-0">
                         <div class="card-body">
-                            <h5 class="card-title">Siswa Terlambat <span>| Hari Ini</span></h5>
-                            <table class="table table-borderless datatable">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">#</th>
-                                        <th scope="col">Nama</th>
-                                        <th scope="col">Kelas</th>
-                                        <th scope="col">Jam</th>
-                                        <th scope="col">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse($siswaTerlambat as $index => $absen)
-                                    <tr>
-                                        <th scope="row">{{ $index + 1 }}</th>
-                                        <td>{{ $absen->siswa->nama }}</td>
-                                        <td>{{ $absen->siswa->kelas->nama ?? '-' }}</td>
-                                        <td>{{ Carbon\Carbon::parse($absen->jam)->format('H:i') }}</td>
-                                        <td><span class="badge bg-warning">Terlambat</span></td>
-                                    </tr>
-                                    @empty
-                                    <tr>
-                                        <td colspan="5" class="text-center">Tidak ada siswa terlambat hari ini</td>
-                                    </tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
+                            <h5 class="card-title fw-semibold">Distribusi Status Absensi <span class="text-muted">| Minggu Ini</span></h5>
+                            <div id="trafficChart" class="chart-container" style="min-height: 400px;"></div>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
 
         <!-- Right side columns -->
         <div class="col-lg-4">
-            <!-- Statistik Per Kelas -->
-            <div class="card">
-                <div class="filter">
-                    <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                        <li class="dropdown-header text-start">
-                            <h6>Filter</h6>
-                        </li>
-                        <li><a class="dropdown-item" href="#">Hari Ini</a></li>
-                        <li><a class="dropdown-item" href="#">Minggu Ini</a></li>
-                        <li><a class="dropdown-item" href="#">Bulan Ini</a></li>
-                    </ul>
-                </div>
-                <div class="card-body">
-                    <h5 class="card-title">Kehadiran Per Kelas <span>| Hari Ini</span></h5>
-                    @foreach($statistikKelas as $kelas)
-                    <div class="activity">
-                        <div class="activity-item d-flex">
-                            <div class="activite-label">{{ $kelas->persentase }}%</div>
-                            <i class='bi bi-circle-fill activity-badge 
-                                @if($kelas->persentase >= 90) text-success
-                                @elseif($kelas->persentase >= 70) text-warning
-                                @else text-danger
-                                @endif align-self-start'></i>
-                            <div class="activity-content">
-                                <strong>{{ $kelas->nama }}</strong><br>
-                                <small class="text-muted">
-                                    {{ $kelas->hadir }}/{{ $kelas->total_siswa }} siswa hadir
-                                    @if($kelas->terlambat > 0)
-                                        <br><span class="text-warning">{{ $kelas->terlambat }} terlambat</span>
-                                    @endif
-                                </small>
-                            </div>
+
+            <!-- Jam dan Pengaturan -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center py-4">
+                    <h5 class="card-title fw-semibold mb-3">Waktu Saat Ini</h5>
+                    <h2 id="current-time" class="text-primary fw-bold display-6">{{ now()->format('H:i:s') }}</h2>
+                    <p class="text-muted fs-5">{{ now()->format('l, d F Y') }}</p>
+
+                    @if($pengaturan)
+                    <div class="row mt-4 g-2">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Jam Masuk</small>
+                            <div class="fw-bold text-dark">{{ $pengaturan->jam_masuk_awal }} - {{ $pengaturan->jam_masuk_akhir }}</div>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted d-block">Pulang</small>
+                            <div class="fw-bold text-dark">{{ $pengaturan->jam_pulang }}</div>
+                        </div>
+                        <div class="col-12 mt-2">
+                            <small class="text-muted">Status</small>
+                            <div class="badge bg-success bg-gradient px-3 py-2 w-100">Absensi Aktif</div>
                         </div>
                     </div>
-                    @endforeach
+                    @endif
                 </div>
             </div>
 
-            <!-- Absensi Terbaru -->
-            <div class="card">
-                <div class="filter">
-                    <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                        <li class="dropdown-header text-start">
-                            <h6>Filter</h6>
-                        </li>
-                        <li><a class="dropdown-item" href="#">Hari Ini</a></li>
-                        <li><a class="dropdown-item" href="#">Kemarin</a></li>
-                        <li><a class="dropdown-item" href="#">Minggu Ini</a></li>
-                    </ul>
-                </div>
+            <!-- Top Kelas -->
+            <div class="card shadow-sm border-0">
                 <div class="card-body pb-0">
-                    <h5 class="card-title">Absensi Terbaru <span>| Real Time</span></h5>
-                    <div class="news">
-                        @foreach($absensiTerbaru as $absen)
-                        <div class="post-item clearfix">
-                            <div class="post-content">
-                                <h6>
-                                    <span class="badge 
-                                        @if($absen->status == 'hadir') bg-success
-                                        @elseif($absen->status == 'terlambat') bg-warning
-                                        @elseif($absen->status == 'pulang') bg-primary
-                                        @elseif($absen->status == 'izin') bg-info
-                                        @else bg-secondary
-                                        @endif">
+                    <h5 class="card-title fw-semibold">Top Kelas <span class="text-muted">| Bulan Ini</span></h5>
+                    <div class="mt-3">
+                        @foreach($topKelas as $index => $kelas)
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-2 rounded-3"
+                             style="background: #f8f9fa;">
+                            <div class="d-flex align-items-center">
+                                <span class="badge bg-primary rounded-circle me-2" style="width: 28px; height: 28px;">{{ $index + 1 }}</span>
+                                <div>
+                                    <h6 class="mb-0 fw-semibold">{{ $kelas->nama }}</h6>
+                                    <small class="text-muted">{{ $kelas->total_siswa }} siswa</small>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-success">{{ $kelas->total_hadir }}</span>
+                                <small class="d-block text-muted">hadir</small>
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card shadow-sm border-0">
+                <div class="card-body pb-0">
+                    <h5 class="card-title fw-semibold">Absensi Terbaru <span class="text-muted">| Hari Ini</span></h5>
+                    <div class="activity mt-3" id="recent-activity">
+                        @foreach($absensiTerbaru->take(8) as $absen)
+                        <div class="activity-item d-flex mb-3">
+                            <div class="activite-label fw-bold text-primary" style="min-width: 50px;">{{ Carbon\Carbon::parse($absen->jam)->format('H:i') }}</div>
+                            <i class='bi bi-circle-fill activity-badge 
+                                @if($absen->status == 'hadir') text-success
+                                @elseif($absen->status == 'terlambat') text-warning  
+                                @elseif($absen->status == 'pulang') text-info
+                                @else text-secondary
+                                @endif mx-2 align-self-center' style="font-size: 10px;"></i>
+                            <div class="activity-content flex-grow-1">
+                                <strong>{{ $absen->siswa->nama }}</strong>
+                                <span class="text-muted ms-1">({{ $absen->siswa->kelas->nama ?? '-' }})</span>
+                                <br>
+                                <small class="text-muted">
+                                    {{ ucfirst($absen->jenis) }} &bull;
+                                    <span class="badge bg-soft 
+                                        @if($absen->status == 'hadir') text-success bg-success-subtle
+                                        @elseif($absen->status == 'terlambat') text-warning bg-warning-subtle  
+                                        @elseif($absen->status == 'pulang') text-info bg-info-subtle
+                                        @else text-secondary bg-secondary-subtle
+                                        @endif
+                                        rounded-pill px-2 py-1" style="font-size: 0.75em;">
                                         {{ ucfirst($absen->status) }}
                                     </span>
-                                    {{ $absen->siswa->nama }}
-                                </h6>
-                                <p class="mb-1">{{ $absen->siswa->kelas->nama ?? '-' }}</p>
-                                <small class="text-muted">
-                                    {{ Carbon\Carbon::parse($absen->tanggal)->format('d/m/Y') }} - 
-                                    {{ Carbon\Carbon::parse($absen->jam)->format('H:i') }}
                                 </small>
                             </div>
                         </div>
@@ -251,175 +214,175 @@
                 </div>
             </div>
 
-            <!-- Website Traffic -->
-            <div class="card">
-                <div class="filter">
-                    <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-                    <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                        <li class="dropdown-header text-start">
-                            <h6>Filter</h6>
-                        </li>
-                        <li><a class="dropdown-item" href="#">Bulan Ini</a></li>
-                        <li><a class="dropdown-item" href="#">3 Bulan</a></li>
-                        <li><a class="dropdown-item" href="#">6 Bulan</a></li>
-                    </ul>
-                </div>
-                <div class="card-body pb-0">
-                    <h5 class="card-title">Performa Kelas <span>| Bulan Ini</span></h5>
-                    <div id="budgetChart" style="min-height: 400px;" class="echart"></div>
-                </div>
-            </div>
         </div>
     </div>
 </section>
-
 @endsection
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.44.0/dist/apexcharts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    // Chart Kehadiran 7 Hari
-    new ApexCharts(document.querySelector("#reportsChart"), {
+document.addEventListener("DOMContentLoaded", function () {
+    
+    // Real-time Clock
+    function updateClock() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('id-ID');
+        document.getElementById('current-time').textContent = timeString;
+    }
+    setInterval(updateClock, 1000);
+    updateClock(); // Initial call
+
+    // Chart Data from PHP
+    const chartData = @json($chartData);
+    const statusData = @json($statusMingguIni);
+
+    // Line Chart - Absensi
+    const chartOptions = {
         series: [{
-            name: 'Kehadiran',
-            data: @json(array_column($chartKehadiran, 'hadir')),
+            name: 'Masuk',
+            data: chartData.map(item => item.masuk),
+            color: '#4e73df'
+        }, {
+            name: 'Pulang',
+            data: chartData.map(item => item.pulang),
+            color: '#1cc88a'
         }],
         chart: {
-            height: 350,
             type: 'area',
-            toolbar: {
-                show: false
-            },
+            height: 350,
+            toolbar: { show: false },
+            animations: { enabled: true }
         },
-        markers: {
-            size: 4
-        },
-        colors: ['#4154f1'],
         fill: {
-            type: "gradient",
-            gradient: {
-                shadeIntensity: 1,
-                opacityFrom: 0.3,
-                opacityTo: 0.4,
-                stops: [0, 90, 100]
-            }
+            type: 'gradient',
+            gradient: { opacityFrom: 0.4, opacityTo: 0.1, shadeIntensity: 1 }
         },
-        dataLabels: {
-            enabled: false
-        },
-        stroke: {
-            curve: 'smooth',
-            width: 2
-        },
+        dataLabels: { enabled: false },
+        stroke: { curve: 'smooth', width: 3 },
         xaxis: {
-            categories: @json(array_column($chartKehadiran, 'tanggal')),
+            categories: chartData.map(item => item.day),
+            axisBorder: { show: false },
+            axisTicks: { show: false }
         },
-        tooltip: {
-            x: {
-                format: 'dd/MM'
-            },
-        }
-    }).render();
+        yaxis: { tickAmount: 4 },
+        tooltip: { x: { format: 'dd MMM' } },
+        grid: { borderColor: '#e7eaf6', strokeDashArray: 5 }
+    };
 
-    // Chart Status Absensi (Donut)
-    echarts.init(document.querySelector("#trafficChart")).setOption({
-        tooltip: {
-            trigger: 'item'
-        },
-        legend: {
-            top: '5%',
-            left: 'center'
-        },
+    const chart = new ApexCharts(document.querySelector("#reportsChart"), chartOptions);
+    chart.render();
+
+    // Pie Chart - Distribusi Status
+    const trafficChart = echarts.init(document.querySelector("#trafficChart"));
+    const trafficOption = {
+        tooltip: { trigger: 'item', formatter: '{a} <br/>{b}: {c} ({d}%)' },
+        legend: { top: '7%', left: 'center', textStyle: { fontSize: 12 } },
         series: [{
             name: 'Status Absensi',
             type: 'pie',
-            radius: ['40%', '70%'],
+            radius: ['50%', '70%'],
             avoidLabelOverlap: false,
-            label: {
-                show: false,
-                position: 'center'
-            },
+            label: { show: false },
             emphasis: {
-                label: {
-                    show: true,
-                    fontSize: '18',
-                    fontWeight: 'bold'
-                }
+                label: { show: true, fontSize: 16, fontWeight: 'bold' }
             },
-            labelLine: {
-                show: false
-            },
+            labelLine: { show: false },
             data: [
-                { value: {{ $chartStatus['hadir'] ?? 0 }}, name: 'Hadir', itemStyle: { color: '#5cb85c' }},
-                { value: {{ $chartStatus['terlambat'] ?? 0 }}, name: 'Terlambat', itemStyle: { color: '#f0ad4e' }},
-                { value: {{ $chartStatus['izin'] ?? 0 }}, name: 'Izin', itemStyle: { color: '#5bc0de' }},
+                { value: statusData.hadir, name: 'Hadir', itemStyle: { color: '#1cc88a' } },
+                { value: statusData.terlambat, name: 'Terlambat', itemStyle: { color: '#f6c23e' } },
+                { value: statusData.izin, name: 'Izin', itemStyle: { color: '#4e73df' } },
+                { value: statusData.sakit, name: 'Sakit', itemStyle: { color: '#e74a3b' } }
             ]
         }]
+    };
+    trafficChart.setOption(trafficOption);
+
+    // Real-time update
+    function updateRealtimeData() {
+        fetch('{{ route("dashboard.realtime") }}')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('masuk-hari-ini').textContent = data.masuk_hari_ini;
+                document.getElementById('pulang-hari-ini').textContent = data.pulang_hari_ini;
+            })
+            .catch(err => console.error('Realtime fetch error:', err));
+    }
+    setInterval(updateRealtimeData, 30000);
+
+    // Responsive resize
+    window.addEventListener('resize', () => {
+        chart.update(); trafficChart.resize();
     });
 
-    // Chart Performa Per Kelas (Bar)
-    const performaData = @json($chartPerformaKelas);
-    echarts.init(document.querySelector("#budgetChart")).setOption({
-        tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-                type: 'cross',
-                label: {
-                    backgroundColor: '#6a7985'
-                }
-            }
-        },
-        legend: {
-            data: ['Hadir', 'Terlambat']
-        },
-        toolbox: {
-            show: true,
-            feature: {
-                dataView: { show: true, readOnly: false },
-                magicType: { show: true, type: ['line', 'bar'] },
-                restore: { show: true },
-                saveAsImage: { show: true }
-            }
-        },
-        grid: {
-            left: '3%',
-            right: '4%',
-            bottom: '3%',
-            containLabel: true
-        },
-        xAxis: [{
-            type: 'category',
-            boundaryGap: false,
-            data: performaData.map(item => item.nama)
-        }],
-        yAxis: [{
-            type: 'value'
-        }],
-        series: [{
-            name: 'Hadir',
-            type: 'line',
-            stack: 'Total',
-            areaStyle: {},
-            emphasis: {
-                focus: 'series'
-            },
-            data: performaData.map(item => item.hadir)
-        }, {
-            name: 'Terlambat',
-            type: 'line',
-            stack: 'Total',
-            areaStyle: {},
-            emphasis: {
-                focus: 'series'
-            },
-            data: performaData.map(item => item.terlambat)
-        }]
-    });
+    // Filter chart
+    window.updateChart = function(period) {
+        alert('Fitur filter: ' + period); // Ganti dengan logika fetch ke backend
+    };
 });
-
-// Auto refresh setiap 30 detik
-setInterval(function() {
-    location.reload();
-}, 30000);
 </script>
+
+<style>
+/* Modern Professional Styling */
+.card {
+    border-radius: 16px !important;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 576px) {
+    .card-body {
+        padding: 1rem;
+    }
+    .icon-container {
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 1.2rem !important;
+    }
+    .display-6 {
+        font-size: 2rem;
+    }
+    .activity-item {
+        font-size: 0.85rem;
+    }
+    .col-sm-6 {
+        flex: 0 0 50%;
+            max-width: 50%;
+    }
+}
+
+/* Badge Style */
+.bg-soft {
+    background-color: rgba(0,0,0,0.05);
+}
+
+/* Chart Responsive */
+.chart-container {
+    width: 100%;
+    min-height: 300px;
+}
+
+/* Activity Timeline */
+.activity-badge {
+    font-size: 10px;
+    min-width: 10px;
+}
+.activite-label {
+    font-size: 0.8rem;
+    color: #4e73df;
+    font-weight: 600;
+}
+</style>
 @endpush

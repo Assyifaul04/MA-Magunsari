@@ -43,7 +43,13 @@ class KelasController extends Controller
     public function destroy(Kelas $kelas)
     {
         $kelas->delete();
+    
+        if(request()->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Kelas berhasil dihapus.']);
+        }
+    
         return redirect()->route('kelas.index')->with('success', 'Kelas berhasil dihapus.');
     }
+    
 }
 

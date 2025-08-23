@@ -118,7 +118,7 @@ class AbsensiController extends Controller
         if ($jenis === 'masuk') {
             $jamMasukAwal  = $pengaturan->jam_masuk_awal ?? '05:00:00';
             $jamMasukAkhir = $pengaturan->jam_masuk_akhir ?? '07:00:00';
-        
+
             if ($now->format('H:i:s') < $jamMasukAwal) {
                 return response()->json([
                     'success' => false,
@@ -129,7 +129,12 @@ class AbsensiController extends Controller
             } else {
                 $status = 'terlambat';
             }
+        } elseif ($jenis === 'pulang') {
+            $status = 'pulang';
+        } elseif ($jenis === 'izin') {
+            $status = 'izin';
         }
+
 
 
         $absensi = Absensi::create([
