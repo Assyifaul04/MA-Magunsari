@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Absensi;
+use App\Models\Siswa;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 use Illuminate\Http\Request;
@@ -18,30 +19,45 @@ class AbsensiExport implements FromView
 
     public function view(): View
     {
-        $query = Absensi::with('siswa.kelas');
+        $tanggalMulai   = $this->request->tanggal_mulai ?? now()->toDateString();
+        $tanggalSelesai = $this->request->tanggal_selesai ?? now()->toDateString();
+
+        // Query absensi (kecuali tidak_hadir)
+        $absensiQuery = Absensi::with('siswa.kelas')
+            ->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
 
         if ($this->request->kelas) {
-            $query->whereHas('siswa.kelas', function ($q) {
-                $q->where('id', $this->request->kelas);
-            });
-        }
-        if ($this->request->tanggal_mulai && $this->request->tanggal_selesai) {
-            $query->whereBetween('tanggal', [$this->request->tanggal_mulai, $this->request->tanggal_selesai]);
+            $absensiQuery->whereHas('siswa.kelas', fn($q) => $q->where('id', $this->request->kelas));
         }
         if ($this->request->jenis) {
-            $query->where('jenis', $this->request->jenis);
+            $absensiQuery->where('jenis', $this->request->jenis);
         }
         if ($this->request->nama) {
-            $query->whereHas('siswa', function ($q) {
-                $q->where('nama', 'like', "%{$this->request->nama}%");
-            });
+            $absensiQuery->whereHas('siswa', fn($q) => $q->where('nama', 'like', "%{$this->request->nama}%"));
         }
-        if ($this->request->status) {
-            $query->where('status', $this->request->status);
+        if ($this->request->status && $this->request->status !== 'tidak_hadir') {
+            $absensiQuery->where('status', $this->request->status);
         }
 
-        $absensi = $query->orderBy('tanggal', 'desc')->orderBy('jam', 'asc')->get();
+        $absensi = $absensiQuery
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('jam', 'asc')
+            ->get();
 
-        return view('exports.absensi', compact('absensi'));
+        // Query siswa tidak hadir (hanya jika status tidak_hadir atau status kosong)
+        $siswaTidakHadir = collect();
+        if ($this->request->status === 'tidak_hadir' || !$this->request->status) {
+            $siswaTidakHadir = Siswa::with('kelas')
+                ->whereNotNull('rfid')
+                ->when($this->request->kelas, fn($q) => $q->where('kelas_id', $this->request->kelas))
+                ->when($this->request->nama, fn($q) => $q->where('nama', 'like', "%{$this->request->nama}%"))
+                ->whereDoesntHave('absensi', function ($q) use ($tanggalMulai, $tanggalSelesai) {
+                    $q->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai])
+                        ->whereIn('status', ['hadir', 'terlambat', 'izin', 'sakit', 'pulang']);
+                })
+                ->get();
+        }
+
+        return view('exports.absensi', compact('absensi', 'siswaTidakHadir'));
     }
 }

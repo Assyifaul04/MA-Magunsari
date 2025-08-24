@@ -64,7 +64,7 @@ class AbsensiController extends Controller
             'rfid' => 'required|string',
             'jenis' => 'nullable|in:masuk,pulang,izin',
             'keterangan' => 'nullable|string',
-            'status' => 'nullable|in:hadir,terlambat,pulang,izin,sakit'
+            'status' => 'nullable|in:hadir,terlambat,pulang,izin,sakit,tidak hadir'
         ]);
 
         $siswa = Siswa::where('rfid', $request->rfid)->first();
@@ -210,43 +210,78 @@ class AbsensiController extends Controller
         return view('absensi.hari_ini', compact('absensi'));
     }
 
+
+
     public function byRange(Request $request)
     {
-        $query = Absensi::with('siswa.kelas');
+        $tanggalMulai   = $request->tanggal_mulai ?? Carbon::today()->toDateString();
+        $tanggalSelesai = $request->tanggal_selesai ?? Carbon::today()->toDateString();
 
-        // filter kelas
+        $absensi = collect();
+        $siswaTidakHadir = collect();
+
+        // Query absensi default
+        $absensiQuery = Absensi::with('siswa.kelas')
+            ->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
+
         if ($request->kelas) {
-            $query->whereHas('siswa.kelas', function ($q) use ($request) {
-                $q->where('id', $request->kelas);
-            });
+            $absensiQuery->whereHas('siswa.kelas', fn($q) => $q->where('id', $request->kelas));
         }
 
-        // filter tanggal
-        if ($request->tanggal_mulai && $request->tanggal_selesai) {
-            $query->whereBetween('tanggal', [$request->tanggal_mulai, $request->tanggal_selesai]);
-        }
-
-        // filter jenis
         if ($request->jenis) {
-            $query->where('jenis', $request->jenis);
+            $absensiQuery->where('jenis', $request->jenis);
         }
 
-        // filter nama
         if ($request->nama) {
-            $query->whereHas('siswa', function ($q) use ($request) {
-                $q->where('nama', 'like', "%{$request->nama}%");
-            });
+            $absensiQuery->whereHas('siswa', fn($q) => $q->where('nama', 'like', "%{$request->nama}%"));
         }
 
-        // filter status
-        if ($request->status) {
-            $query->where('status', $request->status);
+        if ($request->status && $request->status !== 'tidak_hadir') {
+            $absensiQuery->where('status', $request->status);
         }
 
-        $absensi = $query->orderBy('tanggal', 'desc')->orderBy('jam', 'asc')->get();
+        $absensi = $absensiQuery->orderBy('tanggal', 'desc')
+            ->orderBy('jam', 'asc')
+            ->get();
 
-        return view('absensi.by_range', compact('absensi'));
+        // Jika filter status == tidak_hadir → ambil siswa yang tidak ada absensinya
+        // Jika filter status == tidak_hadir
+        if ($request->status == 'tidak_hadir') {
+            $siswaTidakHadirQuery = Siswa::with('kelas')
+                ->whereNotNull('rfid')
+                ->when($request->kelas, fn($q) => $q->where('kelas_id', $request->kelas))
+                ->when($request->nama, fn($q) => $q->where('nama', 'like', "%{$request->nama}%"))
+                ->whereDoesntHave('absensi', function ($q) use ($tanggalMulai, $tanggalSelesai) {
+                    $q->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai])
+                        ->whereIn('status', ['hadir', 'terlambat', 'izin', 'sakit', 'pulang']);
+                });
+
+            $siswaTidakHadir = $siswaTidakHadirQuery->get();
+
+            // kosongkan absensi supaya tidak campur
+            $absensi = collect();
+        }
+
+        // Kalau status kosong (semua) → tampilkan absensi + siswa tidak hadir
+        elseif (!$request->status) {
+            $siswaTidakHadirQuery = Siswa::with('kelas')
+                ->whereNotNull('rfid')
+                ->when($request->kelas, fn($q) => $q->where('kelas_id', $request->kelas))
+                ->when($request->nama, fn($q) => $q->where('nama', 'like', "%{$request->nama}%"))
+                ->whereDoesntHave('absensi', function ($q) use ($tanggalMulai, $tanggalSelesai) {
+                    $q->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai])
+                        ->whereIn('status', ['hadir', 'terlambat', 'izin', 'sakit', 'pulang']);
+                });
+
+            $siswaTidakHadir = $siswaTidakHadirQuery->get();
+        }
+
+
+        return view('absensi.by_range', compact('absensi', 'siswaTidakHadir'));
     }
+
+
+
 
     public function export(Request $request)
     {
@@ -256,42 +291,43 @@ class AbsensiController extends Controller
 
     public function print(Request $request)
     {
-
-        $query = Absensi::with('siswa.kelas');
+        $tanggalMulai = $request->tanggal_mulai ?? now()->toDateString();
+        $tanggalSelesai = $request->tanggal_selesai ?? now()->toDateString();
+    
+        // Query absensi
+        $query = Absensi::with('siswa.kelas')
+            ->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
+    
         if ($request->kelas) {
-            $query->whereHas(
-                'siswa.kelas',
-                fn($q) => $q->where('id', $request->kelas)
-            );
+            $query->whereHas('siswa.kelas', fn($q) => $q->where('id', $request->kelas));
         }
-        if ($request->tanggal_mulai && $request->tanggal_selesai) {
-            $query->whereBetween(
-                'tanggal',
-                [
-                    $request->tanggal_mulai,
-                    $request->tanggal_selesai
-                ]
-            );
-        }
-        if ($request->jenis) $query->where(
-            'jenis',
-            $request->jenis
-        );
+        if ($request->jenis) $query->where('jenis', $request->jenis);
         if ($request->nama) {
-            $query->whereHas(
-                'siswa',
-                fn($q) => $q->where('nama', 'like', "%{$request->nama}%")
-            );
+            $query->whereHas('siswa', fn($q) => $q->where('nama', 'like', "%{$request->nama}%"));
         }
-        if ($request->status) $query->where(
-            'status',
-            $request->status
-        );
-
+        if ($request->status && $request->status != 'tidak_hadir') {
+            $query->where('status', $request->status);
+        }
+    
         $absensi = $query->orderBy('tanggal', 'desc')->orderBy('jam', 'asc')->get();
-
-        return view('absensi.print', compact('absensi'));
+    
+        // siswa tidak hadir
+        $siswaTidakHadir = collect();
+        if ($request->status == 'tidak_hadir' || !$request->status) {
+            $siswaTidakHadir = Siswa::with('kelas')
+                ->whereNotNull('rfid')
+                ->when($request->kelas, fn($q) => $q->where('kelas_id', $request->kelas))
+                ->when($request->nama, fn($q) => $q->where('nama', 'like', "%{$request->nama}%"))
+                ->whereDoesntHave('absensi', function ($q) use ($tanggalMulai, $tanggalSelesai) {
+                    $q->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai])
+                      ->whereIn('status', ['hadir','terlambat','izin','sakit','pulang']);
+                })
+                ->get();
+        }
+    
+        return view('absensi.print', compact('absensi', 'siswaTidakHadir', 'tanggalMulai', 'tanggalSelesai'));
     }
+
 
     public function performa(Request $request)
     {

@@ -86,7 +86,7 @@
             <a class="nav-link {{ isActive('absensi.performa') || isActive('absensi.rekap') ? '' : 'collapsed' }}"
                 data-bs-target="#data-laporan-nav" data-bs-toggle="collapse" href="#">
                 <i class="bi bi-file-text"></i>
-                <span>Rekap Performa</span>
+                <span>Laporan Performa</span>
                 <i class="bi bi-chevron-down ms-auto"></i>
             </a>
             <ul id="data-laporan-nav"

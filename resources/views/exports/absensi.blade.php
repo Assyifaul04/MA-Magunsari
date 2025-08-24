@@ -38,6 +38,7 @@
             </tr>
         </thead>
         <tbody>
+            {{-- Data absensi --}}
             @foreach ($absensi as $i => $a)
                 <tr>
                     <td>{{ $i + 1 }}</td>
@@ -48,6 +49,20 @@
                     <td>{{ ucfirst($a->status) }}</td>
                     <td>{{ $a->tanggal }}</td>
                     <td>{{ $a->jam }}</td>
+                </tr>
+            @endforeach
+
+            {{-- Data siswa tidak hadir --}}
+            @foreach ($siswaTidakHadir as $i => $s)
+                <tr>
+                    <td>{{ $i + 1 + $absensi->count() }}</td>
+                    <td>{{ $s->rfid }}</td>
+                    <td>{{ $s->nama }}</td>
+                    <td>{{ $s->kelas->nama ?? '-' }}</td>
+                    <td>-</td>
+                    <td>Tidak Hadir</td>
+                    <td>-</td>
+                    <td>-</td>
                 </tr>
             @endforeach
         </tbody>

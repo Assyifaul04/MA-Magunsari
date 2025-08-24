@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('siswa_id')->nullable()->constrained('siswas')->onDelete('set null');
             $table->enum('jenis', ['masuk', 'pulang', 'izin']);
-            $table->enum('status', ['hadir', 'terlambat', 'pulang', 'izin', 'sakit']);
+            $table->enum('status', ['hadir', 'terlambat', 'pulang', 'izin', 'sakit', 'tidak hadir']);
             $table->string('rfid')->nullable(); // untuk absensi izin atau siswa tanpa data lengkap
             $table->text('keterangan')->nullable(); // untuk izin
             $table->date('tanggal');
@@ -23,6 +23,7 @@ return new class extends Migration
             $table->timestamps();
         });
     }
+    
     
 
     /**

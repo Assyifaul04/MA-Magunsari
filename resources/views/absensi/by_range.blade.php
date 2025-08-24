@@ -112,6 +112,10 @@
                                         <option value="sakit" {{ request('status') == 'sakit' ? 'selected' : '' }}>
                                             Sakit
                                         </option>
+                                        <option value="tidak_hadir"
+                                            {{ request('status') == 'tidak_hadir' ? 'selected' : '' }}>
+                                            Tidak Hadir
+                                        </option>
                                     </select>
                                 </div>
 
@@ -146,15 +150,21 @@
                 <div class="card">
                     <div class="card-body">
                         <h5 class="card-title">Data Absensi</h5>
-                
+
+                        @php
+                            $totalData = $absensi->count() + ($siswaTidakHadir->count() ?? 0);
+                        @endphp
+
                         @if (request()->hasAny(['tanggal_mulai', 'tanggal_selesai', 'kelas', 'jenis', 'nama', 'status']))
                             <div class="alert alert-info alert-dismissible fade show" role="alert">
                                 <i class="bi bi-info-circle me-1"></i>
-                                Filter aktif: {{ $absensi->count() }} data ditemukan
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                Filter aktif: {{ $totalData }} data ditemukan
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                    aria-label="Close"></button>
                             </div>
                         @endif
-                
+
+
                         <!-- Responsive table -->
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">
@@ -172,61 +182,62 @@
                                 <tbody>
                                     @forelse ($absensi as $i => $a)
                                         <tr>
-                                            <th scope="row">{{ $i + 1 }}</th>
-                                            <td>{{ $a->rfid }}</td>
+                                            <td>{{ $i + 1 }}</td>
+                                            <td>{{ $a->rfid ?? '-' }}</td>
                                             <td>{{ $a->siswa->nama }}</td>
+                                            <td>{{ $a->siswa->kelas->nama ?? '-' }}</td>
                                             <td>
-                                                @if ($a->siswa->kelas)
-                                                    <span class="badge bg-secondary">{{ $a->siswa->kelas->nama }}</span>
-                                                @else
-                                                    <span class="text-muted">-</span>
-                                                @endif
+                                                <span
+                                                    class="badge 
+                                                    {{ $a->jenis == 'masuk' ? 'bg-success' : ($a->jenis == 'pulang' ? 'bg-warning text-dark' : 'bg-info') }}">
+                                                    {{ ucfirst($a->jenis) }}
+                                                </span>
                                             </td>
                                             <td>
-                                                @if ($a->jenis == 'masuk')
-                                                    <span class="badge bg-success">{{ ucfirst($a->jenis) }}</span>
-                                                @elseif($a->jenis == 'pulang')
-                                                    <span class="badge bg-warning text-dark">{{ ucfirst($a->jenis) }}</span>
-                                                @else
-                                                    <span class="badge bg-info">{{ ucfirst($a->jenis) }}</span>
-                                                @endif
+                                                <span
+                                                    class="badge 
+                                                    {{ $a->status == 'hadir'
+                                                        ? 'bg-success'
+                                                        : ($a->status == 'terlambat'
+                                                            ? 'bg-warning text-dark'
+                                                            : ($a->status == 'izin'
+                                                                ? 'bg-info'
+                                                                : ($a->status == 'sakit'
+                                                                    ? 'bg-danger'
+                                                                    : 'bg-secondary'))) }}">
+                                                    {{ ucfirst(str_replace('_', ' ', $a->status)) }}
+                                                </span>
                                             </td>
-                                            <td>
-                                                @if ($a->status == 'hadir')
-                                                    <span class="badge bg-success">{{ ucfirst($a->status) }}</span>
-                                                @elseif($a->status == 'terlambat')
-                                                    <span class="badge bg-warning text-dark">{{ ucfirst($a->status) }}</span>
-                                                @elseif($a->status == 'izin')
-                                                    <span class="badge bg-info">{{ ucfirst($a->status) }}</span>
-                                                @elseif($a->status == 'sakit')
-                                                    <span class="badge bg-danger">{{ ucfirst($a->status) }}</span>
-                                                @else
-                                                    <span class="badge bg-primary">{{ ucfirst($a->status) }}</span>
-                                                @endif
-                                            </td>
-                                            <td>{{ $a->jam }}</td>
+                                            <td>{{ $a->jam ?? '-' }}</td>
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="7" class="text-center py-4">
-                                                <div class="text-muted">
-                                                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
-                                                    <br>
-                                                    <strong>Tidak ada data absensi</strong>
-                                                    <br>
-                                                    <small>Silakan ubah filter atau periode tanggal untuk menampilkan data</small>
-                                                </div>
-                                            </td>
+                                            <td colspan="7" class="text-center py-4">Tidak ada data absensi</td>
                                         </tr>
                                     @endforelse
+
+                                    {{-- Tambahkan siswa tidak hadir --}}
+                                    @if (isset($siswaTidakHadir))
+                                        @foreach ($siswaTidakHadir as $i => $siswa)
+                                            <tr>
+                                                <td>{{ $absensi->count() + $i + 1 }}</td>
+                                                <td>{{ $siswa->rfid }}</td>
+                                                <td>{{ $siswa->nama }}</td>
+                                                <td>{{ $siswa->kelas->nama ?? '-' }}</td>
+                                                <td>-</td>
+                                                <td><span class="badge bg-danger">Tidak Hadir</span></td>
+                                                <td>-</td>
+                                            </tr>
+                                        @endforeach
+                                    @endif
                                 </tbody>
                             </table>
                         </div>
                         <!-- End Responsive table -->
-                
+
                     </div>
                 </div>
-                
+
             </div>
         </div>
     </section>
@@ -288,21 +299,20 @@
 @endpush
 
 @push('scripts')
-<script>
-    const exportRoute = "{{ route('absensi.export') }}";
-    const printRoute = "{{ route('absensi.print') }}";
-    const byRangeRoute = "{{ route('absensi.byRange') }}";
+    <script>
+        const exportRoute = "{{ route('absensi.export') }}";
+        const printRoute = "{{ route('absensi.print') }}";
+        const byRangeRoute = "{{ route('absensi.byRange') }}";
 
-    @if (request()->hasAny(['tanggal_mulai', 'tanggal_selesai', 'kelas', 'jenis', 'nama', 'status']) && $absensi->count() > 0)
-        var showSuccessToast = true;
-        var successMessage = "Filter berhasil diterapkan. Ditemukan {{ $absensi->count() }} data.";
-    @endif
+        @if (request()->hasAny(['tanggal_mulai', 'tanggal_selesai', 'kelas', 'jenis', 'nama', 'status']) && $totalData > 0)
+            var showSuccessToast = true;
+            var successMessage = "Filter berhasil diterapkan. Ditemukan {{ $totalData }} data.";
+        @endif
 
-    @if (request()->hasAny(['tanggal_mulai', 'tanggal_selesai', 'kelas', 'jenis', 'nama', 'status']) && $absensi->count() === 0)
-        var showWarningToast = true;
-        var warningMessage = "Tidak ada data yang sesuai dengan filter yang dipilih.";
-    @endif
-</script>
-<script src="{{ asset('js/by-range.js') }}"></script>
+        @if (request()->hasAny(['tanggal_mulai', 'tanggal_selesai', 'kelas', 'jenis', 'nama', 'status']) && $totalData === 0)
+            var showWarningToast = true;
+            var warningMessage = "Tidak ada data yang sesuai dengan filter yang dipilih.";
+        @endif
+    </script>
+    <script src="{{ asset('js/by-range.js') }}"></script>
 @endpush
-

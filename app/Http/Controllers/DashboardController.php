@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Absensi;
 use App\Models\Siswa;
 use App\Models\Kelas;
+use App\Models\Absensi;
 use App\Models\Pengaturan;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -15,111 +15,120 @@ class DashboardController extends Controller
     public function index()
     {
         $today = Carbon::today();
-        $thisMonth = Carbon::now()->startOfMonth();
         $thisWeek = Carbon::now()->startOfWeek();
+        $thisMonth = Carbon::now()->startOfMonth();
 
-        // Statistik Umum
+        // Stats Cards
         $totalSiswa = Siswa::count();
         $totalKelas = Kelas::count();
         $siswaAktif = Siswa::where('status', 'aktif')->count();
-        $siswaPending = Siswa::where('status', 'pending')->count();
-
-        // Absensi Hari Ini
         $absensiHariIni = Absensi::whereDate('tanggal', $today)->count();
-        $masukHariIni = Absensi::where('jenis', 'masuk')->whereDate('tanggal', $today)->count();
-        $pulangHariIni = Absensi::where('jenis', 'pulang')->whereDate('tanggal', $today)->count();
-        $izinHariIni = Absensi::where('jenis', 'izin')->whereDate('tanggal', $today)->count();
 
-        // Status Absensi Hari Ini
-        $hadirHariIni = Absensi::where('status', 'hadir')->whereDate('tanggal', $today)->count();
-        $terlambatHariIni = Absensi::where('status', 'terlambat')->whereDate('tanggal', $today)->count();
-        $sakitHariIni = Absensi::where('status', 'sakit')->whereDate('tanggal', $today)->count();
+        // Absensi hari ini berdasarkan status
+        $absensiHariIniStatus = Absensi::whereDate('tanggal', $today)
+            ->select('status', DB::raw('count(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status')
+            ->toArray();
 
-        // Persentase Kehadiran Hari Ini
-        $persentaseHadir = $totalSiswa > 0 ? round(($masukHariIni / $totalSiswa) * 100, 1) : 0;
-
-        // Data untuk Chart - Absensi 7 Hari Terakhir
-        $chartData = [];
+        // Absensi 7 hari terakhir
+        $absensi7Hari = [];
         for ($i = 6; $i >= 0; $i--) {
-            $date = Carbon::now()->subDays($i);
-            $masuk = Absensi::where('jenis', 'masuk')->whereDate('tanggal', $date)->count();
-            $pulang = Absensi::where('jenis', 'pulang')->whereDate('tanggal', $date)->count();
-            
-            $chartData[] = [
-                'date' => $date->format('Y-m-d'),
-                'day' => $date->format('D'),
-                'masuk' => $masuk,
-                'pulang' => $pulang
+            $date = Carbon::today()->subDays($i);
+            $absensi7Hari[] = [
+                'tanggal' => $date->format('d M'),
+                'hadir' => Absensi::whereDate('tanggal', $date)->where('status', 'hadir')->count(),
+                'terlambat' => Absensi::whereDate('tanggal', $date)->where('status', 'terlambat')->count(),
+                'izin' => Absensi::whereDate('tanggal', $date)->where('status', 'izin')->count(),
+                'pulang' => Absensi::whereDate('tanggal', $date)->where('status', 'pulang')->count(),
             ];
         }
 
-        // Data Status Mingguan
-        $statusMingguIni = [
-            'hadir' => Absensi::where('status', 'hadir')->where('tanggal', '>=', $thisWeek)->count(),
-            'terlambat' => Absensi::where('status', 'terlambat')->where('tanggal', '>=', $thisWeek)->count(),
-            'izin' => Absensi::where('status', 'izin')->where('tanggal', '>=', $thisWeek)->count(),
-            'sakit' => Absensi::where('status', 'sakit')->where('tanggal', '>=', $thisWeek)->count(),
-        ];
+        // Absensi per kelas hari ini
+        $absensiPerKelas = Kelas::withCount(['siswa as total_siswa'])
+            ->with(['siswa' => function($query) use ($today) {
+                $query->whereHas('absensi', function($q) use ($today) {
+                    $q->whereDate('tanggal', $today)->where('jenis', 'masuk');
+                });
+            }])
+            ->get()
+            ->map(function ($kelas) {
+                return [
+                    'nama' => $kelas->nama,
+                    'total_siswa' => $kelas->total_siswa,
+                    'hadir' => $kelas->siswa->count(),
+                    'tidak_hadir' => $kelas->total_siswa - $kelas->siswa->count(),
+                    'persentase' => $kelas->total_siswa > 0 ? round(($kelas->siswa->count() / $kelas->total_siswa) * 100, 1) : 0
+                ];
+            });
 
-        // Top 5 Kelas dengan Kehadiran Terbaik (bulan ini)
-        $topKelas = DB::table('absensis') // BUKAN 'absensi'
-        ->join('siswas', 'absensis.siswa_id', '=', 'siswas.id')
-        ->join('kelas', 'siswas.kelas_id', '=', 'kelas.id')
-        ->where('absensis.jenis', 'masuk')
-        ->where('absensis.tanggal', '>=', $thisMonth)
-        ->groupBy('kelas.id', 'kelas.nama')
-        ->select(
-            'kelas.nama',
-            DB::raw('COUNT(*) as total_hadir'),
-            DB::raw('COUNT(DISTINCT siswas.id) as total_siswa')
-        )
-        ->orderBy('total_hadir', 'desc')
-        ->limit(5)
-        ->get();
-    
-
-        // Absensi Terbaru
-        $absensiTerbaru = Absensi::with(['siswa.kelas'])
-            ->orderBy('tanggal', 'desc')
-            ->orderBy('jam', 'desc')
-            ->limit(10)
+        // Top 5 siswa terlambat bulan ini
+        $siswaSeringTerlambat = Siswa::with('kelas')
+            ->withCount(['absensi as terlambat_count' => function($query) use ($thisMonth) {
+                $query->where('status', 'terlambat')
+                      ->where('tanggal', '>=', $thisMonth);
+            }])
+            ->having('terlambat_count', '>', 0)
+            ->orderBy('terlambat_count', 'desc')
+            ->take(5)
             ->get();
 
-        // Pengaturan Hari Ini
-        $pengaturan = Pengaturan::where('tanggal', $today->toDateString())->first();
+        // Absensi masuk vs pulang minggu ini
+        $absensiMingguIni = [];
+        for ($i = 0; $i < 7; $i++) {
+            $date = $thisWeek->copy()->addDays($i);
+            $absensiMingguIni[] = [
+                'hari' => $date->format('D'),
+                'tanggal' => $date->format('d/m'),
+                'masuk' => Absensi::whereDate('tanggal', $date)->where('jenis', 'masuk')->count(),
+                'pulang' => Absensi::whereDate('tanggal', $date)->where('jenis', 'pulang')->count(),
+            ];
+        }
+
+        // Pengaturan jam hari ini
+        $pengaturanHariIni = Pengaturan::where('tanggal', $today->toDateString())->first();
+        if (!$pengaturanHariIni) {
+            $pengaturanHariIni = (object) [
+                'jam_masuk_awal' => '05:00',
+                'jam_masuk_akhir' => '07:00',
+                'jam_pulang' => '15:00'
+            ];
+        }
+
+        // Status waktu absensi saat ini
+        $now = Carbon::now();
+        $currentTime = $now->format('H:i:s');
+        $jamMasukAwal = $pengaturanHariIni->jam_masuk_awal ?? '05:00:00';
+        $jamMasukAkhir = $pengaturanHariIni->jam_masuk_akhir ?? '07:00:00';
+        $jamPulang = $pengaturanHariIni->jam_pulang ?? '15:00:00';
+
+        if ($currentTime < $jamMasukAwal) {
+            $statusWaktu = 'Belum waktu masuk';
+            $jenisAbsensi = 'masuk';
+        } elseif ($currentTime >= $jamMasukAwal && $currentTime <= $jamMasukAkhir) {
+            $statusWaktu = 'Waktu masuk';
+            $jenisAbsensi = 'masuk';
+        } elseif ($currentTime > $jamMasukAkhir && $currentTime < $jamPulang) {
+            $statusWaktu = 'Terlambat masuk';
+            $jenisAbsensi = 'masuk';
+        } else {
+            $statusWaktu = 'Waktu pulang';
+            $jenisAbsensi = 'pulang';
+        }
 
         return view('master.dashboard', compact(
             'totalSiswa',
-            'totalKelas', 
+            'totalKelas',
             'siswaAktif',
-            'siswaPending',
             'absensiHariIni',
-            'masukHariIni',
-            'pulangHariIni', 
-            'izinHariIni',
-            'hadirHariIni',
-            'terlambatHariIni',
-            'sakitHariIni',
-            'persentaseHadir',
-            'chartData',
-            'statusMingguIni',
-            'topKelas',
-            'absensiTerbaru',
-            'pengaturan'
+            'absensiHariIniStatus',
+            'absensi7Hari',
+            'absensiPerKelas',
+            'siswaSeringTerlambat',
+            'absensiMingguIni',
+            'pengaturanHariIni',
+            'statusWaktu',
+            'jenisAbsensi'
         ));
-    }
-
-    // API untuk real-time update
-    public function getRealtimeData()
-    {
-        $today = Carbon::today();
-        
-        return response()->json([
-            'absensi_hari_ini' => Absensi::whereDate('tanggal', $today)->count(),
-            'masuk_hari_ini' => Absensi::where('jenis', 'masuk')->whereDate('tanggal', $today)->count(),
-            'pulang_hari_ini' => Absensi::where('jenis', 'pulang')->whereDate('tanggal', $today)->count(),
-            'izin_hari_ini' => Absensi::where('jenis', 'izin')->whereDate('tanggal', $today)->count(),
-            'current_time' => Carbon::now()->format('H:i:s')
-        ]);
     }
 }

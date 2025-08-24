@@ -44,16 +44,20 @@
     @include('layouts.components.sidebar')
     <!-- End Sidebar -->
 
-    <!-- ======= Main Content ======= -->
-    <main id="main" class="main">
-        @yield('content')
+
+    <!-- Main Content -->
+    <main id="main" class="main py-4">
+        <div class="container-fluid">
+            @yield('content')
+        </div>
     </main>
+    
     <!-- End Main Content -->
 
     <!-- ======= Footer ======= -->
     {{-- <footer id="footer" class="footer">
-        <div class="copyright">
-            &copy; Copyright <strong><span>NiceAdmin</span></strong>. All Rights Reserved
+        <div class="text-center text-md-start mb-2 mb-md-0">
+            &copy; {{ date('Y') }} <strong>Ma Magunsari</strong>. All Rights Reserved.
         </div>
         <div class="credits">
             Designed by <a href="https://bootstrapmade.com/">BootstrapMade</a>

@@ -24,9 +24,8 @@ Route::post('logout', [AuthController::class, 'logout'])->middleware('auth')->na
 Route::middleware(['auth', 'chaceLogout'])->group(function () {
     Route::prefix('master')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-        Route::get('dashboard/realtime', [DashboardController::class, 'getRealtimeData'])
-            ->name('dashboard.realtime');
     });
+    
     
 
     Route::prefix('kelas')->group(function () {
