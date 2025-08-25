@@ -1,15 +1,4 @@
 $(document).ready(function () {
-    // Absensi Masuk
-    // $("#formAbsensiMasuk").on("submit", function (e) {
-    //     e.preventDefault();
-    //     sendAbsensi($(this));
-    // });
-
-    // // Absensi Keluar
-    // $("#formAbsensiKeluar").on("submit", function (e) {
-    //     e.preventDefault();
-    //     sendAbsensi($(this));
-    // });
 
     // Absensi Izin
     $("#formAbsensiMasuk, #formAbsensiKeluar, #formAbsensiIzin").on("submit", function (e) {

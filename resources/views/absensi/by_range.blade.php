@@ -147,97 +147,149 @@
                 </div>
 
                 <!-- Data Table Card -->
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Data Absensi</h5>
-
-                        @php
-                            $totalData = $absensi->count() + ($siswaTidakHadir->count() ?? 0);
-                        @endphp
-
-                        @if (request()->hasAny(['tanggal_mulai', 'tanggal_selesai', 'kelas', 'jenis', 'nama', 'status']))
-                            <div class="alert alert-info alert-dismissible fade show" role="alert">
-                                <i class="bi bi-info-circle me-1"></i>
-                                Filter aktif: {{ $totalData }} data ditemukan
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"
-                                    aria-label="Close"></button>
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="card-title">
+                                    Data Absensi |
+                                    <span class="text-muted">
+                                        {{ \Carbon\Carbon::now()->locale('id')->translatedFormat('l, d F Y') }}
+                                    </span>
+                                </h5>
                             </div>
-                        @endif
 
+                            @php
+                                $totalData =
+                                    ($absensi->count() ?? 0) +
+                                    ($siswaTidakHadir->count() ?? 0) +
+                                    ($siswaBelum->count() ?? 0);
+                                $rowNumber = 1; // untuk nomor urut
+                            @endphp
 
-                        <!-- Responsive table -->
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">#</th>
-                                        <th scope="col">RFID</th>
-                                        <th scope="col">Nama</th>
-                                        <th scope="col">Kelas</th>
-                                        <th scope="col">Jenis</th>
-                                        <th scope="col">Status</th>
-                                        <th scope="col">Jam</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @forelse ($absensi as $i => $a)
+                            @if (request()->hasAny(['tanggal_mulai', 'tanggal_selesai', 'kelas', 'jenis', 'nama', 'status']))
+                                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>Filter aktif:</strong> {{ $totalData }} data ditemukan
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                        aria-label="Close"></button>
+                                </div>
+                            @endif
+
+                            <!-- Table with stripped rows -->
+                            <div class="table-responsive">
+                                <table class="table datatable">
+                                    <thead>
                                         <tr>
-                                            <td>{{ $i + 1 }}</td>
-                                            <td>{{ $a->rfid ?? '-' }}</td>
-                                            <td>{{ $a->siswa->nama }}</td>
-                                            <td>{{ $a->siswa->kelas->nama ?? '-' }}</td>
-                                            <td>
-                                                <span
-                                                    class="badge 
-                                                    {{ $a->jenis == 'masuk' ? 'bg-success' : ($a->jenis == 'pulang' ? 'bg-warning text-dark' : 'bg-info') }}">
-                                                    {{ ucfirst($a->jenis) }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span
-                                                    class="badge 
-                                                    {{ $a->status == 'hadir'
-                                                        ? 'bg-success'
-                                                        : ($a->status == 'terlambat'
-                                                            ? 'bg-warning text-dark'
-                                                            : ($a->status == 'izin'
-                                                                ? 'bg-info'
-                                                                : ($a->status == 'sakit'
-                                                                    ? 'bg-danger'
-                                                                    : 'bg-secondary'))) }}">
-                                                    {{ ucfirst(str_replace('_', ' ', $a->status)) }}
-                                                </span>
-                                            </td>
-                                            <td>{{ $a->jam ?? '-' }}</td>
+                                            <th scope="col">#</th>
+                                            <th scope="col">RFID</th>
+                                            <th scope="col">Nama</th>
+                                            <th scope="col">Kelas</th>
+                                            <th scope="col">Jenis</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Jam</th>
                                         </tr>
-                                    @empty
-                                        <tr>
-                                            <td colspan="7" class="text-center py-4">Tidak ada data absensi</td>
-                                        </tr>
-                                    @endforelse
-
-                                    {{-- Tambahkan siswa tidak hadir --}}
-                                    @if (isset($siswaTidakHadir))
-                                        @foreach ($siswaTidakHadir as $i => $siswa)
+                                    </thead>
+                                    <tbody>
+                                        {{-- Data Absensi --}}
+                                        @forelse ($absensi as $a)
                                             <tr>
-                                                <td>{{ $absensi->count() + $i + 1 }}</td>
+                                                <th scope="row">{{ $rowNumber++ }}</th>
+                                                <td>{{ $a->rfid ?? '-' }}</td>
+                                                <td>{{ $a->siswa->nama }}</td>
+                                                <td>{{ $a->siswa->kelas->nama ?? '-' }}</td>
+                                                <td>
+                                                    <span
+                                                        class="badge rounded-pill 
+                                        {{ $a->jenis == 'masuk' ? 'bg-success' : ($a->jenis == 'pulang' ? 'bg-warning text-dark' : 'bg-info') }}">
+                                                        <i
+                                                            class="bi {{ $a->jenis == 'masuk' ? 'bi-box-arrow-in-right' : ($a->jenis == 'pulang' ? 'bi-box-arrow-left' : 'bi-clock') }} me-1"></i>
+                                                        {{ ucfirst($a->jenis) }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span
+                                                        class="badge rounded-pill 
+                                        {{ $a->status == 'hadir'
+                                            ? 'bg-success'
+                                            : ($a->status == 'terlambat'
+                                                ? 'bg-warning text-dark'
+                                                : ($a->status == 'izin'
+                                                    ? 'bg-info'
+                                                    : ($a->status == 'sakit'
+                                                        ? 'bg-danger'
+                                                        : 'bg-secondary'))) }}">
+                                                        <i
+                                                            class="bi {{ $a->status == 'hadir' ? 'bi-check-circle' : ($a->status == 'terlambat' ? 'bi-clock-history' : ($a->status == 'izin' ? 'bi-file-text' : ($a->status == 'sakit' ? 'bi-heart-pulse' : 'bi-question-circle'))) }} me-1"></i>
+                                                        {{ ucfirst(str_replace('_', ' ', $a->status)) }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    @if ($a->jam)
+                                                        <span class="badge bg-light text-dark">
+                                                            <i class="bi bi-clock me-1"></i>
+                                                            {{ $a->jam }}
+                                                        </span>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            @if (($siswaTidakHadir->count() ?? 0) == 0 && ($siswaBelum->count() ?? 0) == 0)
+                                                <tr>
+                                                    <td colspan="7" class="text-center py-4">
+                                                        <div class="d-flex flex-column align-items-center">
+                                                            <i class="bi bi-inbox display-4 text-muted mb-2"></i>
+                                                            <span class="text-muted">Tidak ada data absensi</span>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                        @endforelse
+
+                                        {{-- Tambahkan siswa tidak hadir --}}
+                                        @foreach ($siswaTidakHadir ?? [] as $siswa)
+                                            <tr>
+                                                <th scope="row">{{ $rowNumber++ }}</th>
                                                 <td>{{ $siswa->rfid }}</td>
                                                 <td>{{ $siswa->nama }}</td>
                                                 <td>{{ $siswa->kelas->nama ?? '-' }}</td>
-                                                <td>-</td>
-                                                <td><span class="badge bg-danger">Tidak Hadir</span></td>
-                                                <td>-</td>
+                                                <td><span class="text-muted">-</span></td>
+                                                <td>
+                                                    <span class="badge rounded-pill bg-danger">
+                                                        <i class="bi bi-x-circle me-1"></i>
+                                                        Tidak Hadir
+                                                    </span>
+                                                </td>
+                                                <td><span class="text-muted">-</span></td>
                                             </tr>
                                         @endforeach
-                                    @endif
-                                </tbody>
-                            </table>
-                        </div>
-                        <!-- End Responsive table -->
 
+                                        {{-- Tambahkan siswa belum --}}
+                                        @foreach ($siswaBelum ?? [] as $siswa)
+                                            <tr>
+                                                <th scope="row">{{ $rowNumber++ }}</th>
+                                                <td>{{ $siswa->rfid }}</td>
+                                                <td>{{ $siswa->nama }}</td>
+                                                <td>{{ $siswa->kelas->nama ?? '-' }}</td>
+                                                <td><span class="text-muted">-</span></td>
+                                                <td>
+                                                    <span class="badge rounded-pill bg-secondary">
+                                                        <i class="bi bi-hourglass-split me-1"></i>
+                                                        Belum
+                                                    </span>
+                                                </td>
+                                                <td><span class="text-muted">-</span></td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                            <!-- End Table with stripped rows -->
+                        </div>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>

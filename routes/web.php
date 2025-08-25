@@ -6,6 +6,7 @@ use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\KelasController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PengaturanController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => view('welcome'));
@@ -25,8 +26,6 @@ Route::middleware(['auth', 'chaceLogout'])->group(function () {
     Route::prefix('master')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     });
-    
-    
 
     Route::prefix('kelas')->group(function () {
         Route::get('/', [KelasController::class, 'index'])->name('kelas.index');

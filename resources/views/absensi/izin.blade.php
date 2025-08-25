@@ -47,7 +47,6 @@
                                     <select name="status" class="form-select" aria-label="Default select example" required>
                                         <option selected disabled value="">-- Pilih Status --</option>
                                         <option value="izin">Izin</option>
-                                        <option value="sakit">Sakit</option>
                                     </select>
                                 </div>
                             </div>
@@ -96,10 +95,7 @@
                                             <td>
                                                 @php
                                                     $statusClass = match ($a->status) {
-                                                        'hadir' => 'bg-success',
-                                                        'terlambat' => 'bg-warning',
                                                         'izin' => 'bg-info',
-                                                        'sakit' => 'bg-secondary',
                                                         default => 'bg-primary',
                                                     };
                                                 @endphp
