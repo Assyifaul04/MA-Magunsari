@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('absensis', function (Blueprint $table) {
             $table->id();
             $table->foreignId('siswa_id')->nullable()->constrained('siswas')->onDelete('set null');
-            $table->enum('jenis', ['masuk', 'pulang', 'izin']);
+            $table->enum('jenis', ['masuk', 'pulang', 'izin'])->nullable();
             $table->enum('status', ['hadir', 'terlambat', 'pulang', 'izin', 'sakit', 'tidak hadir']);
-            $table->string('rfid')->nullable(); // untuk absensi izin atau siswa tanpa data lengkap
-            $table->text('keterangan')->nullable(); // untuk izin
+            $table->string('rfid')->nullable();
+            $table->text('keterangan')->nullable();
             $table->date('tanggal');
             $table->time('jam');
             $table->timestamps();

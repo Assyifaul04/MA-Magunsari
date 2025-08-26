@@ -211,92 +211,42 @@ class AbsensiController extends Controller
         return view('absensi.hari_ini', compact('absensi'));
     }
 
-
-
     public function byRange(Request $request)
     {
-        $tanggalMulai   = $request->tanggal_mulai ?? Carbon::today()->toDateString();
-        $tanggalSelesai = $request->tanggal_selesai ?? Carbon::today()->toDateString();
-        $hariIni        = Carbon::today()->toDateString();
+        $tanggalMulai   = $request->input('tanggal_mulai', now()->toDateString());
+        $tanggalSelesai = $request->input('tanggal_selesai', now()->toDateString());
 
-        $absensi = collect();
-        $siswaTidakHadir = collect();
-        $siswaBelum = collect();
-
-        // Jika status spesifik hadir/izin/sakit/pulang
-        if ($request->status && !in_array($request->status, ['tidak_hadir', 'belum'])) {
-            $absensi = Absensi::with('siswa.kelas')
-                ->whereDate('tanggal', '>=', $tanggalMulai)
-                ->whereDate('tanggal', '<=', $tanggalSelesai)
-                ->when($request->kelas, fn($q) => $q->whereHas('siswa.kelas', fn($x) => $x->where('id', $request->kelas)))
-                ->when($request->jenis, fn($q) => $q->where('jenis', $request->jenis))
-                ->when($request->nama, fn($q) => $q->whereHas('siswa', fn($x) => $x->where('nama', 'like', "%{$request->nama}%")))
-                ->where('status', $request->status)
-                ->orderBy('tanggal', 'desc')->orderBy('jam', 'asc')
-                ->get();
-        } elseif ($request->status === 'tidak_hadir') {
-            // hanya tampilkan siswa yg tidak hadir
-            $siswaTidakHadir = Siswa::with('kelas')
-                ->whereNotNull('rfid')
-                ->when($request->kelas, fn($q) => $q->where('kelas_id', $request->kelas))
-                ->when($request->nama, fn($q) => $q->where('nama', 'like', "%{$request->nama}%"))
-                ->whereDoesntHave('absensi', function ($q) use ($tanggalMulai, $tanggalSelesai) {
-                    $q->whereBetween(DB::raw('DATE(tanggal)'), [$tanggalMulai, $tanggalSelesai])
-                        ->whereIn('status', ['hadir', 'terlambat', 'izin', 'sakit', 'pulang']);
-                })
-                ->get();
-        } elseif ($request->status === 'belum') {
-            // hanya tampilkan siswa yg belum absen (khusus hari ini)
-            $siswaBelum = Siswa::with('kelas')
-                ->whereNotNull('rfid')
-                ->when($request->kelas, fn($q) => $q->where('kelas_id', $request->kelas))
-                ->when($request->nama, fn($q) => $q->where('nama', 'like', "%{$request->nama}%"))
-                ->whereDoesntHave('absensi', function ($q) use ($hariIni) {
-                    $q->whereDate('tanggal', $hariIni);
-                })
-                ->get();
-        } else {
-            // tanpa filter status -> ambil absensi + list tambahan
-            $absensi = Absensi::with('siswa.kelas')
-                ->whereDate('tanggal', '>=', $tanggalMulai)
-                ->whereDate('tanggal', '<=', $tanggalSelesai)
-                ->when($request->kelas, fn($q) => $q->whereHas('siswa.kelas', fn($x) => $x->where('id', $request->kelas)))
-                ->when($request->jenis, fn($q) => $q->where('jenis', $request->jenis))
-                ->when($request->nama, fn($q) => $q->whereHas('siswa', fn($x) => $x->where('nama', 'like', "%{$request->nama}%")))
-                ->orderBy('tanggal', 'desc')->orderBy('jam', 'asc')
-                ->get();
-
-            // Tambahan logika: kalau filter 1 hari
-            if ($tanggalMulai == $tanggalSelesai) {
-                if ($tanggalMulai < $hariIni) {
-                    // lampau -> tidak hadir
-                    $siswaTidakHadir = Siswa::with('kelas')
-                        ->whereNotNull('rfid')
-                        ->when($request->kelas, fn($q) => $q->where('kelas_id', $request->kelas))
-                        ->when($request->nama, fn($q) => $q->where('nama', 'like', "%{$request->nama}%"))
-                        ->whereDoesntHave('absensi', function ($q) use ($tanggalMulai) {
-                            $q->whereDate('tanggal', $tanggalMulai)
-                                ->whereIn('status', ['hadir', 'terlambat', 'izin', 'sakit', 'pulang']);
-                        })
-                        ->get();
-                } elseif ($tanggalMulai == $hariIni) {
-                    // hari ini -> belum
-                    $siswaBelum = Siswa::with('kelas')
-                        ->whereNotNull('rfid')
-                        ->when($request->kelas, fn($q) => $q->where('kelas_id', $request->kelas))
-                        ->when($request->nama, fn($q) => $q->where('nama', 'like', "%{$request->nama}%"))
-                        ->whereDoesntHave('absensi', function ($q) use ($hariIni) {
-                            $q->whereDate('tanggal', $hariIni);
-                        })
-                        ->get();
-                }
-            }
+        // Map status 'tidak_hadir' (dari select option) ke enum DB 'tidak hadir'
+        $status = $request->status;
+        if ($status === 'tidak_hadir') {
+            $status = 'tidak hadir';
         }
 
-        return view('absensi.by_range', compact('absensi', 'siswaTidakHadir', 'siswaBelum'));
+        $query = Absensi::with('siswa.kelas')
+            ->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
+
+        if ($request->kelas) {
+            $query->whereHas('siswa', fn($q) => $q->where('kelas_id', $request->kelas));
+        }
+
+        if ($request->jenis) {
+            $query->where('jenis', $request->jenis);
+        }
+
+        if ($request->nama) {
+            $query->whereHas('siswa', fn($q) => $q->where('nama', 'like', "%{$request->nama}%"));
+        }
+
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        $absensi = $query->orderBy('tanggal', 'desc')->orderBy('jam', 'asc')->get();
+
+        $totalData = $absensi->count();
+
+        return view('absensi.by_range', compact('absensi', 'tanggalMulai', 'tanggalSelesai', 'totalData'));
     }
-
-
 
     public function export(Request $request)
     {
@@ -309,36 +259,35 @@ class AbsensiController extends Controller
         $tanggalMulai = $request->tanggal_mulai ?? now()->toDateString();
         $tanggalSelesai = $request->tanggal_selesai ?? now()->toDateString();
 
+        $status = $request->status;
+        if ($status === 'tidak_hadir') {
+            $status = 'tidak hadir';
+        }
+
         $query = Absensi::with('siswa.kelas')
             ->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
 
         if ($request->kelas) {
-            $query->whereHas('siswa.kelas', fn($q) => $q->where('id', $request->kelas));
+            $query->whereHas('siswa', fn($q) => $q->where('kelas_id', $request->kelas));
         }
-        if ($request->jenis) $query->where('jenis', $request->jenis);
+
+        if ($request->jenis) {
+            $query->where('jenis', $request->jenis);
+        }
+
         if ($request->nama) {
             $query->whereHas('siswa', fn($q) => $q->where('nama', 'like', "%{$request->nama}%"));
         }
-        if ($request->status && $request->status != 'tidak_hadir') {
-            $query->where('status', $request->status);
+
+        if ($status) {
+            $query->where('status', $status);
         }
 
-        $absensi = $query->orderBy('tanggal', 'desc')->orderBy('jam', 'asc')->get();
+        $absensi = $query->orderBy('tanggal', 'desc')
+            ->orderBy('jam', 'asc')
+            ->get();
 
-        $siswaTidakHadir = collect();
-        if ($request->status == 'tidak_hadir' || !$request->status) {
-            $siswaTidakHadir = Siswa::with('kelas')
-                ->whereNotNull('rfid')
-                ->when($request->kelas, fn($q) => $q->where('kelas_id', $request->kelas))
-                ->when($request->nama, fn($q) => $q->where('nama', 'like', "%{$request->nama}%"))
-                ->whereDoesntHave('absensi', function ($q) use ($tanggalMulai, $tanggalSelesai) {
-                    $q->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai])
-                        ->whereIn('status', ['hadir', 'terlambat', 'izin', 'sakit', 'pulang']);
-                })
-                ->get();
-        }
-
-        return view('absensi.print', compact('absensi', 'siswaTidakHadir', 'tanggalMulai', 'tanggalSelesai'));
+        return view('absensi.print', compact('absensi', 'tanggalMulai', 'tanggalSelesai'));
     }
 
 
