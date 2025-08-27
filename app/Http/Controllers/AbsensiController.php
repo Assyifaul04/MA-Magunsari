@@ -211,12 +211,43 @@ class AbsensiController extends Controller
         return view('absensi.hari_ini', compact('absensi'));
     }
 
+    public function generate()
+    {
+        $kemarin = Carbon::yesterday()->toDateString();
+        $siswaList = Siswa::whereNotNull('rfid')->get();
+
+        foreach ($siswaList as $siswa) {
+            $cek = Absensi::where('siswa_id', $siswa->id)
+                ->whereDate('tanggal', $kemarin)
+                ->exists();
+
+            if (!$cek) {
+                Absensi::create([
+                    'siswa_id'   => $siswa->id,
+                    'jenis'      => null,
+                    'status'     => 'tidak hadir',
+                    'rfid'       => $siswa->rfid,
+                    'keterangan' => 'tidak melakukan absen',
+                    'tanggal'    => $kemarin,
+                    'jam'        => '00:00:00'
+                ]);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => "Absensi 'tidak hadir' berhasil ditambahkan untuk siswa yang tidak absen kemarin.",
+        ]);
+    }
+
+
     public function byRange(Request $request)
     {
+        $this->generate();
+
         $tanggalMulai   = $request->input('tanggal_mulai', now()->toDateString());
         $tanggalSelesai = $request->input('tanggal_selesai', now()->toDateString());
 
-        // Map status 'tidak_hadir' (dari select option) ke enum DB 'tidak hadir'
         $status = $request->status;
         if ($status === 'tidak_hadir') {
             $status = 'tidak hadir';

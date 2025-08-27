@@ -109,8 +109,6 @@
                                         <option value="izin" {{ request('status') == 'izin' ? 'selected' : '' }}>
                                             Izin
                                         </option>
-                                        <option value="sakit" {{ request('status') == 'sakit' ? 'selected' : '' }}>
-                                            Sakit
                                         </option>
                                         <option value="tidak_hadir"
                                             {{ request('status') == 'tidak_hadir' ? 'selected' : '' }}>
@@ -197,6 +195,7 @@
                                             <th scope="col">Jenis</th>
                                             <th scope="col">Status</th>
                                             <th scope="col">Jam</th>
+                                            <th scope="col">Keterangan</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -241,6 +240,7 @@
                                                     @endswitch
                                                 </td>
                                                 <td>{{ $item->jam }}</td>
+                                                <td>{{ $item->keterangan}}</td>
                                             </tr>
                                             @empty
                                                 <tr>

@@ -102,21 +102,7 @@
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 class="card-title mb-0 fw-bold">Statistik Absensi <span
-                                            class="text-muted fw-normal">| 7 Hari Terakhir</span></h5>
-                                    <div class="filter">
-                                        <a class="icon btn btn-sm btn-light" href="#" data-bs-toggle="dropdown">
-                                            <i class="bi bi-three-dots"></i>
-                                        </a>
-                                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                            <li><a class="dropdown-item filter-link" href="#" data-filter="today">Hari
-                                                    Ini</a></li>
-                                            <li><a class="dropdown-item filter-link" href="#"
-                                                    data-filter="week">Minggu Ini</a></li>
-                                            <li><a class="dropdown-item filter-link" href="#"
-                                                    data-filter="month">Bulan Ini</a></li>
-                                        </ul>
-                                    </div>
+                                    <h5 class="card-title mb-0 fw-bold">Statistik Absensi</h5>
                                 </div>
                                 <div id="reportsChart" class="chart-container"></div>
                             </div>
@@ -127,8 +113,7 @@
                     <div class="col-12">
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
-                                <h5 class="card-title mb-3 fw-bold">Absensi Masuk vs Pulang <span
-                                        class="text-muted fw-normal">| Minggu Ini</span></h5>
+                                <h5 class="card-title mb-3 fw-bold">Absensi Masuk vs Pulang</h5>
                                 <div id="trafficChart" style="min-height: 400px;" class="echart"></div>
                             </div>
                         </div>
@@ -183,8 +168,7 @@
                     <div class="col-12">
                         <div class="card border-0 shadow-sm">
                             <div class="card-body">
-                                <h5 class="card-title mb-4 fw-bold">Siswa Sering Terlambat <span
-                                        class="text-muted fw-normal">| Bulan Ini</span></h5>
+                                <h5 class="card-title mb-4 fw-bold">Siswa Terlambat</h5>
                                 <div class="activity">
                                     @forelse($siswaSeringTerlambat as $siswa)
                                         <div class="activity-item d-flex align-items-center mb-3">
@@ -204,39 +188,6 @@
                                         </div>
                                     @endforelse
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    
-
-                    <!-- Pengaturan Jam -->
-                    <div class="col-12">
-                        <div class="card border-0 shadow-sm">
-                            <div class="card-body">
-                                <h5 class="card-title mb-4 fw-bold">Pengaturan Jam <span class="text-muted fw-normal">|
-                                        Hari Ini</span></h5>
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span class="text-muted">Jam Masuk:</span>
-                                        <span class="fw-bold text-primary">
-                                            {{ $pengaturanHariIni->jam_masuk_awal ?? '05:00' }} -
-                                            {{ $pengaturanHariIni->jam_masuk_akhir ?? '07:00' }}
-                                        </span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span class="text-muted">Jam Pulang:</span>
-                                        <span class="fw-bold text-success">
-                                            {{ $pengaturanHariIni->jam_pulang ?? '15:00' }}
-                                        </span>
-                                    </li>
-                                    <li class="list-group-item bg-primary text-white rounded mt-2">
-                                        <div class="d-flex justify-content-between">
-                                            <span>Waktu Sekarang:</span>
-                                            <span id="currentTime" class="fw-bold">{{ now()->format('H:i:s') }}</span>
-                                        </div>
-                                    </li>
-                                </ul>
                             </div>
                         </div>
                     </div>
