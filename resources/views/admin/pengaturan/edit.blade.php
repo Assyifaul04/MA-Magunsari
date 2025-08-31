@@ -5,7 +5,7 @@
     <h1>Pengaturan Jam</h1>
     <nav>
         <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ route('dashboard') }}"><i class="bi bi-house-door"></i> Home</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}"><i class="bi bi-house-door"></i> Home</a></li>
             <li class="breadcrumb-item">Master Data</li>
             <li class="breadcrumb-item active">Pengaturan</li>
         </ol>

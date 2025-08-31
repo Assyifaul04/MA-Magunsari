@@ -205,7 +205,7 @@
                                                 <td>{{ $item->tanggal }}</td>
                                                 <td>{{ $item->rfid ?? '-' }}</td>
                                                 <td>{{ $item->siswa->nama ?? '-' }}</td>
-                                                <td>{{ $item->siswa->kelas->nama ?? '-' }}</td>
+                                                <td >{{ $item->siswa->kelas->nama ?? '-' }}</td>
                                                 <td>
                                                     {{ ucfirst($item->jenis ?? '-') }}
                                                 </td>
@@ -216,11 +216,11 @@
                                                         @break
 
                                                         @case('terlambat')
-                                                            <span class="badge bg-warning">Terlambat</span>
+                                                            <span class="badge bg-warning text-dark">Terlambat</span>
                                                         @break
 
                                                         @case('pulang')
-                                                            <span class="badge bg-secondary">Pulang</span>
+                                                            <span class="badge bg-warning text-dark">Pulang</span>
                                                         @break
 
                                                         @case('izin')

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Siswa;
 use App\Models\Kelas;
@@ -116,7 +117,7 @@ class DashboardController extends Controller
             $jenisAbsensi = 'pulang';
         }
 
-        return view('master.dashboard', compact(
+        return view('admin.dashboard', compact(
             'totalSiswa',
             'totalKelas',
             'siswaAktif',

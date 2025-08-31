@@ -61,7 +61,7 @@ $(document).ready(function () {
     }
 
     setInterval(function () {
-        $.get("/absensi/check-jenis", function (res) {
+        $.get("/admin/absensi/check-jenis", function (res) {
             $("#jenisAbsen").text(res.jenis.toUpperCase());
             $jenisInput.val(res.jenis);
         });
@@ -91,7 +91,7 @@ $(document).ready(function () {
         $rfidInput.prop("readonly", true);
 
         $.ajax({
-            url: "/absensi/store",
+            url: "/admin/absensi/store",
             method: "POST",
             data: data,
             success: function (res) {

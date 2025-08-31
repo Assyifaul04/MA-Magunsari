@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Siswa;
 use App\Models\Kelas;
@@ -14,13 +15,13 @@ class SiswaController extends Controller
     {
         $siswas = Siswa::with('kelas')->get();
         $kelas = Kelas::all();
-        return view('master.siswa.index', compact('siswas', 'kelas'));
+        return view('admin.siswa.index', compact('siswas', 'kelas'));
     }
 
     public function create()
     {
         $kelas = Kelas::all();
-        return view('master.siswa.create', compact('kelas'));
+        return view('admin.siswa.create', compact('kelas'));
     }
 
     public function store(Request $request)
@@ -50,7 +51,7 @@ class SiswaController extends Controller
     public function edit(Siswa $siswa)
     {
         $kelas = Kelas::all();
-        return view('master.siswa.edit', compact('siswa', 'kelas'));
+        return view('admin.siswa.edit', compact('siswa', 'kelas'));
     }
 
     public function update(Request $request, Siswa $siswa)
@@ -76,7 +77,7 @@ class SiswaController extends Controller
 
     public function show(Siswa $siswa)
     {
-        return view('master.siswa.show', compact('siswa'));
+        return view('admin.siswa.show', compact('siswa'));
     }
 
     public function destroy(Request $request, Siswa $siswa)

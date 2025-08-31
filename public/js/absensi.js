@@ -8,7 +8,7 @@ $(document).ready(function () {
 
     function sendAbsensi(form) {
         $.ajax({
-            url: "/absensi/store",
+            url: "/admin/absensi/store",
             method: "POST",
             data: form.serialize(),
             success: function (res) {

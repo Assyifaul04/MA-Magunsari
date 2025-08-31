@@ -1,19 +1,34 @@
 $(document).ready(function () {
+    $.ajaxSetup({
+        headers: {
+            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+        },
+    });
 
     function checkJamMasuk() {
-        $.get("/pengaturan/check-jam-masuk", function(res) {
+        $.get("/admin/pengaturan/check-jam-masuk", function (res) {
             if (res.jam_masuk_locked) {
-                $("#jam_masuk_awal, #jam_masuk_akhir").prop('disabled', true)
-                    .addClass('is-invalid');
-                $("#jamMasukAlert").removeClass('d-none');
-                $("#btnSimpan").html('<i class="bi bi-save"></i> Update jam pulang saja');
-                $("#jamMasukInfo").text('Jam masuk terkunci karena siswa sudah mulai absen hari ini');
+                $("#jam_masuk_awal, #jam_masuk_akhir")
+                    .prop("disabled", true)
+                    .addClass("is-invalid");
+                $("#jamMasukAlert").removeClass("d-none");
+                $("#btnSimpan").html(
+                    '<i class="bi bi-save"></i> Update jam pulang saja'
+                );
+                $("#jamMasukInfo").text(
+                    "Jam masuk terkunci karena siswa sudah mulai absen hari ini"
+                );
             } else {
-                $("#jam_masuk_awal, #jam_masuk_akhir").prop('disabled', false)
-                    .removeClass('is-invalid');
-                $("#jamMasukAlert").addClass('d-none');
-                $("#btnSimpan").html('<i class="bi bi-save"></i> Simpan / Update');
-                $("#jamMasukInfo").text('Jika dikosongkan, otomatis pakai default 05:00–07:00');
+                $("#jam_masuk_awal, #jam_masuk_akhir")
+                    .prop("disabled", false)
+                    .removeClass("is-invalid");
+                $("#jamMasukAlert").addClass("d-none");
+                $("#btnSimpan").html(
+                    '<i class="bi bi-save"></i> Simpan / Update'
+                );
+                $("#jamMasukInfo").text(
+                    "Jika dikosongkan, otomatis pakai default 05:00–07:00"
+                );
             }
         });
     }
@@ -24,32 +39,48 @@ $(document).ready(function () {
     $("#formPengaturan").on("submit", function (e) {
         e.preventDefault();
 
-        let jamMasukAwal = $("#jam_masuk_awal").val().split(':');
-        if(jamMasukAwal.length > 1){
-            $("#jam_masuk_awal").val(jamMasukAwal[0].padStart(2,'0') + ':' + jamMasukAwal[1].padStart(2,'0'));
+        let jamMasukAwal = $("#jam_masuk_awal").val().split(":");
+        if (jamMasukAwal.length > 1) {
+            $("#jam_masuk_awal").val(
+                jamMasukAwal[0].padStart(2, "0") +
+                    ":" +
+                    jamMasukAwal[1].padStart(2, "0")
+            );
         }
 
-        let jamMasukAkhir = $("#jam_masuk_akhir").val().split(':');
-        if(jamMasukAkhir.length > 1){
-            $("#jam_masuk_akhir").val(jamMasukAkhir[0].padStart(2,'0') + ':' + jamMasukAkhir[1].padStart(2,'0'));
+        let jamMasukAkhir = $("#jam_masuk_akhir").val().split(":");
+        if (jamMasukAkhir.length > 1) {
+            $("#jam_masuk_akhir").val(
+                jamMasukAkhir[0].padStart(2, "0") +
+                    ":" +
+                    jamMasukAkhir[1].padStart(2, "0")
+            );
         }
 
-        let jamPulang = $("#jam_pulang").val().split(':');
-        if(jamPulang.length > 1){
-            $("#jam_pulang").val(jamPulang[0].padStart(2,'0') + ':' + jamPulang[1].padStart(2,'0'));
+        let jamPulang = $("#jam_pulang").val().split(":");
+        if (jamPulang.length > 1) {
+            $("#jam_pulang").val(
+                jamPulang[0].padStart(2, "0") +
+                    ":" +
+                    jamPulang[1].padStart(2, "0")
+            );
         }
 
         let formData = $(this).serialize();
 
         $.ajax({
-            url: "/pengaturan/update",
+            url: "/admin/pengaturan/update",
             method: "POST",
-            data: formData,
+            data:
+                formData +
+                "&_token=" +
+                $('meta[name="csrf-token"]').attr("content"),
             success: function (response) {
                 if (response.success) {
                     let msg = response.message;
                     if (response.jam_masuk_locked) {
-                        msg += " (Jam masuk tidak bisa diubah karena siswa sudah absen masuk hari ini)";
+                        msg +=
+                            " (Jam masuk tidak bisa diubah karena siswa sudah absen masuk hari ini)";
                     }
                     $("#alertSuccess").removeClass("d-none").html(msg);
                     $("#alertError").addClass("d-none");

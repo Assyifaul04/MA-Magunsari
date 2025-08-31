@@ -8,7 +8,7 @@
         </div>
         <nav>
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}">Dashboard</a></li>
                 <li class="breadcrumb-item">Absensi</li>
                 <li class="breadcrumb-item active">Absensi Masuk</li>
             </ol>

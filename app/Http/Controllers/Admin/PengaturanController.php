@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Pengaturan;
 use App\Models\Absensi;
@@ -30,7 +31,7 @@ class PengaturanController extends Controller
             ->whereDate('tanggal', $today)
             ->exists();
 
-        return view('master.pengaturan.edit', compact('pengaturan', 'sudahAdaMasuk'));
+        return view('admin.pengaturan.edit', compact('pengaturan', 'sudahAdaMasuk'));
     }
 
     public function update(Request $request)

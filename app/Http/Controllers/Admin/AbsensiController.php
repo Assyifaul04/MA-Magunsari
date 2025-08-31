@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
 use App\Exports\AbsensiExport;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Absensi;
 use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\Pengaturan;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AbsensiController extends Controller
@@ -17,7 +17,7 @@ class AbsensiController extends Controller
 
     public function scan()
     {
-        return view('absensi.scan');
+        return view('admin.absensi.scan');
     }
 
     // Halaman scan RFID untuk masuk
@@ -31,7 +31,7 @@ class AbsensiController extends Controller
             ->orderBy('jam', 'asc')
             ->get();
 
-        return view('absensi.masuk', compact('absensi', 'pengaturan'));
+        return view('admin.absensi.masuk', compact('absensi', 'pengaturan'));
     }
 
     public function keluar()
@@ -44,7 +44,7 @@ class AbsensiController extends Controller
             ->orderBy('jam', 'asc')
             ->get();
 
-        return view('absensi.keluar', compact('absensi', 'pengaturan'));
+        return view('admin.absensi.keluar', compact('absensi', 'pengaturan'));
     }
 
     public function izin()
@@ -55,7 +55,7 @@ class AbsensiController extends Controller
             ->orderBy('jam', 'asc')
             ->get();
 
-        return view('absensi.izin', compact('absensi'));
+        return view('admin.absensi.izin', compact('absensi'));
     }
 
     // Proses absensi RFID
@@ -208,7 +208,7 @@ class AbsensiController extends Controller
             ->orderBy('jam', 'asc')
             ->get();
 
-        return view('absensi.hari_ini', compact('absensi'));
+        return view('admin.absensi.hari_ini', compact('absensi'));
     }
 
     public function generate()
@@ -276,12 +276,12 @@ class AbsensiController extends Controller
 
         $totalData = $absensi->count();
 
-        return view('absensi.by_range', compact('absensi', 'tanggalMulai', 'tanggalSelesai', 'totalData'));
+        return view('admin.absensi.by_range', compact('absensi', 'tanggalMulai', 'tanggalSelesai', 'totalData'));
     }
 
     public function export(Request $request)
     {
-        return Excel::download(new AbsensiExport($request), 'absensi.xlsx');
+        return Excel::download(new AbsensiExport($request), 'admin.absensi.xlsx');
     }
 
 
@@ -318,53 +318,6 @@ class AbsensiController extends Controller
             ->orderBy('jam', 'asc')
             ->get();
 
-        return view('absensi.print', compact('absensi', 'tanggalMulai', 'tanggalSelesai'));
-    }
-
-
-    public function performa(Request $request)
-    {
-        $query = Siswa::with(['kelas', 'absensi' => function ($q) {
-            $q->where('jenis', 'masuk');
-        }]);
-
-        if ($request->nama) {
-            $query->where('nama', 'like', "%{$request->nama}%");
-        }
-
-        if ($request->kelas) {
-            $query->where('kelas_id', $request->kelas);
-        }
-
-        $siswaList = $query->get();
-
-        $data = $siswaList->map(function ($siswa) {
-            $totalMasuk = $siswa->absensi->count();
-            $tepatWaktu = $siswa->absensi->where('status', 'hadir')->count();
-            $terlambat  = $siswa->absensi->where('status', 'terlambat')->count();
-
-            $performa = $tepatWaktu > $terlambat ? 'Rajin' : 'Malas';
-
-            return [
-                'nama'      => $siswa->nama,
-                'kelas'     => $siswa->kelas->nama ?? '-',
-                'totalMasuk' => $totalMasuk,
-                'tepatWaktu' => $tepatWaktu,
-                'terlambat' => $terlambat,
-                'performa'  => $performa
-            ];
-        });
-
-        // filter performa
-        if ($request->performa) {
-            $data = $data->filter(function ($d) use ($request) {
-                return strtolower($d['performa']) === strtolower($request->performa);
-            });
-        }
-
-        return view('absensi.performa', [
-            'data' => $data,
-            'kelasList' => Kelas::all()
-        ]);
+        return view('admin.absensi.print', compact('absensi', 'tanggalMulai', 'tanggalSelesai'));
     }
 }
