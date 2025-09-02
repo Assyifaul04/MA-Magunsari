@@ -11,8 +11,8 @@
                 href="{{ route('guru.dashboard') }}" @endif
             class="logo d-flex align-items-center">
             <img src="{{ asset('image/logo.png') }}" alt="Logo" style="height: 50px; width: auto; margin-right: 10px;">
-            <span class="d-none d-lg-block" style="font-size: 22px; font-weight: bold;">
-                MA Mangunsari
+            <span class="d-none d-lg-block" style="font-size: 16px; font-weight: bold;">
+                MAS Nurul Huda
             </span>
         </a>
         <i class="bi bi-list toggle-sidebar-btn"></i>

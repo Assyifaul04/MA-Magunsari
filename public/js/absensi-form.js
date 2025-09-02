@@ -4,7 +4,6 @@ $(document).ready(function () {
     const $statusMessage = $("#statusMessage");
     const $progressBar = $("#progressBar");
     const $loadingSpinner = $("#loadingSpinner");
-    const $alertContainer = $("#alertContainer");
 
     let isProcessing = false;
 
@@ -23,69 +22,121 @@ $(document).ready(function () {
     updateTime();
     setInterval(updateTime, 1000);
 
-    function showAlert(type, title, message, duration = 5000) {
-        const alertId = "alert_" + Date.now();
-        const iconMap = {
-            success: "bi-check-circle-fill",
-            error: "bi-exclamation-triangle-fill",
-            warning: "bi-exclamation-triangle-fill",
-            info: "bi-info-circle-fill",
+    // Updated SweetAlert2 configuration with white background and black bold text
+    function showAlert(type, title, message, duration = 3000) {
+        const alertConfigs = {
+            success: {
+                icon: "success",
+                iconColor: "#28a745",
+                timer: 3000,
+            },
+            error: {
+                icon: "error",
+                iconColor: "#dc3545",
+                timer: 3000,
+            },
+            warning: {
+                icon: "warning",
+                iconColor: "#ffc107",
+                timer: 3000,
+            },
+            info: {
+                icon: "info",
+                iconColor: "#17a2b8",
+                timer: 3000,
+            },
         };
 
-        const alertHtml = `
-            <div class="alert alert-${
-                type === "error" ? "danger" : type
-            } alert-dismissible fade show shadow-lg"
-                 id="${alertId}" role="alert"
-                 style="border: none; border-radius: 15px; backdrop-filter: blur(10px);">
-                <div class="d-flex align-items-center">
-                    <i class="bi ${
-                        iconMap[type]
-                    } me-2" style="font-size: 1.2rem;"></i>
-                    <div>
-                        <strong>${title}</strong>
-                        <div class="small">${message}</div>
-                    </div>
-                </div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `;
+        const config = alertConfigs[type];
+        if (!config) return;
 
-        $alertContainer.prepend(alertHtml);
+        Swal.fire({
+            title: title,
+            text: message,
+            icon: config.icon,
+            iconColor: config.iconColor,
+            color: "#000000", // Black text
+            background: "#ffffff", // White background
+            timer: config.timer,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            allowOutsideClick: true,
+            allowEscapeKey: true,
+            position: "center",
+            width: "450px",
+            padding: "1.5rem",
+            customClass: {
+                title: "swal2-title-bold",
+                htmlContainer: "swal2-text-bold",
+            },
+            showClass: {
+                popup: "swal2-show",
+                backdrop: "swal2-backdrop-show",
+            },
+            hideClass: {
+                popup: "swal2-hide",
+                backdrop: "swal2-backdrop-hide",
+            },
+            didOpen: () => {
+                // Add custom CSS for bold text
+                const style = document.createElement("style");
+                style.innerHTML = `
+                    .swal2-title-bold {
+                        font-weight: bold !important;
+                        color: #000000 !important;
+                    }
+                    .swal2-text-bold {
+                        font-weight: bold !important;
+                        color: #000000 !important;
+                    }
+                `;
+                document.head.appendChild(style);
 
-        setTimeout(() => {
-            $(`#${alertId}`).fadeOut(300, function () {
-                $(this).remove();
-            });
-        }, duration);
+                // Auto close untuk success alerts
+                if (type === "success") {
+                    setTimeout(() => Swal.close(), 3000);
+                }
+            },
+        });
     }
 
-    setInterval(function () {
+    // Optimized interval checking with reduced frequency
+    let intervalId = setInterval(function () {
         $.get("/admin/absensi/check-jenis", function (res) {
-            $("#jenisAbsen").text(res.jenis.toUpperCase());
-            $jenisInput.val(res.jenis);
-        });
-    }, 1000);
+            const currentJenis = $("#jenisAbsen").text();
+            const newJenis = res.jenis.toUpperCase();
 
+            // Only update if changed to reduce DOM manipulation
+            if (currentJenis !== newJenis) {
+                $("#jenisAbsen").text(newJenis);
+                $jenisInput.val(res.jenis);
+            }
+        }).fail(function () {
+            // Handle connection errors gracefully
+            console.warn("Failed to check jenis absen");
+        });
+    }, 2000); // Reduced frequency from 1000ms to 2000ms
+
+    // Optimized form submission with faster processing
     $("#rfidForm").on("submit", function (e) {
         e.preventDefault();
 
         if (isProcessing) return;
-        isProcessing = true;
 
-        const data = $(this).serialize();
         const rfidValue = $rfidInput.val().trim();
-
         if (!rfidValue) {
             showAlert(
                 "warning",
                 "Peringatan",
                 "Silahkan tempelkan kartu RFID terlebih dahulu"
             );
-            isProcessing = false;
             return;
         }
 
+        isProcessing = true;
+        const data = $(this).serialize();
+
+        // Immediate UI feedback
         $loadingSpinner.show();
         $progressBar.addClass("pulse-animation").css("width", "100%");
         $rfidInput.prop("readonly", true);
@@ -94,6 +145,7 @@ $(document).ready(function () {
             url: "/admin/absensi/store",
             method: "POST",
             data: data,
+            timeout: 10000, // 10 second timeout
             success: function (res) {
                 $statusMessage
                     .text(res.message)
@@ -101,39 +153,45 @@ $(document).ready(function () {
                     .addClass("text-green-600 font-semibold");
 
                 showAlert("success", "Berhasil!", res.message);
+
+                // Clear status message faster for success
+                setTimeout(() => {
+                    $statusMessage
+                        .text("")
+                        .removeClass("text-green-600 font-semibold");
+                }, 1500);
             },
             error: function (xhr) {
-                const msg = xhr.responseJSON
-                    ? xhr.responseJSON.message
-                    : "Terjadi kesalahan.";
+                const msg =
+                    xhr.responseJSON?.message || "Terjadi kesalahan sistem.";
                 $statusMessage
                     .text("❌ " + msg)
                     .removeClass("text-green-600")
                     .addClass("text-red-600 font-semibold");
 
                 showAlert("error", "Gagal!", msg);
-            },
-            complete: function () {
-                $progressBar
-                    .removeClass("animate-pulse pulse-animation")
-                    .css("width", "0%");
-                $loadingSpinner.hide();
-                $rfidInput.prop("readonly", false).val("").focus();
 
+                // Keep error message longer
                 setTimeout(() => {
                     $statusMessage
                         .text("")
-                        .removeClass(
-                            "text-green-600 text-red-600 font-semibold"
-                        );
-                }, 3000);
-
+                        .removeClass("text-red-600 font-semibold");
+                }, 2500);
+            },
+            complete: function () {
+                // Immediate cleanup
+                $progressBar.removeClass("pulse-animation").css("width", "0%");
+                $loadingSpinner.hide();
+                $rfidInput.prop("readonly", false).val("").focus();
                 isProcessing = false;
             },
         });
     });
 
+    // Optimized input handling with debouncing
     let typingTimer;
+    const TYPING_DELAY = 300; // Reduced delay for faster response
+
     $rfidInput.on("input", function () {
         clearTimeout(typingTimer);
         const value = $(this).val().trim();
@@ -141,7 +199,14 @@ $(document).ready(function () {
         if (value.length >= 8 && !isProcessing) {
             typingTimer = setTimeout(() => {
                 $("#rfidForm").submit();
-            }, 500);
+            }, TYPING_DELAY);
+        }
+    });
+
+    // Clean up interval on page unload
+    $(window).on("beforeunload", function () {
+        if (intervalId) {
+            clearInterval(intervalId);
         }
     });
 });
