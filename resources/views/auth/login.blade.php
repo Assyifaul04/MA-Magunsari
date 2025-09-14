@@ -82,9 +82,7 @@
             box-shadow: var(--shadow);
             overflow: hidden;
             width: 100%;
-            max-width: 850px;
-            min-height: 480px;
-            display: flex;
+            max-width: 450px;
             position: relative;
         }
 
@@ -98,43 +96,19 @@
             background: linear-gradient(90deg, var(--primary-color), var(--orange-primary));
         }
 
-        /* Login section - bagian kiri */
+        /* Login section */
         .login-section {
-            flex: 1;
             padding: 2.5rem;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            min-width: 350px;
-        }
-
-        /* Animation section - bagian kanan */
-        .animation-section {
-            flex: 1;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 480px;
-            overflow: hidden;
-        }
-
-        .animation-section::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background:
-                radial-gradient(circle at 20% 50%, rgba(249, 115, 22, 0.06) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(168, 85, 247, 0.03) 0%, transparent 50%);
         }
 
         /* Logo section */
         .logo-section {
             display: flex;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center;
             margin-bottom: 2.5rem;
             gap: 15px;
         }
@@ -170,6 +144,7 @@
         /* Welcome text */
         .welcome-text {
             margin-bottom: 1.5rem;
+            text-align: center;
         }
 
         .welcome-text h3 {
@@ -330,282 +305,20 @@
             font-weight: 500;
         }
 
-        /* === RFID ANIMATION STYLES === */
-        .rfid-system {
-            position: relative;
-            width: 280px;
-            height: 280px;
-            z-index: 2;
-        }
-
-        .rfid-reader {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 100px;
-            height: 65px;
-            background: linear-gradient(145deg, #ffffff, #f1f5f9);
-            border-radius: 10px;
-            box-shadow: var(--shadow);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .rfid-reader:hover {
-            transform: translate(-50%, -50%) scale(1.05);
-            box-shadow: 0 12px 30px rgba(1, 41, 112, 0.15);
-        }
-
-        .rfid-reader::before {
-            content: '';
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, var(--orange-primary), var(--orange-dark));
-            border-radius: 50%;
-            animation: pulse 2s infinite;
-        }
-
-        .rfid-card {
-            position: absolute;
-            width: 50px;
-            height: 32px;
-            background: #fff;
-            border-radius: 5px;
-            box-shadow: var(--shadow);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: var(--transition);
-        }
-
-        .rfid-card::before {
-            content: '';
-            width: 20px;
-            height: 12px;
-            background: linear-gradient(135deg, #89a9d3, #0babf5);
-            border-radius: 2px;
-        }
-
-        .rfid-card:nth-child(2) {
-            top: 20%;
-            left: 20%;
-            animation: cardFloat1 4s infinite;
-        }
-
-        .rfid-card:nth-child(3) {
-            top: 25%;
-            right: 15%;
-            animation: cardFloat2 4s infinite 1s;
-        }
-
-        .rfid-card:nth-child(4) {
-            bottom: 30%;
-            left: 15%;
-            animation: cardFloat3 4s infinite 2s;
-        }
-
-        .rfid-card:nth-child(5) {
-            bottom: 25%;
-            right: 20%;
-            animation: cardFloat4 4s infinite 3s;
-        }
-
-        /* Gelombang sinyal */
-        .signal-wave {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border: 2px solid var(--orange-primary);
-            border-radius: 50%;
-            opacity: 0;
-            animation: signalWave 3s infinite;
-        }
-
-        .signal-wave:nth-child(6) {
-            width: 120px;
-            height: 120px;
-            animation-delay: 0s;
-        }
-
-        .signal-wave:nth-child(7) {
-            width: 160px;
-            height: 160px;
-            animation-delay: 0.5s;
-        }
-
-        .signal-wave:nth-child(8) {
-            width: 200px;
-            height: 200px;
-            animation-delay: 1s;
-        }
-
-        /* Titik data */
-        .data-point {
-            position: absolute;
-            width: 6px;
-            height: 6px;
-            background: var(--orange-primary);
-            border-radius: 50%;
-            opacity: 0;
-            animation: dataFlow 2s infinite;
-        }
-
-        .data-point:nth-child(9) {
-            top: 10%;
-            left: 45%;
-            animation-delay: 0s;
-        }
-
-        .data-point:nth-child(10) {
-            top: 15%;
-            right: 40%;
-            animation-delay: 0.2s;
-        }
-
-        .data-point:nth-child(11) {
-            bottom: 20%;
-            left: 35%;
-            animation-delay: 0.4s;
-        }
-
-        .data-point:nth-child(12) {
-            bottom: 15%;
-            right: 45%;
-            animation-delay: 0.6s;
-        }
-
-        /* Status */
-        .status-indicator {
-            position: absolute;
-            bottom: 1.5rem;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 0.8rem;
-            z-index: 10;
-        }
-
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.4rem 0.8rem;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: 500;
-            color: #334155;
-            box-shadow: var(--shadow);
-            backdrop-filter: blur(10px);
-        }
-
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            animation: statusPulse 2s infinite;
-        }
-
-        .status-dot.online {
-            background: var(--success-color);
-        }
-
-        .status-dot.scanning {
-            background: var(--orange-primary);
-        }
-
-        /* RFID Animasi */
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-                opacity: 1;
-            }
-            50% {
-                transform: scale(1.1);
-                opacity: 0.8;
-            }
-        }
-
-        @keyframes cardFloat1 {
-            0%,100%{opacity:0;transform:translate(0,0) rotate(0deg);}
-            25%{opacity:1;}
-            50%{opacity:1;transform:translate(100px,50px) rotate(5deg);}
-            75%{opacity:0.5;transform:translate(150px,120px) rotate(10deg);}
-        }
-
-        @keyframes cardFloat2 {
-            0%,100%{opacity:0;transform:translate(0,0) rotate(0deg);}
-            25%{opacity:1;}
-            50%{opacity:1;transform:translate(-80px,60px) rotate(-5deg);}
-            75%{opacity:0.5;transform:translate(-120px,140px) rotate(-10deg);}
-        }
-
-        @keyframes cardFloat3 {
-            0%,100%{opacity:0;transform:translate(0,0) rotate(0deg);}
-            25%{opacity:1;}
-            50%{opacity:1;transform:translate(90px,-70px) rotate(7deg);}
-            75%{opacity:0.5;transform:translate(130px,-130px) rotate(15deg);}
-        }
-
-        @keyframes cardFloat4 {
-            0%,100%{opacity:0;transform:translate(0,0) rotate(0deg);}
-            25%{opacity:1;}
-            50%{opacity:1;transform:translate(-70px,-80px) rotate(-7deg);}
-            75%{opacity:0.5;transform:translate(-110px,-140px) rotate(-15deg);}
-        }
-
-        @keyframes signalWave {
-            0%{opacity:0;transform:translate(-50%,-50%) scale(0.8);}
-            50%{opacity:0.6;}
-            100%{opacity:0;transform:translate(-50%,-50%) scale(1.2);}
-        }
-
-        @keyframes dataFlow {
-            0%,100%{opacity:0;transform:scale(0) rotate(0deg);}
-            50%{opacity:1;transform:scale(1) rotate(180deg);}
-        }
-
-        @keyframes statusPulse {
-            0%,100%{opacity:1;}
-            50%{opacity:0.5;}
-        }
-
         /* Login animation */
-        @keyframes fadeInLeft {
+        @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateX(-50px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes fadeInRight {
-            from {
-                opacity: 0;
-                transform: translateX(50px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
+                transform: translateY(0);
             }
         }
 
         .login-section {
-            animation: fadeInLeft 0.8s ease-out;
-        }
-
-        .animation-section {
-            animation: fadeInRight 1s ease-out 0.3s both;
+            animation: fadeInUp 0.8s ease-out;
         }
 
         /* Loading state */
@@ -638,47 +351,17 @@
         }
 
         /* Responsive design */
-        @media (max-width: 1024px) {
-            .login-wrapper {
-                flex-direction: column;
-                max-width: 600px;
-            }
-
-            .login-section {
-                min-width: auto;
-                padding: 2.5rem;
-            }
-
-            .animation-section {
-                min-height: 400px;
-            }
-
-            .rfid-system {
-                width: 300px;
-                height: 300px;
-            }
-        }
-
         @media (max-width: 768px) {
             .main-container {
                 padding: 15px;
             }
 
             .login-wrapper {
-                min-height: auto;
+                max-width: 400px;
             }
 
             .login-section {
                 padding: 2rem;
-            }
-
-            .animation-section {
-                min-height: 350px;
-            }
-
-            .rfid-system {
-                width: 280px;
-                height: 280px;
             }
 
             .logo-text {
@@ -686,7 +369,7 @@
             }
 
             .welcome-text h3 {
-                font-size: 1.3rem;
+                font-size: 1.2rem;
             }
         }
 
@@ -704,37 +387,9 @@
                 font-size: 1.3rem;
             }
 
-            .animation-section {
-                min-height: 300px;
+            .login-wrapper {
+                max-width: 350px;
             }
-
-            .rfid-system {
-                width: 250px;
-                height: 250px;
-            }
-
-            .rfid-reader {
-                width: 100px;
-                height: 70px;
-            }
-
-            .rfid-reader::before {
-                width: 35px;
-                height: 35px;
-            }
-        }
-
-        /* Hover effects untuk interactivity */
-        .rfid-card:hover {
-            transform: scale(1.1) !important;
-            opacity: 1 !important;
-            z-index: 15;
-        }
-
-        /* Focus states for accessibility */
-        .rfid-reader:focus {
-            outline: 2px solid var(--primary-color);
-            outline-offset: 2px;
         }
     </style>
 </head>
@@ -742,7 +397,7 @@
 <body>
     <main class="main-container">
         <div class="login-wrapper">
-            <!-- Login Section - Kiri -->
+            <!-- Login Section -->
             <div class="login-section">
                 <!-- Logo Section -->
                 <div class="logo-section">
@@ -810,43 +465,6 @@
                     </div>
                 </form>
             </div>
-
-            <!-- Animation Section - Kanan -->
-            <div class="animation-section">
-                <div class="rfid-system">
-                    <!-- RFID Reader -->
-                    <div class="rfid-reader" tabindex="0" role="button" aria-label="RFID Reader"></div>
-
-                    <!-- RFID Cards -->
-                    <div class="rfid-card"></div>
-                    <div class="rfid-card"></div>
-                    <div class="rfid-card"></div>
-                    <div class="rfid-card"></div>
-
-                    <!-- Signal Waves -->
-                    <div class="signal-wave"></div>
-                    <div class="signal-wave"></div>
-                    <div class="signal-wave"></div>
-
-                    <!-- Data Points -->
-                    <div class="data-point"></div>
-                    <div class="data-point"></div>
-                    <div class="data-point"></div>
-                    <div class="data-point"></div>
-
-                    <!-- Status Indicator -->
-                    <div class="status-indicator">
-                        <div class="status-item">
-                            <div class="status-dot online"></div>
-                            <span>Online</span>
-                        </div>
-                        <div class="status-item">
-                            <div class="status-dot scanning"></div>
-                            <span>Scanning</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </main>
 
@@ -860,10 +478,6 @@
             const form = document.querySelector('.needs-validation');
             const loginBtn = document.getElementById('loginBtn');
             const logoImage = document.getElementById('logoImage');
-            const rfidReader = document.querySelector('.rfid-reader');
-            const rfidCards = document.querySelectorAll('.rfid-card');
-            const signalWaves = document.querySelectorAll('.signal-wave');
-            const dataPoints = document.querySelectorAll('.data-point');
 
             // Logo flip functionality
             logoImage.addEventListener('click', function() {
@@ -912,138 +526,7 @@
                     }, 300);
                 }, 5000);
             });
-
-            // RFID Animation interactions
-            function triggerRFIDScan() {
-                // Enhanced animations
-                rfidCards.forEach((card, index) => {
-                    card.style.animationDelay = `${index * 0.3}s`;
-                    card.style.animationDuration = '2s';
-                    setTimeout(() => {
-                        card.style.opacity = '1';
-                        card.style.transform = 'scale(1.1)';
-                    }, index * 300);
-                });
-
-                signalWaves.forEach((wave, index) => {
-                    wave.style.animationDelay = `${index * 0.2}s`;
-                    wave.style.animationDuration = '1.5s';
-                });
-
-                dataPoints.forEach((point, index) => {
-                    point.style.animationDelay = `${index * 0.1}s`;
-                    point.style.animationDuration = '1s';
-                });
-
-                // Reset after animation
-                setTimeout(() => {
-                    rfidCards.forEach(card => {
-                        card.style.opacity = '';
-                        card.style.transform = '';
-                    });
-                }, 2000);
-            }
-
-            // RFID reader interactions
-            rfidReader.addEventListener('click', triggerRFIDScan);
-            rfidReader.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    triggerRFIDScan();
-                }
-            });
-
-            // Auto trigger RFID scan every 8 seconds
-            setInterval(triggerRFIDScan, 8000);
-
-            // Interactive card hover effects
-            rfidCards.forEach(card => {
-                card.addEventListener('mouseenter', function() {
-                    this.style.transform = 'scale(1.15) rotate(5deg)';
-                    this.style.opacity = '1';
-                    this.style.zIndex = '15';
-                    this.style.boxShadow = '0 15px 35px rgba(249, 115, 22, 0.3)';
-                });
-
-                card.addEventListener('mouseleave', function() {
-                    this.style.transform = '';
-                    this.style.zIndex = '';
-                    this.style.boxShadow = '';
-                });
-            });
-
-            // Status indicator interactions
-            const statusItems = document.querySelectorAll('.status-item');
-            statusItems.forEach(item => {
-                item.addEventListener('click', function() {
-                    // Animate status click
-                    this.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        this.style.transform = '';
-                    }, 150);
-                });
-            });
-
-            // Parallax effect on mouse move
-            const animationSection = document.querySelector('.animation-section');
-            animationSection.addEventListener('mousemove', function(e) {
-                const rect = this.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-                
-                const rotateX = (y - centerY) / centerY * 5;
-                const rotateY = (centerX - x) / centerX * 5;
-                
-                this.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-            });
-
-            animationSection.addEventListener('mouseleave', function() {
-                this.style.transform = '';
-            });
-
-            // Accessibility enhancements
-            rfidReader.setAttribute('aria-describedby', 'rfid-description');
-            const description = document.createElement('div');
-            description.id = 'rfid-description';
-            description.className = 'sr-only';
-            description.textContent = 'Click to simulate RFID card scanning';
-            document.body.appendChild(description);
-
-            // Performance optimization - pause animations when not visible
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.animationPlayState = 'running';
-                    } else {
-                        entry.target.style.animationPlayState = 'paused';
-                    }
-                });
-            });
-
-            // Observe all animated elements
-            [...rfidCards, ...signalWaves, ...dataPoints].forEach(el => {
-                observer.observe(el);
-            });
         });
-
-        // Add CSS class for screen readers
-        const style = document.createElement('style');
-        style.textContent = `
-            .sr-only {
-                position: absolute;
-                width: 1px;
-                height: 1px;
-                padding: 0;
-                margin: -1px;
-                overflow: hidden;
-                clip: rect(0, 0, 0, 0);
-                white-space: nowrap;
-                border: 0;
-            }
-        `;
-        document.head.appendChild(style);
     </script>
 </body>
 

@@ -320,4 +320,76 @@ class AbsensiController extends Controller
 
         return view('admin.absensi.print', compact('absensi', 'tanggalMulai', 'tanggalSelesai'));
     }
+
+    public function rekapBulanan(Request $request)
+    {
+        $tahun   = $request->input('tahun');
+        $bulan   = $request->input('bulan');
+        $kelas   = $request->input('kelas');
+        $siswaId = $request->input('siswa');
+
+        $rekap = [];
+        $jumlahHari = null;
+
+        // hanya jalan kalau tahun, bulan, kelas, dan siswa dipilih
+        if ($tahun && $bulan && $kelas && $siswaId) {
+            // Jumlah hari dalam bulan
+            $jumlahHari = Carbon::createFromDate($tahun, $bulan)->daysInMonth;
+
+            // Query siswa (hanya siswa yang dipilih)
+            $siswaList = Siswa::whereNotNull('rfid')
+                ->where('kelas_id', $kelas)
+                ->where('id', $siswaId)
+                ->with('kelas')
+                ->get();
+
+            // Ambil absensi sesuai bulan dan tahun
+            $absensi = Absensi::with('siswa')
+                ->whereYear('tanggal', $tahun)
+                ->whereMonth('tanggal', $bulan)
+                ->get()
+                ->groupBy('siswa_id');
+
+            // Susun data per siswa dan per tanggal
+            foreach ($siswaList as $siswa) {
+                $rekap[$siswa->id] = [
+                    'siswa' => $siswa,
+                    'data'  => [],
+                ];
+
+                for ($hari = 1; $hari <= $jumlahHari; $hari++) {
+                    $tanggal = Carbon::createFromDate($tahun, $bulan, $hari)->toDateString();
+
+                    $absenHari = optional($absensi[$siswa->id] ?? collect())
+                        ->firstWhere('tanggal', $tanggal);
+
+                    if ($absenHari) {
+                        if (in_array($absenHari->status, ['hadir', 'terlambat'])) {
+                            $rekap[$siswa->id]['data'][$hari] = '✔';
+                        } elseif ($absenHari->status === 'izin') {
+                            $rekap[$siswa->id]['data'][$hari] = 'I';
+                        } elseif ($absenHari->status === 'sakit') {
+                            $rekap[$siswa->id]['data'][$hari] = 'S';
+                        } else {
+                            $rekap[$siswa->id]['data'][$hari] = '-';
+                        }
+                    } else {
+                        $rekap[$siswa->id]['data'][$hari] = null;
+                    }
+                }
+            }
+        }
+
+        $kelasList = Kelas::all();
+
+        return view('admin.absensi.rekap_bulanan', compact(
+            'rekap',
+            'tahun',
+            'bulan',
+            'jumlahHari',
+            'kelasList',
+            'kelas',
+            'siswaId'
+        ));
+    }
 }

@@ -18,12 +18,14 @@
         <!-- Dashboard -->
         <li class="nav-item">
             @if (Auth::user()->role === 'admin')
-                <a class="nav-link {{ isActive('admin.dashboard') ? '' : 'collapsed' }}" href="{{ route('admin.dashboard') }}">
+                <a class="nav-link {{ isActive('admin.dashboard') ? '' : 'collapsed' }}"
+                    href="{{ route('admin.dashboard') }}">
                     <i class="bi bi-grid"></i>
                     <span>Dashboard</span>
                 </a>
             @elseif (Auth::user()->role === 'guru')
-                <a class="nav-link {{ isActive('guru.dashboard') ? '' : 'collapsed' }}" href="{{ route('guru.dashboard') }}">
+                <a class="nav-link {{ isActive('guru.dashboard') ? '' : 'collapsed' }}"
+                    href="{{ route('guru.dashboard') }}">
                     <i class="bi bi-grid"></i>
                     <span>Dashboard</span>
                 </a>
@@ -85,12 +87,20 @@
                                 class="bi bi-dot"></i><span>Hari Ini</span></a></li>
                     <li><a href="{{ route('absensi.byRange') }}" class="{{ isActive('absensi.byRange') }}"><i
                                 class="bi bi-dot"></i><span>By Range</span></a></li>
-                </ul>
+                    <li>
+                    <li>
+                        <a href="{{ route('absensi.rekap_bulanan') }}"
+                            class="{{ isActive('absensi.rekap_bulanan') }}">
+                            <i class="bi bi-dot"></i>
+                            <span>Rekap</span>
+                        </a>
+                    </li>
             </li>
-        @endif
-        
-        @if (Auth::user()->role === 'guru')
-        
-        @endif
+    </ul>
+    </li>
+    @endif
+
+    @if (Auth::user()->role === 'guru')
+    @endif
     </ul>
 </aside>
