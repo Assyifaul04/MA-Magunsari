@@ -25,12 +25,14 @@ class AuthController extends Controller
     
             $user = Auth::user();
     
-            if ($user->role === 'admin') {
+            if ($user->role === 'superAdmin') {
+                return redirect()->intended('/superAdmin/dashboard');
+            } elseif ($user->role === 'admin') {
                 return redirect()->intended('/admin/dashboard');
             } elseif ($user->role === 'guru') {
                 return redirect()->intended('/guru/dashboard');
             }
-
+    
             return redirect()->route('login')->withErrors([
                 'role' => 'Role tidak dikenali.'
             ]);
@@ -40,6 +42,7 @@ class AuthController extends Controller
             'email' => 'Email atau password salah.',
         ])->onlyInput('email');
     }
+    
     
 
     public function logout(Request $request)

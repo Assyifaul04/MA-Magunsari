@@ -6,15 +6,18 @@
     <div class="d-flex align-items-center justify-content-between w-100">
 
         <!-- Logo -->
-        <a @if (Auth::user()->role === 'admin') href="{{ route('admin.dashboard') }}"
-            @elseif(Auth::user()->role === 'guru')
-                href="{{ route('guru.dashboard') }}" @endif
+        <a @if (Auth::user()->role === 'superAdmin') href="{{ route('superAdmin.dashboard') }}"
+        @elseif (Auth::user()->role === 'admin') 
+            href="{{ route('admin.dashboard') }}"
+        @elseif(Auth::user()->role === 'guru') 
+            href="{{ route('guru.dashboard') }}" @endif
             class="logo d-flex align-items-center">
             <img src="{{ asset('image/logo.png') }}" alt="Logo" style="height: 50px; width: auto; margin-right: 10px;">
             <span class="d-none d-lg-block" style="font-size: 16px; font-weight: bold;">
                 MAS Nurul Huda
             </span>
         </a>
+
         <i class="bi bi-list toggle-sidebar-btn"></i>
 
         <!-- Profile Dropdown -->
@@ -38,7 +41,13 @@
                                 class="rounded-circle mb-2 border shadow-sm" width="60" height="60">
                             <h6 class="mb-0">{{ Auth::user()->name }}</h6>
                             <small class="text-muted">
-                                {{ Auth::user()->role === 'admin' ? 'Administrator' : 'Guru' }}
+                                @if (Auth::user()->role === 'superAdmin')
+                                    Super Administrator
+                                @elseif (Auth::user()->role === 'admin')
+                                    Administrator
+                                @elseif (Auth::user()->role === 'guru')
+                                    Guru
+                                @endif
                             </small>
                         </li>
                         <li>
@@ -46,15 +55,16 @@
                         </li>
 
                         <!-- Menu Items beda role -->
-                        @if (Auth::user()->role === 'admin')
+                        @if (Auth::user()->role === 'superAdmin')
                             <li>
-                                <a class="dropdown-item d-flex align-items-center" href="">
-                                    <i class="bi bi-gear me-2 text-secondary"></i> Admin Settings
+                                <a class="dropdown-item d-flex align-items-center" href="#">
+                                    <i class="bi bi-shield-lock me-2 text-primary"></i> Manage System
                                 </a>
                             </li>
+                        @elseif (Auth::user()->role === 'admin')
                             <li>
-                                <a class="dropdown-item d-flex align-items-center" href="{{ route('admins.index') }}">
-                                    <i class="bi bi-people me-2 text-primary"></i> Kelola Admin
+                                <a class="dropdown-item d-flex align-items-center" href="#">
+                                    <i class="bi bi-gear me-2 text-secondary"></i> Profile
                                 </a>
                             </li>
                         @elseif(Auth::user()->role === 'guru')
@@ -64,6 +74,7 @@
                                 </a>
                             </li>
                         @endif
+
 
                         <li>
                             <hr class="dropdown-divider">

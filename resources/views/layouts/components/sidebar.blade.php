@@ -17,7 +17,13 @@
 
         <!-- Dashboard -->
         <li class="nav-item">
-            @if (Auth::user()->role === 'admin')
+            @if (Auth::user()->role === 'superAdmin')
+                <a class="nav-link {{ isActive('superAdmin.dashboard') ? '' : 'collapsed' }}"
+                    href="{{ route('superAdmin.dashboard') }}">
+                    <i class="bi bi-grid"></i>
+                    <span>Dashboard</span>
+                </a>
+            @elseif (Auth::user()->role === 'admin')
                 <a class="nav-link {{ isActive('admin.dashboard') ? '' : 'collapsed' }}"
                     href="{{ route('admin.dashboard') }}">
                     <i class="bi bi-grid"></i>
@@ -32,7 +38,26 @@
             @endif
         </li>
 
-        <!-- Jika admin tampilkan semua menu -->
+        <!-- Menu khusus SuperAdmin -->
+        @if (Auth::user()->role === 'superAdmin')
+            <li class="nav-item">
+                <a class="nav-link {{ isActive('users.*') ? '' : 'collapsed' }}" data-bs-target="#users-nav"
+                    data-bs-toggle="collapse" href="#">
+                    <i class="bi bi-person-gear"></i>
+                    <span>Manajemen User</span>
+                    <i class="bi bi-chevron-down ms-auto"></i>
+                </a>
+                <ul id="users-nav" class="nav-content {{ isExpanded('users.*') }}" data-bs-parent="#sidebar-nav">
+                    <li>
+                        <a href="{{ route('users.index') }}" class="{{ isActive('users.index') }}">
+                            <i class="bi bi-dot"></i><span>Users</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        @endif
+
+        <!-- Menu Admin -->
         @if (Auth::user()->role === 'admin')
             <!-- Presensi -->
             <li class="nav-item">
@@ -88,19 +113,19 @@
                     <li><a href="{{ route('absensi.byRange') }}" class="{{ isActive('absensi.byRange') }}"><i
                                 class="bi bi-dot"></i><span>By Range</span></a></li>
                     <li>
-                    <li>
                         <a href="{{ route('absensi.rekap_bulanan') }}"
                             class="{{ isActive('absensi.rekap_bulanan') }}">
                             <i class="bi bi-dot"></i>
                             <span>Rekap</span>
                         </a>
                     </li>
+                </ul>
             </li>
-    </ul>
-    </li>
-    @endif
+        @endif
 
-    @if (Auth::user()->role === 'guru')
-    @endif
+        <!-- Guru -->
+        @if (Auth::user()->role === 'guru')
+            {{-- Tambahkan menu khusus guru di sini kalau ada --}}
+        @endif
     </ul>
 </aside>

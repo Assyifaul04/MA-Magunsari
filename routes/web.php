@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\PengaturanController;
 use App\Http\Controllers\Guru\DashboardGuruController;
+use App\Http\Controllers\Super\SuperAdminController;
+use App\Http\Controllers\Super\TambahUserController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn() => view('welcome'));
@@ -15,13 +17,27 @@ Route::get('/', fn() => view('welcome'));
 Route::get('/absensi/scan', [AbsensiController::class, 'scan'])->name('absensi.scan');
 Route::post('/absensi/store', [AbsensiController::class, 'store'])->name('absensi.store');
 Route::get('/absensi/check-jenis', [AbsensiController::class, 'checkJenis'])->name('absensi.checkJenis');
-
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthController::class, 'login'])->name('login');
     Route::post('login', [AuthController::class, 'authenticated']);
 });
-
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+
+
+Route::middleware(['auth', 'chaceLogout', 'role:superAdmin'])->group(function () {
+    // Super Admin Web Routes
+    Route::prefix('superAdmin')->group(function () {
+        Route::get('dashboard', [SuperAdminController::class, 'index'])->name('superAdmin.dashboard');
+        Route::resource('users', TambahUserController::class);
+    });
+    
+    // API Routes for AJAX requests
+    Route::prefix('api')->group(function () {
+        Route::get('user-count', [SuperAdminController::class, 'getUserCount'])->name('api.user-count');
+        Route::get('recent-activities', [SuperAdminController::class, 'getRecentActivities'])->name('api.recent-activities');
+    });
+});
+
 
 Route::middleware(['auth', 'chaceLogout', 'role:admin'])->group(function () {
     Route::prefix('admin')->group(function () {
