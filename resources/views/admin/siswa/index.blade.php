@@ -43,12 +43,23 @@
                             </div>
                         </div>
 
+                        <!-- Input Search -->
+                        <div class="mb-3 d-flex justify-content-end">
+                            <div class="input-group w-25">
+                                <span class="input-group-text bg-white">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" id="searchInput" class="form-control" placeholder="Cari NISN / Nama...">
+                            </div>
+                        </div>
+
                         <!-- Default Table -->
                         <div class="table-responsive">
-                            <table class="table table-striped">
+                            <table class="table table-striped" id="siswaTable">
                                 <thead>
                                     <tr>
                                         <th scope="col">#</th>
+                                        <th scope="col">NISN</th>
                                         <th scope="col">Nama Siswa</th>
                                         <th scope="col">Kelas</th>
                                         <th scope="col">RFID</th>
@@ -60,6 +71,7 @@
                                     @forelse($siswas as $index => $siswa)
                                         <tr>
                                             <th scope="row">{{ $index + 1 }}</th>
+                                            <td>{{ $siswa->nisn }}</td>
                                             <td>
                                                 <a href="javascript:void(0)"
                                                     class="text-primary fw-bold text-decoration-none" data-bs-toggle="modal"
@@ -87,11 +99,11 @@
                                                             class="bi bi-clock me-1"></i>Pending</span>
                                                 @endif
                                             </td>
-                                            <!-- Bagian Action Buttons dalam tabel -->
                                             <td>
                                                 <div class="btn-group" role="group">
                                                     <button type="button" class="btn btn-sm btn-outline-info editSiswaBtn"
-                                                        data-id="{{ $siswa->id }}" data-nama="{{ $siswa->nama }}"
+                                                        data-nisn="{{ $siswa->nisn }}" data-id="{{ $siswa->id }}"
+                                                        data-nama="{{ $siswa->nama }}"
                                                         data-kelas="{{ $siswa->kelas_id }}"
                                                         data-rfid="{{ $siswa->rfid }}" data-status="{{ $siswa->status }}"
                                                         title="Edit Siswa">
@@ -112,7 +124,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="6" class="text-center py-4">
+                                            <td colspan="7" class="text-center py-4">
                                                 <div class="text-muted">
                                                     <i class="bi bi-inbox display-4 d-block mb-2"></i>
                                                     <h6>Belum ada data siswa</h6>
@@ -125,6 +137,9 @@
                             </table>
                         </div>
                         <!-- End Default Table -->
+
+
+
 
                     </div>
                 </div>
@@ -238,6 +253,15 @@
                                 </ul>
                             </div>
                         @endif
+                        <div class="mb-3">
+                            <label for="nisn" class="form-label">NISN <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-card-list"></i></span>
+                                <input type="text" name="nisn" id="nisn" value="{{ old('nisn') }}"
+                                    class="form-control" required placeholder="Masukkan NISN">
+                            </div>
+                        </div>
+
 
                         <div class="mb-3">
                             <label for="nama" class="form-label">Nama Lengkap <span
@@ -298,6 +322,18 @@
                         <input type="hidden" id="edit_siswa_id" name="siswa_id">
 
                         <div class="row">
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label for="edit_nisn" class="form-label">NISN <span
+                                            class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-card-list"></i></span>
+                                        <input type="text" name="nisn" id="edit_nisn" class="form-control"
+                                            required>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="col-12">
                                 <div class="mb-3">
                                     <label for="edit_nama" class="form-label">Nama Lengkap <span
@@ -369,4 +405,21 @@
 @push('scripts')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="{{ asset('js/siswa.js') }}"></script>
+    <script>
+        document.getElementById("searchInput").addEventListener("keyup", function() {
+            let filter = this.value.toLowerCase();
+            let rows = document.querySelectorAll("#siswaTable tbody tr");
+
+            rows.forEach(row => {
+                let nisn = row.cells[1]?.textContent.toLowerCase() || "";
+                let nama = row.cells[2]?.textContent.toLowerCase() || "";
+
+                if (nisn.includes(filter) || nama.includes(filter)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        });
+    </script>
 @endpush

@@ -151,16 +151,23 @@ $(document).ready(function () {
                     .text(res.message)
                     .removeClass("text-red-600")
                     .addClass("text-green-600 font-semibold");
-
+            
                 showAlert("success", "Berhasil!", res.message);
-
-                // Clear status message faster for success
+            
+                // 🔊 Suara tanpa menyebut nama
+                if (res.success && res.data) {
+                    const jenis = res.data.jenis || "absensi";
+                    const status = res.data.status || "";
+                    const ttsMessage = `Absensi ${jenis} berhasil, status ${status}`;
+                    speakMessage(ttsMessage);
+                }
+            
                 setTimeout(() => {
-                    $statusMessage
-                        .text("")
-                        .removeClass("text-green-600 font-semibold");
+                    $statusMessage.text("").removeClass("text-green-600 font-semibold");
                 }, 1500);
             },
+            
+            
             error: function (xhr) {
                 const msg =
                     xhr.responseJSON?.message || "Terjadi kesalahan sistem.";
@@ -168,9 +175,12 @@ $(document).ready(function () {
                     .text("❌ " + msg)
                     .removeClass("text-green-600")
                     .addClass("text-red-600 font-semibold");
-
+            
                 showAlert("error", "Gagal!", msg);
-
+            
+                // 🔊 Tambahkan suara untuk error juga
+                speakMessage(msg);
+            
                 // Keep error message longer
                 setTimeout(() => {
                     $statusMessage
@@ -209,4 +219,19 @@ $(document).ready(function () {
             clearInterval(intervalId);
         }
     });
+
+    function speakMessage(message) {
+        if ('speechSynthesis' in window) {
+            // Stop semua suara sebelumnya biar gak numpuk
+            window.speechSynthesis.cancel();  
+    
+            const utterance = new SpeechSynthesisUtterance(message);
+            utterance.lang = 'id-ID'; // Bahasa Indonesia
+            utterance.rate = 1.2;     // Biar agak cepat
+            utterance.pitch = 1;      // Nada normal
+            window.speechSynthesis.speak(utterance);
+        } else {
+            console.warn("Browser tidak mendukung Speech Synthesis API");
+        }
+    }
 });

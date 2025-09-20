@@ -27,11 +27,13 @@ class SiswaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'nisn' => 'required|string|max:20|unique:siswas,nisn',
             'nama' => 'required|string|max:255',
             'kelas_id' => 'required|exists:kelas,id',
         ]);
 
         $siswa = Siswa::create([
+            'nisn' => $request->nisn,
             'nama' => $request->nama,
             'kelas_id' => $request->kelas_id,
             'rfid' => null,
@@ -57,6 +59,7 @@ class SiswaController extends Controller
     public function update(Request $request, Siswa $siswa)
     {
         $request->validate([
+            'nisn' => 'required|string|max:20|unique:siswas,nisn,' . $siswa->id,
             'nama' => 'required|string|max:255',
             'kelas_id' => 'required|exists:kelas,id',
             'rfid' => 'nullable|unique:siswas,rfid,' . $siswa->id,

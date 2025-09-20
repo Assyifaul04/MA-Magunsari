@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Exports\AbsensiExport;
+use App\Exports\RekapBulananExport;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Absensi;
@@ -391,5 +392,15 @@ class AbsensiController extends Controller
             'kelas',
             'siswaId'
         ));
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $tahun   = $request->input('tahun');
+        $bulan   = $request->input('bulan');
+        $kelas   = $request->input('kelas');
+        $siswaId = $request->input('siswa');
+
+        return Excel::download(new RekapBulananExport($tahun, $bulan, $kelas, $siswaId), 'rekap_bulanan.xlsx');
     }
 }

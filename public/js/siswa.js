@@ -206,6 +206,7 @@ $(document).ready(function () {
         
         // Get data with validation
         const id = safeGetData(button, "id");
+        const nisn = safeGetData(button, "nisn", "");
         const nama = safeGetData(button, "nama", "");
         const kelas = safeGetData(button, "kelas", "");
         const rfid = safeGetData(button, "rfid", "");
@@ -243,6 +244,7 @@ $(document).ready(function () {
 
                 // Set field form dengan validasi
                 $("#edit_siswa_id").val(id);
+                $("#edit_nisn").val(nisn);
                 $("#edit_nama").val(nama);
                 $("#edit_kelas_id").val(kelas);
                 $("#edit_rfid").val(rfid);

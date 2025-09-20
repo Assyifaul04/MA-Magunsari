@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('siswas', function (Blueprint $table) {
             $table->id();
+            $table->string('nisn')->unique();
             $table->string('nama');
             $table->foreignId('kelas_id')->constrained('kelas')->onDelete('cascade');
             $table->string('rfid')->nullable()->unique();

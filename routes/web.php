@@ -88,6 +88,8 @@ Route::middleware(['auth', 'chaceLogout', 'role:admin'])->group(function () {
             Route::get('by-range/export', [AbsensiController::class, 'export'])->name('absensi.export');
             Route::get('by-range/print', [AbsensiController::class, 'print'])->name('absensi.print');
             Route::get('rekap-bulanan', [AbsensiController::class, 'rekapBulanan'])->name('absensi.rekap_bulanan');
+            Route::get('rekap/export', [AbsensiController::class, 'exportExcel'])->name('rekap.export');
+
         });
     });
 });

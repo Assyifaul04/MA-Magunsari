@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Super;
 
 use App\Http\Controllers\Controller;
+use App\Models\Absensi;
+use App\Models\Siswa;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -11,7 +13,33 @@ class SuperAdminController extends Controller
 {
     public function index()
     {
-        // Get user statistics
+        // Siswa bermasalah: terlambat atau tidak masuk
+        $siswaBermasalah = Siswa::whereNotNull('rfid')
+        ->with('kelas')
+        ->get()
+        ->map(function ($siswa) {
+            $siswa->jumlah_terlambat = Absensi::where('siswa_id', $siswa->id)
+                ->where('status', 'terlambat')
+                ->count();
+            return $siswa;
+        })
+        ->sortByDesc('jumlah_terlambat')
+        ->take(10);
+
+    // Siswa rajin: hadir tepat waktu
+    $siswaRajin = Siswa::whereNotNull('rfid')
+        ->with('kelas')
+        ->get()
+        ->map(function ($siswa) {
+            $siswa->jumlah_hadir = Absensi::where('siswa_id', $siswa->id)
+                ->where('status', 'hadir')
+                ->count();
+            return $siswa;
+        })
+        ->sortByDesc('jumlah_hadir')
+        ->take(10);
+    
+        // Statistik user
         $stats = [
             'total_users' => User::count(),
             'super_admins' => User::where('role', 'superAdmin')->count(),
@@ -26,12 +54,9 @@ class SuperAdminController extends Controller
                 ->whereYear('created_at', now()->year)
                 ->count(),
         ];
-
-        // Get recent activities (recently added users)
-        $recentUsers = User::with([])
-            ->latest('created_at')
-            ->take(10)
-            ->get()
+    
+        // Recent user
+        $recentUsers = User::latest('created_at')->take(10)->get()
             ->map(function ($user) {
                 return [
                     'id' => $user->id,
@@ -41,8 +66,8 @@ class SuperAdminController extends Controller
                     'created_diff' => $user->created_at->diffForHumans(),
                 ];
             });
-
-        // Get user registration trend (last 7 days)
+    
+        // Trend registrasi 7 hari terakhir
         $registrationTrend = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::now()->subDays($i);
@@ -52,22 +77,25 @@ class SuperAdminController extends Controller
                 'count' => User::whereDate('created_at', $date)->count(),
             ];
         }
-
-        // System info
+    
+        // Informasi sistem
         $systemInfo = [
             'php_version' => PHP_VERSION,
             'laravel_version' => app()->version(),
             'server_time' => now()->format('Y-m-d H:i:s'),
             'uptime_since' => Carbon::now()->startOfDay(),
         ];
-
+    
         return view('superAdmin.dashboard', compact(
             'stats',
             'recentUsers',
             'registrationTrend',
-            'systemInfo'
+            'systemInfo',
+            'siswaBermasalah',
+            'siswaRajin' // tambahkan siswa rajin
         ));
     }
+    
 
     /**
      * Get user count for AJAX request

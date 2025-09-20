@@ -171,6 +171,66 @@
             </div>
         </div>
 
+        <div class="col-12 mt-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Siswa Rajin Kehadiran</h5>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nama Siswa</th>
+                                <th>Kelas</th>
+                                <th>Jumlah Hadir Tepat Waktu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($siswaRajin as $siswa)
+                                <tr>
+                                    <td>{{ $siswa->nama }}</td>
+                                    <td>{{ $siswa->kelas->nama ?? '-' }}</td>
+                                    <td>{{ $siswa->jumlah_hadir ?? 0 }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">Belum ada data</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-12 mt-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Siswa Terlambat</h5>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Nama Siswa</th>
+                                <th>Kelas</th>
+                                <th>Jumlah Terlambat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($siswaBermasalah as $siswa)
+                                <tr>
+                                    <td>{{ $siswa->nama }}</td>
+                                    <td>{{ $siswa->kelas->nama ?? '-' }}</td>
+                                    <td>{{ $siswa->jumlah_terlambat ?? 0 }}</td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">Belum ada data</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
         <div class="row">
             <!-- User Distribution Chart -->
             <div class="col-lg-8">
