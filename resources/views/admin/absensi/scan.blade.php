@@ -202,7 +202,7 @@
             <form id="rfidForm" class="mb-4" autocomplete="off">
                 <div class="position-relative">
                     <input type="text" name="rfid" id="rfidInput" placeholder="Tempelkan RFID Anda..."
-                        class="form-control rfid-input">
+                        class="form-control rfid-input" inputmode="none" autocomplete="off" />
                     <input type="hidden" name="jenis" id="jenisInput">
                     <div class="loading-spinner position-absolute"
                         style="right: 15px; top: 50%; transform: translateY(-50%);" id="loadingSpinner"></div>
@@ -234,6 +234,9 @@
     <!-- Custom Script -->
     <!-- Include external JS file if you prefer -->
     <script src="{{ asset('js/absensi-form.js') }}"></script>
+    <script>
+        window.APP_URL = "http://192.168.18.96:8000";
+    </script>
 </body>
 
 </html>

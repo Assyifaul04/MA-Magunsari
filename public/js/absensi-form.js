@@ -101,21 +101,36 @@ $(document).ready(function () {
     }
 
     // Optimized interval checking with reduced frequency
-    let intervalId = setInterval(function () {
-        $.get("/admin/absensi/check-jenis", function (res) {
-            const currentJenis = $("#jenisAbsen").text();
-            const newJenis = res.jenis.toUpperCase();
+    // let intervalId = setInterval(function () {
 
-            // Only update if changed to reduce DOM manipulation
+    //     $.get("/admin/absensi/check-jenis", function (res) {
+    //         const currentJenis = $("#jenisAbsen").text();
+    //         const newJenis = res.jenis.toUpperCase();
+
+    //         if (currentJenis !== newJenis) {
+    //             $("#jenisAbsen").text(newJenis);
+    //             $jenisInput.val(res.jenis);
+    //         }
+    //     }).fail(function () {
+    //         console.warn("Failed to check jenis absen");
+    //     });
+    // }, 2000);
+
+    let intervalId = setInterval(function () {
+        $.get(window.APP_URL + "/admin/absensi/check-jenis", function (res) {
+            console.log("Response server:", res); // debug
+    
+            const currentJenis = $("#jenisAbsen").text();
+            const newJenis = res.jenis ? res.jenis.toUpperCase() : "...";
+    
             if (currentJenis !== newJenis) {
                 $("#jenisAbsen").text(newJenis);
                 $jenisInput.val(res.jenis);
             }
-        }).fail(function () {
-            // Handle connection errors gracefully
-            console.warn("Failed to check jenis absen");
+        }).fail(function (xhr) {
+            console.warn("Failed to check jenis absen", xhr.status, xhr.responseText);
         });
-    }, 2000); // Reduced frequency from 1000ms to 2000ms
+    }, 2000);
 
     // Optimized form submission with faster processing
     $("#rfidForm").on("submit", function (e) {
@@ -142,7 +157,8 @@ $(document).ready(function () {
         $rfidInput.prop("readonly", true);
 
         $.ajax({
-            url: "/admin/absensi/store",
+            url: window.APP_URL + "/admin/absensi/store",
+            // url: "/admin/absensi/store",
             method: "POST",
             data: data,
             timeout: 10000, // 10 second timeout
@@ -153,8 +169,7 @@ $(document).ready(function () {
                     .addClass("text-green-600 font-semibold");
             
                 showAlert("success", "Berhasil!", res.message);
-            
-                // 🔊 Suara tanpa menyebut nama
+
                 if (res.success && res.data) {
                     const jenis = res.data.jenis || "absensi";
                     const status = res.data.status || "";
