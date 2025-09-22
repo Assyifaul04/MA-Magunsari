@@ -235,7 +235,7 @@
     <!-- Include external JS file if you prefer -->
     <script src="{{ asset('js/absensi-form.js') }}"></script>
     <script>
-        window.APP_URL = "http://192.168.18.96:8000";
+        window.APP_URL = "http://192.168.1.16:8000";
     </script>
 </body>
 

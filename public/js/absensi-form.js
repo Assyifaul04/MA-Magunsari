@@ -237,16 +237,24 @@ $(document).ready(function () {
 
     function speakMessage(message) {
         if ('speechSynthesis' in window) {
-            // Stop semua suara sebelumnya biar gak numpuk
-            window.speechSynthesis.cancel();  
+            window.speechSynthesis.cancel(); // hentikan suara sebelumnya
     
             const utterance = new SpeechSynthesisUtterance(message);
-            utterance.lang = 'id-ID'; // Bahasa Indonesia
-            utterance.rate = 1.2;     // Biar agak cepat
-            utterance.pitch = 1;      // Nada normal
+            utterance.lang = 'id-ID';
+            utterance.rate = 1.1;   // jangan terlalu cepat
+            utterance.pitch = 1.1;  // sedikit lebih tinggi untuk suara lebih jelas
+    
+            // pilih voice Indonesia yang tersedia
+            const voices = window.speechSynthesis.getVoices();
+            const indonesianVoice = voices.find(voice => voice.lang === 'id-ID');
+            if (indonesianVoice) {
+                utterance.voice = indonesianVoice;
+            }
+    
             window.speechSynthesis.speak(utterance);
         } else {
             console.warn("Browser tidak mendukung Speech Synthesis API");
         }
     }
+    
 });
