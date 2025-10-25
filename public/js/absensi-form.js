@@ -4,6 +4,7 @@ $(document).ready(function () {
     const $statusMessage = $("#statusMessage");
     const $progressBar = $("#progressBar");
     const $loadingSpinner = $("#loadingSpinner");
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
     let isProcessing = false;
 
@@ -22,7 +23,6 @@ $(document).ready(function () {
     updateTime();
     setInterval(updateTime, 1000);
 
-    // Updated SweetAlert2 configuration with white background and black bold text
     function showAlert(type, title, message, duration = 3000) {
         const alertConfigs = {
             success: {
@@ -55,8 +55,8 @@ $(document).ready(function () {
             text: message,
             icon: config.icon,
             iconColor: config.iconColor,
-            color: "#000000", // Black text
-            background: "#ffffff", // White background
+            color: "#000000",
+            background: "#ffffff",
             timer: config.timer,
             timerProgressBar: true,
             showConfirmButton: false,
@@ -101,36 +101,35 @@ $(document).ready(function () {
     }
 
     // Optimized interval checking with reduced frequency
-    // let intervalId = setInterval(function () {
+    let intervalId = setInterval(function () {
+        $.get("/admin/absensi/check-jenis", function (res) {
+            const currentJenis = $("#jenisAbsen").text();
+            const newJenis = res.jenis.toUpperCase();
 
-    //     $.get("/admin/absensi/check-jenis", function (res) {
+            if (currentJenis !== newJenis) {
+                $("#jenisAbsen").text(newJenis);
+                $jenisInput.val(res.jenis);
+            }
+        }).fail(function () {
+            console.warn("Failed to check jenis absen");
+        });
+    }, 2000);
+
+    // let intervalId = setInterval(function () {
+    //     $.get(window.APP_URL + "/admin/absensi/check-jenis", function (res) {
+    //         console.log("Response server:", res); // debug
+
     //         const currentJenis = $("#jenisAbsen").text();
-    //         const newJenis = res.jenis.toUpperCase();
+    //         const newJenis = res.jenis ? res.jenis.toUpperCase() : "...";
 
     //         if (currentJenis !== newJenis) {
     //             $("#jenisAbsen").text(newJenis);
     //             $jenisInput.val(res.jenis);
     //         }
-    //     }).fail(function () {
-    //         console.warn("Failed to check jenis absen");
+    //     }).fail(function (xhr) {
+    //         console.warn("Failed to check jenis absen", xhr.status, xhr.responseText);
     //     });
     // }, 2000);
-
-    let intervalId = setInterval(function () {
-        $.get(window.APP_URL + "/admin/absensi/check-jenis", function (res) {
-            console.log("Response server:", res); // debug
-    
-            const currentJenis = $("#jenisAbsen").text();
-            const newJenis = res.jenis ? res.jenis.toUpperCase() : "...";
-    
-            if (currentJenis !== newJenis) {
-                $("#jenisAbsen").text(newJenis);
-                $jenisInput.val(res.jenis);
-            }
-        }).fail(function (xhr) {
-            console.warn("Failed to check jenis absen", xhr.status, xhr.responseText);
-        });
-    }, 2000);
 
     // Optimized form submission with faster processing
     $("#rfidForm").on("submit", function (e) {
@@ -157,52 +156,114 @@ $(document).ready(function () {
         $rfidInput.prop("readonly", true);
 
         $.ajax({
-            url: window.APP_URL + "/admin/absensi/store",
-            // url: "/admin/absensi/store",
+            // url: window.APP_URL + "/admin/absensi/store",
+            url: "/admin/absensi/store",
             method: "POST",
             data: data,
             timeout: 10000, // 10 second timeout
+            // success: function (res) {
+            //     $statusMessage
+            //         .text(res.message)
+            //         .removeClass("text-red-600")
+            //         .addClass("text-green-600 font-semibold");
+
+            //     showAlert("success", "Berhasil!", res.message);
+
+            //     if (res.success && res.data) {
+            //         const jenis = res.data.jenis || "absensi";
+            //         const status = res.data.status || "";
+            //         const ttsMessage = `Absensi ${jenis} berhasil, status ${status}`;
+            //         speakMessage(ttsMessage);
+            //     }
+
+            //     setTimeout(() => {
+            //         $statusMessage.text("").removeClass("text-green-600 font-semibold");
+            //     }, 1500);
+            // },0002749534
+
             success: function (res) {
                 $statusMessage
                     .text(res.message)
                     .removeClass("text-red-600")
                     .addClass("text-green-600 font-semibold");
-            
+
                 showAlert("success", "Berhasil!", res.message);
 
                 if (res.success && res.data) {
                     const jenis = res.data.jenis || "absensi";
-                    const status = res.data.status || "";
-                    const ttsMessage = `Absensi ${jenis} berhasil, status ${status}`;
-                    speakMessage(ttsMessage);
+                    const status = (res.data.status || "").toLowerCase();
+
+                    let beepType = 1;
+
+                    if (status.includes("masuk")) beepType = 1;
+                    else if (status.includes("pulang")) beepType = 2;
+                    else if (status.includes("sudah")) beepType = 3;
+
+                    const ttsMessage = `Absensi ${jenis} berhasil, status ${res.data.status}`;
+                    playBeepAndSpeak(beepType, ttsMessage);
                 }
-            
+
                 setTimeout(() => {
-                    $statusMessage.text("").removeClass("text-green-600 font-semibold");
+                    $statusMessage
+                        .text("")
+                        .removeClass("text-green-600 font-semibold");
                 }, 1500);
             },
-            
-            
+
+            // error: function (xhr) {
+            //     const msg =
+            //         xhr.responseJSON?.message || "Terjadi kesalahan sistem.";
+            //     $statusMessage
+            //         .text("❌ " + msg)
+            //         .removeClass("text-green-600")
+            //         .addClass("text-red-600 font-semibold");
+
+            //     showAlert("error", "Gagal!", msg);
+
+            //     // 🔊 Tambahkan suara untuk error juga
+            //     speakMessage(msg);
+
+            //     // Keep error message longer
+            //     setTimeout(() => {
+            //         $statusMessage
+            //             .text("")
+            //             .removeClass("text-red-600 font-semibold");
+            //     }, 2500);
+            // },
+
             error: function (xhr) {
                 const msg =
                     xhr.responseJSON?.message || "Terjadi kesalahan sistem.";
+
                 $statusMessage
                     .text("❌ " + msg)
                     .removeClass("text-green-600")
                     .addClass("text-red-600 font-semibold");
-            
-                showAlert("error", "Gagal!", msg);
-            
-                // 🔊 Tambahkan suara untuk error juga
-                speakMessage(msg);
-            
-                // Keep error message longer
+
+                // Tampilkan notifikasi visual
+                // Untuk kasus "sudah absen", gunakan ikon 'warning' atau 'info' agar tidak terlihat seperti error fatal
+                const alertType = msg.toLowerCase().includes("sudah")
+                    ? "warning"
+                    : "error";
+                showAlert(alertType, "Informasi", msg);
+
+                // --- PERUBAHAN DI SINI ---
+                // Periksa apakah pesan error mengandung kata "sudah"
+                if (msg.toLowerCase().includes("sudah")) {
+                    // Jika ya, mainkan bunyi untuk "sudah absen" (tipe 3)
+                    playBeepAndSpeak(3, msg);
+                } else {
+                    // Jika error lain, cukup ucapkan pesannya
+                    speakMessage(msg);
+                }
+
                 setTimeout(() => {
                     $statusMessage
                         .text("")
                         .removeClass("text-red-600 font-semibold");
                 }, 2500);
             },
+
             complete: function () {
                 // Immediate cleanup
                 $progressBar.removeClass("pulse-animation").css("width", "0%");
@@ -213,9 +274,8 @@ $(document).ready(function () {
         });
     });
 
-    // Optimized input handling with debouncing
     let typingTimer;
-    const TYPING_DELAY = 300; // Reduced delay for faster response
+    const TYPING_DELAY = 300;
 
     $rfidInput.on("input", function () {
         clearTimeout(typingTimer);
@@ -228,33 +288,73 @@ $(document).ready(function () {
         }
     });
 
-    // Clean up interval on page unload
     $(window).on("beforeunload", function () {
         if (intervalId) {
             clearInterval(intervalId);
         }
     });
 
+    // Suara voice Indonesia
     function speakMessage(message) {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel(); // hentikan suara sebelumnya
-    
+        if ("speechSynthesis" in window) {
+            window.speechSynthesis.cancel();
+
             const utterance = new SpeechSynthesisUtterance(message);
-            utterance.lang = 'id-ID';
-            utterance.rate = 1.1;   // jangan terlalu cepat
-            utterance.pitch = 1.1;  // sedikit lebih tinggi untuk suara lebih jelas
-    
-            // pilih voice Indonesia yang tersedia
+            utterance.lang = "id-ID";
+            utterance.rate = 1.1;
+            utterance.pitch = 1.1;
+
             const voices = window.speechSynthesis.getVoices();
-            const indonesianVoice = voices.find(voice => voice.lang === 'id-ID');
+            const indonesianVoice = voices.find(
+                (voice) => voice.lang === "id-ID"
+            );
             if (indonesianVoice) {
                 utterance.voice = indonesianVoice;
             }
-    
+
             window.speechSynthesis.speak(utterance);
         } else {
             console.warn("Browser tidak mendukung Speech Synthesis API");
         }
     }
-    
+
+    // Suara frekuensi DTMF
+    function playBeepAndSpeak(type, message) {
+        setTimeout(() => {
+            playDTMF(type);
+        }, 50);
+
+        setTimeout(() => {
+            speakMessage(message);
+        }, 300);
+    }
+
+    function playDTMF(key) {
+        const dtmfFreqs = {
+            // Nada untuk Absen MASUK (Tombol 1)
+            1: [697, 1209],
+
+            // Nada untuk Absen PULANG (Tombol 5)
+            2: [770, 1336],
+
+            // Nada untuk SUDAH ABSEN (Tombol 9)
+            3: [852, 1477],
+        };
+
+        const freqs = dtmfFreqs[key] || [1000];
+        if (!audioCtx) return;
+        if (audioCtx.state === "suspended") audioCtx.resume();
+
+        freqs.forEach((freq) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = "sine";
+            osc.frequency.value = freq;
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.25);
+        });
+    }
 });

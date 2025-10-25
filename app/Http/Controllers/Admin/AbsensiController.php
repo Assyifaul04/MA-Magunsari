@@ -11,6 +11,7 @@ use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\Pengaturan;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AbsensiController extends Controller
@@ -212,73 +213,73 @@ class AbsensiController extends Controller
         return view('admin.absensi.hari_ini', compact('absensi'));
     }
 
-    public function generate()
+    public function generateRange($tanggalMulai, $tanggalSelesai)
     {
-        $kemarin = Carbon::yesterday()->toDateString();
         $siswaList = Siswa::whereNotNull('rfid')->get();
 
-        foreach ($siswaList as $siswa) {
-            $cek = Absensi::where('siswa_id', $siswa->id)
-                ->whereDate('tanggal', $kemarin)
-                ->exists();
+        $periode = CarbonPeriod::create($tanggalMulai, $tanggalSelesai);
 
-            if (!$cek) {
-                Absensi::create([
-                    'siswa_id'   => $siswa->id,
-                    'jenis'      => null,
-                    'status'     => 'tidak hadir',
-                    'rfid'       => $siswa->rfid,
-                    'keterangan' => 'tidak melakukan absen',
-                    'tanggal'    => $kemarin,
-                    'jam'        => '00:00:00'
-                ]);
+        foreach ($periode as $tanggal) {
+            foreach ($siswaList as $siswa) {
+                $cek = Absensi::where('siswa_id', $siswa->id)
+                    ->whereDate('tanggal', $tanggal->toDateString())
+                    ->exists();
+
+                if (!$cek) {
+                    Absensi::create([
+                        'siswa_id'   => $siswa->id,
+                        'jenis'      => null,
+                        'status'     => 'tidak hadir',
+                        'rfid'       => $siswa->rfid,
+                        'keterangan' => 'tidak melakukan absen',
+                        'tanggal'    => $tanggal->toDateString(),
+                        'jam'        => '00:00:00'
+                    ]);
+                }
             }
         }
-
-        return response()->json([
-            'success' => true,
-            'message' => "Absensi 'tidak hadir' berhasil ditambahkan untuk siswa yang tidak absen kemarin.",
-        ]);
     }
+
 
 
     public function byRange(Request $request)
     {
-        $this->generate();
-
         $tanggalMulai   = $request->input('tanggal_mulai', now()->toDateString());
         $tanggalSelesai = $request->input('tanggal_selesai', now()->toDateString());
-
+    
+        // 🔥 Generate data "tidak hadir" untuk seluruh rentang tanggal
+        $this->generateRange($tanggalMulai, $tanggalSelesai);
+    
         $status = $request->status;
         if ($status === 'tidak_hadir') {
             $status = 'tidak hadir';
         }
-
+    
         $query = Absensi::with('siswa.kelas')
             ->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
-
+    
         if ($request->kelas) {
             $query->whereHas('siswa', fn($q) => $q->where('kelas_id', $request->kelas));
         }
-
+    
         if ($request->jenis) {
             $query->where('jenis', $request->jenis);
         }
-
+    
         if ($request->nama) {
             $query->whereHas('siswa', fn($q) => $q->where('nama', 'like', "%{$request->nama}%"));
         }
-
+    
         if ($status) {
             $query->where('status', $status);
         }
-
+    
         $absensi = $query->orderBy('tanggal', 'desc')->orderBy('jam', 'asc')->get();
-
         $totalData = $absensi->count();
-
+    
         return view('admin.absensi.by_range', compact('absensi', 'tanggalMulai', 'tanggalSelesai', 'totalData'));
     }
+    
 
     public function export(Request $request)
     {
