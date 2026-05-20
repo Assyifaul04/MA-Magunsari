@@ -4,8 +4,7 @@ $(document).ready(function () {
     const $statusMessage = $("#statusMessage");
     const $progressBar = $("#progressBar");
     const $loadingSpinner = $("#loadingSpinner");
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-
+    
     let isProcessing = false;
 
     $.ajaxSetup({
@@ -115,22 +114,6 @@ $(document).ready(function () {
         });
     }, 2000);
 
-    // let intervalId = setInterval(function () {
-    //     $.get(window.APP_URL + "/admin/absensi/check-jenis", function (res) {
-    //         console.log("Response server:", res); // debug
-
-    //         const currentJenis = $("#jenisAbsen").text();
-    //         const newJenis = res.jenis ? res.jenis.toUpperCase() : "...";
-
-    //         if (currentJenis !== newJenis) {
-    //             $("#jenisAbsen").text(newJenis);
-    //             $jenisInput.val(res.jenis);
-    //         }
-    //     }).fail(function (xhr) {
-    //         console.warn("Failed to check jenis absen", xhr.status, xhr.responseText);
-    //     });
-    // }, 2000);
-
     // Optimized form submission with faster processing
     $("#rfidForm").on("submit", function (e) {
         e.preventDefault();
@@ -156,30 +139,10 @@ $(document).ready(function () {
         $rfidInput.prop("readonly", true);
 
         $.ajax({
-            // url: window.APP_URL + "/admin/absensi/store",
             url: "/admin/absensi/store",
             method: "POST",
             data: data,
             timeout: 10000, // 10 second timeout
-            // success: function (res) {
-            //     $statusMessage
-            //         .text(res.message)
-            //         .removeClass("text-red-600")
-            //         .addClass("text-green-600 font-semibold");
-
-            //     showAlert("success", "Berhasil!", res.message);
-
-            //     if (res.success && res.data) {
-            //         const jenis = res.data.jenis || "absensi";
-            //         const status = res.data.status || "";
-            //         const ttsMessage = `Absensi ${jenis} berhasil, status ${status}`;
-            //         speakMessage(ttsMessage);
-            //     }
-
-            //     setTimeout(() => {
-            //         $statusMessage.text("").removeClass("text-green-600 font-semibold");
-            //     }, 1500);
-            // },0002749534
 
             success: function (res) {
                 $statusMessage
@@ -190,17 +153,15 @@ $(document).ready(function () {
                 showAlert("success", "Berhasil!", res.message);
 
                 if (res.success && res.data) {
-                    const jenis = res.data.jenis || "absensi";
                     const status = (res.data.status || "").toLowerCase();
+                    
+                    let ttsMessage = "oke"; // Default suara untuk hadir / terlambat / pulang
 
-                    let beepType = 1;
+                    if (status.includes("sudah")) {
+                        ttsMessage = "sudah absen";
+                    }
 
-                    if (status.includes("masuk")) beepType = 1;
-                    else if (status.includes("pulang")) beepType = 2;
-                    else if (status.includes("sudah")) beepType = 3;
-
-                    const ttsMessage = `Absensi ${jenis} berhasil, status ${res.data.status}`;
-                    playBeepAndSpeak(beepType, ttsMessage);
+                    speakMessage(ttsMessage);
                 }
 
                 setTimeout(() => {
@@ -209,27 +170,6 @@ $(document).ready(function () {
                         .removeClass("text-green-600 font-semibold");
                 }, 1500);
             },
-
-            // error: function (xhr) {
-            //     const msg =
-            //         xhr.responseJSON?.message || "Terjadi kesalahan sistem.";
-            //     $statusMessage
-            //         .text("❌ " + msg)
-            //         .removeClass("text-green-600")
-            //         .addClass("text-red-600 font-semibold");
-
-            //     showAlert("error", "Gagal!", msg);
-
-            //     // 🔊 Tambahkan suara untuk error juga
-            //     speakMessage(msg);
-
-            //     // Keep error message longer
-            //     setTimeout(() => {
-            //         $statusMessage
-            //             .text("")
-            //             .removeClass("text-red-600 font-semibold");
-            //     }, 2500);
-            // },
 
             error: function (xhr) {
                 const msg =
@@ -241,21 +181,19 @@ $(document).ready(function () {
                     .addClass("text-red-600 font-semibold");
 
                 // Tampilkan notifikasi visual
-                // Untuk kasus "sudah absen", gunakan ikon 'warning' atau 'info' agar tidak terlihat seperti error fatal
                 const alertType = msg.toLowerCase().includes("sudah")
                     ? "warning"
                     : "error";
                 showAlert(alertType, "Informasi", msg);
 
-                // --- PERUBAHAN DI SINI ---
-                // Periksa apakah pesan error mengandung kata "sudah"
+                // --- LOGIKA SUARA UNTUK ERROR ---
+                let ttsMessage = "gagal"; 
+
                 if (msg.toLowerCase().includes("sudah")) {
-                    // Jika ya, mainkan bunyi untuk "sudah absen" (tipe 3)
-                    playBeepAndSpeak(3, msg);
-                } else {
-                    // Jika error lain, cukup ucapkan pesannya
-                    speakMessage(msg);
+                    ttsMessage = "sudah absen";
                 }
+
+                speakMessage(ttsMessage);
 
                 setTimeout(() => {
                     $statusMessage
@@ -316,45 +254,5 @@ $(document).ready(function () {
         } else {
             console.warn("Browser tidak mendukung Speech Synthesis API");
         }
-    }
-
-    // Suara frekuensi DTMF
-    function playBeepAndSpeak(type, message) {
-        setTimeout(() => {
-            playDTMF(type);
-        }, 50);
-
-        setTimeout(() => {
-            speakMessage(message);
-        }, 300);
-    }
-
-    function playDTMF(key) {
-        const dtmfFreqs = {
-            // Nada untuk Absen MASUK (Tombol 1)
-            1: [697, 1209],
-
-            // Nada untuk Absen PULANG (Tombol 5)
-            2: [770, 1336],
-
-            // Nada untuk SUDAH ABSEN (Tombol 9)
-            3: [852, 1477],
-        };
-
-        const freqs = dtmfFreqs[key] || [1000];
-        if (!audioCtx) return;
-        if (audioCtx.state === "suspended") audioCtx.resume();
-
-        freqs.forEach((freq) => {
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = "sine";
-            osc.frequency.value = freq;
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.25);
-        });
     }
 });

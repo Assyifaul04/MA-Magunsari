@@ -19,5 +19,6 @@ class Absensi extends Model
     {
         return $this->belongsTo(Siswa::class);
     }
+
 }
 

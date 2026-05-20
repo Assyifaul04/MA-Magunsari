@@ -10,12 +10,24 @@ use App\Models\Absensi;
 use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\Pengaturan;
+use App\Models\TemplateWhatsapp;
+use App\Models\NotifikasiWhatsapp;
+use App\Services\WhatsappService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AbsensiController extends Controller
 {
+    protected $waService;
+
+    /**
+     * Inisialisasi WhatsappService melalui Constructor
+     */
+    public function __construct(WhatsappService $waService)
+    {
+        $this->waService = $waService;
+    }
 
     public function scan()
     {
@@ -29,7 +41,7 @@ class AbsensiController extends Controller
 
         $absensi = Absensi::with(['siswa.kelas'])
             ->where('jenis', 'masuk')
-            ->whereDate('tanggal', Carbon::today()->toDateString()) // filter hari ini
+            ->whereDate('tanggal', Carbon::today()->toDateString())
             ->orderBy('jam', 'asc')
             ->get();
 
@@ -60,7 +72,9 @@ class AbsensiController extends Controller
         return view('admin.absensi.izin', compact('absensi'));
     }
 
-    // Proses absensi RFID
+    /**
+     * Proses absensi RFID & Pengiriman WhatsApp Otomatis
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -70,7 +84,10 @@ class AbsensiController extends Controller
             'status' => 'nullable|in:hadir,terlambat,pulang,izin,sakit,tidak hadir'
         ]);
 
-        $siswa = Siswa::where('rfid', $request->rfid)->first();
+        $siswa = Siswa::with([
+            'kelas',
+            'orangTua'
+        ])->where('rfid', $request->rfid)->first();
 
         if (!$siswa) {
             return response()->json([
@@ -79,7 +96,15 @@ class AbsensiController extends Controller
             ], 404);
         }
 
+        if (!$siswa->orangTua) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Siswa belum memiliki data orang tua.'
+            ], 400);
+        }
+
         $now = Carbon::now();
+
         $pengaturan = Pengaturan::firstOrCreate(
             ['tanggal' => $now->toDateString()],
             [
@@ -138,8 +163,6 @@ class AbsensiController extends Controller
             $status = 'izin';
         }
 
-
-
         $absensi = Absensi::create([
             'siswa_id'   => $siswa->id,
             'jenis'      => $jenis,
@@ -150,12 +173,63 @@ class AbsensiController extends Controller
             'jam'        => $now->toTimeString(),
         ]);
 
+        // Kirim Notifikasi WhatsApp
+        $this->kirimNotifikasiWA($siswa, $absensi, $jenis, $status, $now);
 
         return response()->json([
             'success' => true,
             'message' => "Absensi {$jenis} berhasil dicatat dengan status {$status}.",
             'data' => $absensi->load('siswa.kelas')
         ]);
+    }
+
+    /**
+     * Logic Pengiriman Pesan WA
+     */
+    private function kirimNotifikasiWA($siswa, $absensi, $jenis, $status, $now)
+    {
+        $template = TemplateWhatsapp::where('jenis', $jenis)
+            ->where('is_active', true)
+            ->first();
+
+        if ($template && $siswa->orangTua && $siswa->orangTua->nomor_whatsapp) {
+            $pesan = str_replace(
+                ['{nama_siswa}', '{kelas}', '{tanggal}', '{jam}', '{status}'],
+                [
+                    $siswa->nama,
+                    $siswa->kelas->nama ?? '-',
+                    $now->format('d-m-Y'),
+                    $now->format('H:i:s'),
+                    $status
+                ],
+                $template->isi_pesan
+            );
+
+            try {
+                $response = $this->waService->send($siswa->orangTua->nomor_whatsapp, $pesan);
+
+                NotifikasiWhatsapp::create([
+                    'absensi_id' => $absensi->id,
+                    'siswa_id' => $siswa->id,
+                    'orang_tua_id' => $siswa->orang_tua_id,
+                    'nomor_whatsapp' => $siswa->orangTua->nomor_whatsapp,
+                    'pesan' => $pesan,
+                    'status' => 'terkirim',
+                    'response_gateway' => json_encode($response),
+                    'dikirim_pada' => now(),
+                ]);
+            } catch (\Exception $e) {
+                NotifikasiWhatsapp::create([
+                    'absensi_id' => $absensi->id,
+                    'siswa_id' => $siswa->id,
+                    'orang_tua_id' => $siswa->orang_tua_id,
+                    'nomor_whatsapp' => $siswa->orangTua->nomor_whatsapp,
+                    'pesan' => $pesan,
+                    'status' => 'gagal',
+                    'response_gateway' => $e->getMessage(),
+                ]);
+            }
+        }
     }
 
     public function checkJenis()
@@ -191,15 +265,14 @@ class AbsensiController extends Controller
         }
 
         return response()->json([
-            'jenis'          => $jenis,
-            'status'         => $status,      // tambahkan status
+            'jenis' => $jenis,
+            'status' => $status,
             'jam_masuk_awal' => $jamMasukAwal,
             'jam_masuk_akhir' => $jamMasukAkhir,
-            'jam_pulang'     => $jamPulang,
-            'now'            => $current
+            'jam_pulang' => $jamPulang,
+            'now' => $current
         ]);
     }
-
 
     public function hariIni()
     {
@@ -216,7 +289,6 @@ class AbsensiController extends Controller
     public function generateRange($tanggalMulai, $tanggalSelesai)
     {
         $siswaList = Siswa::whereNotNull('rfid')->get();
-
         $periode = CarbonPeriod::create($tanggalMulai, $tanggalSelesai);
 
         foreach ($periode as $tanggal) {
@@ -240,52 +312,56 @@ class AbsensiController extends Controller
         }
     }
 
-
-
     public function byRange(Request $request)
     {
         $tanggalMulai   = $request->input('tanggal_mulai', now()->toDateString());
         $tanggalSelesai = $request->input('tanggal_selesai', now()->toDateString());
-    
-        // 🔥 Generate data "tidak hadir" untuk seluruh rentang tanggal
+
         $this->generateRange($tanggalMulai, $tanggalSelesai);
-    
+
         $status = $request->status;
         if ($status === 'tidak_hadir') {
             $status = 'tidak hadir';
         }
-    
+
         $query = Absensi::with('siswa.kelas')
             ->whereBetween('tanggal', [$tanggalMulai, $tanggalSelesai]);
-    
+
         if ($request->kelas) {
             $query->whereHas('siswa', fn($q) => $q->where('kelas_id', $request->kelas));
         }
-    
+
         if ($request->jenis) {
             $query->where('jenis', $request->jenis);
         }
-    
+
         if ($request->nama) {
             $query->whereHas('siswa', fn($q) => $q->where('nama', 'like', "%{$request->nama}%"));
         }
-    
+
         if ($status) {
             $query->where('status', $status);
         }
-    
-        $absensi = $query->orderBy('tanggal', 'desc')->orderBy('jam', 'asc')->get();
+
+        $absensi = $query
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('jam', 'asc')
+            ->get();
+
         $totalData = $absensi->count();
-    
-        return view('admin.absensi.by_range', compact('absensi', 'tanggalMulai', 'tanggalSelesai', 'totalData'));
+
+        return view('admin.absensi.by_range', compact(
+            'absensi',
+            'tanggalMulai',
+            'tanggalSelesai',
+            'totalData'
+        ));
     }
-    
 
     public function export(Request $request)
     {
         return Excel::download(new AbsensiExport($request), 'admin.absensi.xlsx');
     }
-
 
     public function print(Request $request)
     {
@@ -316,11 +392,16 @@ class AbsensiController extends Controller
             $query->where('status', $status);
         }
 
-        $absensi = $query->orderBy('tanggal', 'desc')
+        $absensi = $query
+            ->orderBy('tanggal', 'desc')
             ->orderBy('jam', 'asc')
             ->get();
 
-        return view('admin.absensi.print', compact('absensi', 'tanggalMulai', 'tanggalSelesai'));
+        return view('admin.absensi.print', compact(
+            'absensi',
+            'tanggalMulai',
+            'tanggalSelesai'
+        ));
     }
 
     public function rekapBulanan(Request $request)
@@ -333,26 +414,21 @@ class AbsensiController extends Controller
         $rekap = [];
         $jumlahHari = null;
 
-        // hanya jalan kalau tahun, bulan, kelas, dan siswa dipilih
         if ($tahun && $bulan && $kelas && $siswaId) {
-            // Jumlah hari dalam bulan
             $jumlahHari = Carbon::createFromDate($tahun, $bulan)->daysInMonth;
 
-            // Query siswa (hanya siswa yang dipilih)
             $siswaList = Siswa::whereNotNull('rfid')
                 ->where('kelas_id', $kelas)
                 ->where('id', $siswaId)
                 ->with('kelas')
                 ->get();
 
-            // Ambil absensi sesuai bulan dan tahun
             $absensi = Absensi::with('siswa')
                 ->whereYear('tanggal', $tahun)
                 ->whereMonth('tanggal', $bulan)
                 ->get()
                 ->groupBy('siswa_id');
 
-            // Susun data per siswa dan per tanggal
             foreach ($siswaList as $siswa) {
                 $rekap[$siswa->id] = [
                     'siswa' => $siswa,
@@ -361,9 +437,7 @@ class AbsensiController extends Controller
 
                 for ($hari = 1; $hari <= $jumlahHari; $hari++) {
                     $tanggal = Carbon::createFromDate($tahun, $bulan, $hari)->toDateString();
-
-                    $absenHari = optional($absensi[$siswa->id] ?? collect())
-                        ->firstWhere('tanggal', $tanggal);
+                    $absenHari = optional($absensi[$siswa->id] ?? collect())->firstWhere('tanggal', $tanggal);
 
                     if ($absenHari) {
                         if (in_array($absenHari->status, ['hadir', 'terlambat'])) {
@@ -402,6 +476,9 @@ class AbsensiController extends Controller
         $kelas   = $request->input('kelas');
         $siswaId = $request->input('siswa');
 
-        return Excel::download(new RekapBulananExport($tahun, $bulan, $kelas, $siswaId), 'rekap_bulanan.xlsx');
+        return Excel::download(
+            new RekapBulananExport($tahun, $bulan, $kelas, $siswaId),
+            'rekap_bulanan.xlsx'
+        );
     }
 }

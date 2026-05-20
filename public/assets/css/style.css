@@ -1231,3 +1231,51 @@ h6 {
   font-size: 13px;
   color: #012970;
 }
+
+/* SHADCN SIDEBAR */
+
+.shadcn-sidebar {
+  background: #0f172a !important;
+  border-right: 1px solid #1e293b;
+}
+
+/* main link */
+.shadcn-link {
+  background: transparent !important;
+  color: #cbd5e1 !important;
+  border-radius: 10px;
+  margin: 4px 8px;
+  padding: 10px 12px;
+}
+
+.shadcn-link:hover {
+  background: #1e293b !important;
+  color: #fff !important;
+}
+
+.nav-link:not(.collapsed).shadcn-link {
+  background: #3b82f6 !important;
+  color: #fff !important;
+}
+
+/* sub */
+.shadcn-sub {
+  padding-left: 10px;
+}
+
+.shadcn-sublink {
+  color: #94a3b8 !important;
+  border-radius: 8px;
+  margin: 2px 10px;
+  padding: 8px 12px;
+}
+
+.shadcn-sublink:hover {
+  background: #1e293b;
+  color: #fff !important;
+}
+
+.shadcn-sublink.active {
+  background: #2563eb;
+  color: #fff !important;
+}

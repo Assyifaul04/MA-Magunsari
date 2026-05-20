@@ -1,4 +1,5 @@
 $(document).ready(function () {
+
     // ================= Configuration =================
     const CONFIG = {
         RFID_MIN_LENGTH: 8,
@@ -6,6 +7,10 @@ $(document).ready(function () {
         BUTTON_LOADING_DELAY: 300,
         SUCCESS_TIMER: 1500
     };
+
+    // ================= Flag & Debounce Handle =================
+    let isSubmitting = false;
+    let rfidDebounceTimer = null; // simpan timer agar bisa dibatalkan
 
     // ================= Utility Functions =================
     function isValidElement(element) {
@@ -15,184 +20,244 @@ $(document).ready(function () {
     function safeGetData(element, key, defaultValue = null) {
         if (!isValidElement(element)) return defaultValue;
         const value = element.data(key);
-        return value !== undefined && value !== null ? value : defaultValue;
+        return (value !== undefined && value !== null) ? value : defaultValue;
     }
 
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-
-    // ================= Spinner Functions =================
-    function showSpinner() {
-        const spinner = $("#loading-spinner");
-        if (isValidElement(spinner)) {
-            spinner.removeClass("d-none");
-        }
-    }
-    
-    function hideSpinner() {
-        const spinner = $("#loading-spinner");
-        if (isValidElement(spinner)) {
-            spinner.addClass("d-none");
+    // Batalkan debounce RFID yang sedang menunggu
+    function cancelRfidDebounce() {
+        if (rfidDebounceTimer) {
+            clearTimeout(rfidDebounceTimer);
+            rfidDebounceTimer = null;
         }
     }
 
-    // ================= Button Loading Functions =================
+    // ================= Button Loading =================
     function showButtonLoading(button, originalContent) {
-        if (!isValidElement(button)) {
-            console.warn('Button element not found for loading state');
-            return false;
-        }
-        
-        try {
-            button.prop('disabled', true);
-            button.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
-            button.data('original-content', originalContent || button.text());
-            return true;
-        } catch (error) {
-            console.error('Error showing button loading:', error);
-            return false;
-        }
+        if (!isValidElement(button)) return false;
+        button.prop('disabled', true);
+        button.data('original-content', originalContent || button.html());
+        button.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+        return true;
     }
 
     function hideButtonLoading(button) {
-        if (!isValidElement(button)) {
-            console.warn('Button element not found for hiding loading state');
-            return false;
-        }
-
-        try {
-            button.prop('disabled', false);
-            const originalContent = button.data('original-content');
-            if (originalContent) {
-                button.html(originalContent);
-            }
-            return true;
-        } catch (error) {
-            console.error('Error hiding button loading:', error);
-            return false;
-        }
+        if (!isValidElement(button)) return false;
+        button.prop('disabled', false);
+        const orig = button.data('original-content');
+        if (orig) button.html(orig);
+        return true;
     }
 
     // ================= AJAX Error Handler =================
     function handleAjaxError(xhr, button = null) {
         if (button) hideButtonLoading(button);
-        
         let message = "Terjadi kesalahan pada sistem";
-        
         try {
             if (xhr.status === 422 && xhr.responseJSON?.errors) {
-                const errors = xhr.responseJSON.errors;
-                message = Object.values(errors)
-                    .flat()
-                    .filter(error => error && typeof error === 'string')
-                    .join("<br>");
+                message = Object.values(xhr.responseJSON.errors).flat().join("<br>");
             } else if (xhr.responseJSON?.message) {
                 message = xhr.responseJSON.message;
             } else if (xhr.status === 0) {
-                message = "Koneksi terputus. Periksa koneksi internet Anda.";
+                message = "Koneksi terputus.";
             } else if (xhr.status === 404) {
                 message = "Halaman tidak ditemukan.";
             } else if (xhr.status >= 500) {
-                message = "Terjadi kesalahan server. Silakan coba lagi.";
+                message = "Terjadi kesalahan server.";
             }
-        } catch (error) {
-            console.error('Error parsing AJAX response:', error);
-        }
-
-        Swal.fire({
-            title: 'Error!',
-            html: message,
-            icon: 'error',
-            confirmButtonText: 'OK'
-        });
+        } catch (e) { console.error(e); }
+        Swal.fire({ title: 'Error!', html: message, icon: 'error', confirmButtonText: 'OK' });
     }
 
     // ================= Success Handler =================
     function handleSuccess(response, button = null, shouldReload = true) {
         if (button) hideButtonLoading(button);
-        
-        const message = response?.message || "Operasi berhasil!";
-        
         Swal.fire({
             title: 'Berhasil!',
-            text: message,
+            text: response?.message || "Operasi berhasil!",
             icon: 'success',
             timer: CONFIG.SUCCESS_TIMER,
             showConfirmButton: false
-        }).then(() => {
-            if (shouldReload) {
-                window.location.reload();
-            }
-        });
+        }).then(() => { if (shouldReload) window.location.reload(); });
     }
 
     // ================= Form Validation =================
     function validateForm(form) {
         if (!isValidElement(form)) return false;
-        
-        // Remove previous validation feedback
         form.find('.is-invalid').removeClass('is-invalid');
         form.find('.invalid-feedback').remove();
-        
         let isValid = true;
-        
-        // Check required fields
-        form.find('[required]').each(function() {
+        form.find('[required]').each(function () {
             const field = $(this);
-            const value = field.val()?.toString().trim();
-            
-            if (!value || value === '') {
+            if (!field.val()?.toString().trim()) {
                 field.addClass('is-invalid');
                 field.after('<div class="invalid-feedback">Field ini wajib diisi</div>');
                 isValid = false;
             }
         });
-        
         return isValid;
     }
 
-    // ================= Tambah & Edit Siswa =================
-    $("#addSiswaForm, #editSiswaForm").on("submit", function (e) {
-        e.preventDefault();
-        
-        const form = $(this);
-        if (!validateForm(form)) return;
-        
-        const submitButton = form.find('button[type="submit"]');
-        const originalContent = submitButton.html();
-        const actionUrl = form.attr("action");
-        
-        if (!actionUrl) {
+    // ================= Scan RFID =================
+    function doScanRfid() {
+        // Batalkan debounce yang masih pending agar tidak terpicu dua kali
+        cancelRfidDebounce();
+
+        if (isSubmitting) return;
+
+        const form = $("#scanRfidForm");
+        if (!isValidElement(form)) return;
+
+        const rfidInput = form.find("#rfid");
+        const rfidValue = rfidInput.val()?.toString().trim();
+        const siswaId   = form.find("#siswa_id").val();
+
+        if (!rfidValue || rfidValue.length < CONFIG.RFID_MIN_LENGTH) {
             Swal.fire({
                 title: 'Error!',
-                text: 'Form action URL tidak ditemukan',
+                text: `RFID minimal ${CONFIG.RFID_MIN_LENGTH} karakter`,
+                icon: 'error'
+            });
+            rfidInput.focus();
+            return;
+        }
+
+        if (!siswaId) {
+            Swal.fire({
+                title: 'Error!',
+                text: 'ID siswa tidak ditemukan. Tutup modal dan coba lagi.',
                 icon: 'error'
             });
             return;
         }
-        
-        if (!showButtonLoading(submitButton, originalContent)) return;
+
+        const actionUrl = form.attr("action");
+        if (!actionUrl) {
+            Swal.fire({ title: 'Error!', text: 'URL scan tidak ditemukan', icon: 'error' });
+            return;
+        }
+
+        isSubmitting = true;
+        const submitBtn = form.find('button[type="submit"]');
+        showButtonLoading(submitBtn, submitBtn.html());
 
         $.ajax({
             url: actionUrl,
             type: "POST",
             data: form.serialize(),
-            timeout: 30000, // 30 second timeout
+            timeout: 30000,
             success: function (response) {
-                form.closest(".modal").modal("hide");
-                handleSuccess(response, submitButton);
+                isSubmitting = false;
+                hideButtonLoading(submitBtn);
+
+                if (response?.success) {
+                    // Update RFID cell di tabel
+                    const rfidCell = $("#rfid-" + response.siswa_id);
+                    if (isValidElement(rfidCell)) {
+                        rfidCell.html('<code class="text-muted">' + response.rfid + '</code>');
+                        const statusCell = rfidCell.closest('tr').find('.status-cell');
+                        if (isValidElement(statusCell)) {
+                            if (response.status === 'aktif') {
+                                statusCell.html('<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Aktif</span>');
+                            } else {
+                                statusCell.html('<span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Pending</span>');
+                            }
+                        }
+                    }
+
+                    $("#scanRfidModal").modal("hide");
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: response.message || 'RFID berhasil disimpan',
+                        icon: 'success',
+                        timer: CONFIG.SUCCESS_TIMER,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Warning!',
+                        text: response?.message || 'Response tidak valid',
+                        icon: 'warning'
+                    });
+                }
             },
             error: function (xhr) {
-                handleAjaxError(xhr, submitButton);
+                isSubmitting = false;
+                hideButtonLoading(submitBtn);
+                handleAjaxError(xhr);
+                rfidInput.val("").focus();
+            }
+        });
+    }
+
+    // Submit manual via tombol
+    $("#scanRfidForm").on("submit", function (e) {
+        e.preventDefault();
+        doScanRfid();
+    });
+
+    // Auto-submit via debounce saat user mengetik/scan
+    $(document).on("input", "#rfid", function () {
+        if (isSubmitting) return;
+
+        const val = $(this).val()?.toString().trim() || "";
+
+        // Batalkan timer lama sebelum buat yang baru
+        cancelRfidDebounce();
+
+        if (val.length >= CONFIG.RFID_MIN_LENGTH) {
+            rfidDebounceTimer = setTimeout(function () {
+                rfidDebounceTimer = null;
+                doScanRfid();
+            }, CONFIG.TYPING_DELAY);
+        }
+    });
+
+    // Set data siswa saat modal akan muncul
+    $('#scanRfidModal').on('show.bs.modal', function (event) {
+        // Reset semua state
+        cancelRfidDebounce();
+        isSubmitting = false;
+
+        const trigger = $(event.relatedTarget);
+        if (isValidElement(trigger)) {
+            $(this).find('#siswa_id').val(safeGetData(trigger, 'siswa-id') || '');
+            $(this).find('.nama-siswa').text(safeGetData(trigger, 'siswa-nama', 'Nama tidak tersedia'));
+        }
+        $(this).find('#rfid').val('');
+    });
+
+    // Focus input RFID setelah modal tampil
+    $('#scanRfidModal').on('shown.bs.modal', function () {
+        $(this).find('#rfid').focus();
+    });
+
+    // ================= Tambah & Edit Siswa =================
+    $("#addSiswaForm, #editSiswaForm").on("submit", function (e) {
+        e.preventDefault();
+        const form = $(this);
+        if (!validateForm(form)) return;
+
+        const submitBtn = form.find('button[type="submit"]');
+        const actionUrl = form.attr("action");
+
+        if (!actionUrl) {
+            Swal.fire({ title: 'Error!', text: 'Form action URL tidak ditemukan', icon: 'error' });
+            return;
+        }
+
+        showButtonLoading(submitBtn, submitBtn.html());
+
+        $.ajax({
+            url: actionUrl,
+            type: "POST",
+            data: form.serialize(),
+            timeout: 30000,
+            success: function (response) {
+                form.closest(".modal").modal("hide");
+                handleSuccess(response, submitBtn);
+            },
+            error: function (xhr) {
+                handleAjaxError(xhr, submitBtn);
             }
         });
     });
@@ -200,84 +265,58 @@ $(document).ready(function () {
     // ================= Tombol Edit =================
     $(document).on("click", ".editSiswaBtn", function (e) {
         e.preventDefault();
-        
         const button = $(this);
-        const originalContent = button.html();
-        
-        // Get data with validation
-        const id = safeGetData(button, "id");
-        const nisn = safeGetData(button, "nisn", "");
-        const nama = safeGetData(button, "nama", "");
-        const kelas = safeGetData(button, "kelas", "");
-        const rfid = safeGetData(button, "rfid", "");
-        const status = safeGetData(button, "status", "");
+
+        const id         = safeGetData(button, "id");
+        const nisn       = safeGetData(button, "nisn", "");
+        const nama       = safeGetData(button, "nama", "");
+        const kelas      = safeGetData(button, "kelas", "");
+        const orangTuaId = safeGetData(button, "orangTuaId", "");
+        const rfid       = safeGetData(button, "rfid", "");
+        const status     = safeGetData(button, "status", "");
+        const updateUrl  = safeGetData(button, "updateUrl"); // Menangkap update URL dari blade
 
         if (!id) {
-            Swal.fire({
-                title: 'Error!',
-                text: 'ID siswa tidak ditemukan',
-                icon: 'error'
-            });
+            Swal.fire({ title: 'Error!', text: 'ID siswa tidak ditemukan', icon: 'error' });
             return;
         }
 
-        if (!showButtonLoading(button, originalContent)) return;
+        showButtonLoading(button, button.html());
 
-        // Simulate loading time for better UX
-        setTimeout(function() {
-            try {
-                const editForm = $("#editSiswaForm");
-                const editModal = $("#editSiswaModal");
-                
-                if (!isValidElement(editForm) || !isValidElement(editModal)) {
-                    hideButtonLoading(button);
-                    Swal.fire({
-                        title: 'Error!',
-                        text: 'Form edit tidak ditemukan',
-                        icon: 'error'
-                    });
-                    return;
-                }
+        setTimeout(function () {
+            const editForm  = $("#editSiswaForm");
+            const editModal = $("#editSiswaModal");
 
-                // Set form action dinamis
-                editForm.attr("action", "/siswa/" + id);
-
-                // Set field form dengan validasi
-                $("#edit_siswa_id").val(id);
-                $("#edit_nisn").val(nisn);
-                $("#edit_nama").val(nama);
-                $("#edit_kelas_id").val(kelas);
-                $("#edit_rfid").val(rfid);
-                $("#edit_status").val(status);
-
+            if (!isValidElement(editForm) || !isValidElement(editModal)) {
                 hideButtonLoading(button);
-                editModal.modal("show");
-            } catch (error) {
-                hideButtonLoading(button);
-                console.error('Error in edit form:', error);
-                Swal.fire({
-                    title: 'Error!',
-                    text: 'Terjadi kesalahan saat membuka form edit',
-                    icon: 'error'
-                });
+                Swal.fire({ title: 'Error!', text: 'Form edit tidak ditemukan', icon: 'error' });
+                return;
             }
+
+            // Memasukkan URL yang benar ke dalam atribut action form
+            editForm.attr("action", updateUrl);
+            
+            $("#edit_siswa_id").val(id);
+            $("#edit_nisn").val(nisn);
+            $("#edit_nama").val(nama);
+            $("#edit_kelas_id").val(kelas);
+            $("#edit_orang_tua_id").val(orangTuaId);
+            $("#edit_rfid").val(rfid === 'null' || rfid === null ? '' : rfid);
+            $("#edit_status").val(status);
+
+            hideButtonLoading(button);
+            editModal.modal("show");
         }, CONFIG.BUTTON_LOADING_DELAY);
     });
 
-    // ================= Hapus Siswa =================
+    // ================= Tombol Hapus =================
     $(document).on("click", ".deleteSiswaBtn", function (e) {
         e.preventDefault();
-        
         const button = $(this);
-        const form = button.closest('form');
-        const originalContent = button.html();
+        const form   = button.closest('form');
 
         if (!isValidElement(form)) {
-            Swal.fire({
-                title: 'Error!',
-                text: 'Form delete tidak ditemukan',
-                icon: 'error'
-            });
+            Swal.fire({ title: 'Error!', text: 'Form delete tidak ditemukan', icon: 'error' });
             return;
         }
 
@@ -292,217 +331,40 @@ $(document).ready(function () {
             cancelButtonText: 'Batal',
             reverseButtons: true
         }).then((result) => {
-            if (result.isConfirmed) {
-                if (!showButtonLoading(button, originalContent)) return;
-                
-                $.ajax({
-                    url: form.attr("action"),
-                    type: "POST",
-                    data: form.serialize(),
-                    timeout: 30000,
-                    success: function (response) {
-                        handleSuccess(response, button);
-                    },
-                    error: function (xhr) {
-                        handleAjaxError(xhr, button);
-                    }
-                });
-            }
+            if (!result.isConfirmed) return;
+            showButtonLoading(button, button.html());
+            $.ajax({
+                url: form.attr("action"),
+                type: "POST",
+                data: form.serialize(),
+                timeout: 30000,
+                success: function (response) { handleSuccess(response, button); },
+                error:   function (xhr)      { handleAjaxError(xhr, button); }
+            });
         });
     });
 
-    // ================= Scan RFID Form Submit =================
-    $("#scanRfidForm").on("submit", function (e) {
-        e.preventDefault();
-        
-        // Prevent double submission
-        if (isSubmitting) {
-            console.log('Form already submitting, ignoring...');
-            return false;
-        }
-        
-        const form = $(this);
-        const rfidInput = form.find("#rfid");
-        const rfidValue = rfidInput.val()?.toString().trim();
-        
-        if (!rfidValue || rfidValue.length < CONFIG.RFID_MIN_LENGTH) {
-            Swal.fire({
-                title: 'Error!',
-                text: `RFID minimal ${CONFIG.RFID_MIN_LENGTH} karakter`,
-                icon: 'error'
-            });
-            rfidInput.focus();
-            isSubmitting = false; // Reset flag
-            return false;
-        }
-        
-        const submitButton = form.find('button[type="submit"]');
-        const originalContent = submitButton.html();
-        const actionUrl = form.attr("action");
-
-        if (!actionUrl) {
-            Swal.fire({
-                title: 'Error!',
-                text: 'URL scan tidak ditemukan',
-                icon: 'error'
-            });
-            isSubmitting = false; // Reset flag
-            return false;
-        }
-
-        if (!showButtonLoading(submitButton, originalContent)) {
-            isSubmitting = false; // Reset flag
-            return false;
-        }
-
-        $.ajax({
-            url: actionUrl,
-            type: "POST",
-            data: form.serialize(),
-            timeout: 30000,
-            success: function (response) {
-                isSubmitting = false; // Reset flag
-                hideButtonLoading(submitButton);
-                
-                if (response?.success) {
-                    const modal = $("#scanRfidModal");
-                    if (isValidElement(modal)) {
-                        modal.modal("hide");
-                    }
-                    handleSuccess(response, null, true);
-                } else {
-                    Swal.fire({
-                        title: 'Warning!',
-                        text: response?.message || 'Response tidak valid',
-                        icon: 'warning'
-                    });
-                }
-            },
-            error: function (xhr) {
-                isSubmitting = false; // Reset flag
-                hideButtonLoading(submitButton);
-                handleAjaxError(xhr);
-                
-                // Clear and focus RFID input on error
-                if (isValidElement(rfidInput)) {
-                    rfidInput.val("").focus();
-                }
-            }
-        });
-    });
-
-    // ================= Auto Submit RFID on Input =================
-    let isSubmitting = false; // Flag to prevent double submission
-    
-    const debouncedRfidSubmit = debounce(function(rfidValue) {
-        if (rfidValue.length >= CONFIG.RFID_MIN_LENGTH && !isSubmitting) {
-            const form = $("#scanRfidForm");
-            if (isValidElement(form)) {
-                isSubmitting = true;
-                form.submit();
-            }
-        }
-    }, CONFIG.TYPING_DELAY);
-
-    $(document).on("input", "#rfid", function () {
-        const uid = $(this).val()?.toString().trim() || "";
-        if (!isSubmitting) { // Only trigger if not already submitting
-            debouncedRfidSubmit(uid);
-        }
-    });
-
-    // ================= Set Nama Siswa di Modal Scan =================
-    $('#scanRfidModal').on('show.bs.modal', function (event) {
-        try {
-            // Reset submission flag when modal opens
-            isSubmitting = false;
-            
-            const button = $(event.relatedTarget);
-            const modal = $(this);
-            
-            if (isValidElement(button)) {
-                const siswaId = safeGetData(button, 'siswa-id');
-                const siswaNama = safeGetData(button, 'siswa-nama', 'Nama tidak tersedia');
-
-                if (siswaId) {
-                    modal.find('#siswa_id').val(siswaId);
-                    modal.find('.nama-siswa').text(siswaNama);
-                }
-            }
-            
-            // Clear and focus RFID input
-            const rfidInput = modal.find('#rfid');
-            if (isValidElement(rfidInput)) {
-                rfidInput.val('').focus();
-            }
-        } catch (error) {
-            console.error('Error setting up scan modal:', error);
-        }
-    });
-
-    // ================= Reset Modal Forms =================
+    // ================= Reset Modal =================
     $('.modal').on('hidden.bs.modal', function () {
-        try {
-            // Reset submission flag when modal closes
-            if ($(this).attr('id') === 'scanRfidModal') {
-                isSubmitting = false;
-            }
-            
-            const modal = $(this);
-            const forms = modal.find('form');
-            
-            // Reset forms
-            forms.each(function() {
-                if (this.reset) {
-                    this.reset();
-                }
-            });
-            
-            // Clear validation states
-            modal.find('.is-invalid').removeClass('is-invalid');
-            modal.find('.invalid-feedback').remove();
-            
-            // Clear any button loading states
-            modal.find('button').each(function() {
-                const button = $(this);
-                if (button.prop('disabled') && button.data('original-content')) {
-                    hideButtonLoading(button);
-                }
-            });
-        } catch (error) {
-            console.error('Error resetting modal:', error);
+        if ($(this).attr('id') === 'scanRfidModal') {
+            cancelRfidDebounce(); // batalkan debounce pending saat modal ditutup
+            isSubmitting = false;
         }
-    });
-
-    // ================= Global AJAX Setup =================
-    $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            // Add CSRF token if available
-            const token = $('meta[name="csrf-token"]').attr('content');
-            if (token) {
-                xhr.setRequestHeader('X-CSRF-TOKEN', token);
-            }
-        },
-        error: function(xhr, textStatus, errorThrown) {
-            if (textStatus === 'timeout') {
-                Swal.fire({
-                    title: 'Timeout!',
-                    text: 'Request timeout. Silakan coba lagi.',
-                    icon: 'warning'
-                });
-            }
-        }
-    });
-
-    // ================= Global Error Handler =================
-    window.onerror = function(msg, url, lineNo, columnNo, error) {
-        console.error('Global error:', {
-            message: msg,
-            source: url,
-            line: lineNo,
-            column: columnNo,
-            error: error
+        $(this).find('form').each(function () { if (this.reset) this.reset(); });
+        $(this).find('.is-invalid').removeClass('is-invalid');
+        $(this).find('.invalid-feedback').remove();
+        $(this).find('button').each(function () {
+            const btn = $(this);
+            if (btn.prop('disabled') && btn.data('original-content')) hideButtonLoading(btn);
         });
-        return false;
-    };
+    });
+
+    // ================= AJAX Setup =================
+    $.ajaxSetup({
+        beforeSend: function (xhr) {
+            const token = $('meta[name="csrf-token"]').attr('content');
+            if (token) xhr.setRequestHeader('X-CSRF-TOKEN', token);
+        }
+    });
+
 });

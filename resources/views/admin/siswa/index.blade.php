@@ -10,7 +10,7 @@
                 <li class="breadcrumb-item active">Data Siswa</li>
             </ol>
         </nav>
-    </div><!-- End Page Title -->
+    </div>
 
     <section class="section">
         <div class="row">
@@ -29,13 +29,10 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <h5 class="card-title">Management Data Siswa</h5>
                             <div class="d-flex gap-2">
-                                <!-- Tombol Tambah Siswa -->
                                 <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                                     data-bs-target="#tambahSiswaModal">
                                     <i class="bi bi-plus-circle me-1"></i> Tambah Siswa
                                 </button>
-
-                                <!-- Tombol Import Excel -->
                                 <button type="button" class="btn btn-warning" data-bs-toggle="modal"
                                     data-bs-target="#importSiswaModal">
                                     <i class="bi bi-upload me-1"></i> Import Excel
@@ -43,7 +40,6 @@
                             </div>
                         </div>
 
-                        <!-- Input Search -->
                         <div class="mb-3 d-flex justify-content-end">
                             <div class="input-group w-25">
                                 <span class="input-group-text bg-white">
@@ -53,7 +49,6 @@
                             </div>
                         </div>
 
-                        <!-- Default Table -->
                         <div class="table-responsive">
                             <table class="table table-striped" id="siswaTable">
                                 <thead>
@@ -62,6 +57,7 @@
                                         <th scope="col">NISN</th>
                                         <th scope="col">Nama Siswa</th>
                                         <th scope="col">Kelas</th>
+                                        <th scope="col">Orang Tua</th>
                                         <th scope="col">RFID</th>
                                         <th scope="col">Status</th>
                                         <th scope="col">Aksi</th>
@@ -74,15 +70,19 @@
                                             <td>{{ $siswa->nisn }}</td>
                                             <td>
                                                 <a href="javascript:void(0)"
-                                                    class="text-primary fw-bold text-decoration-none" data-bs-toggle="modal"
-                                                    data-bs-target="#scanRfidModal" data-siswa-id="{{ $siswa->id }}"
-                                                    data-siswa-nama="{{ $siswa->nama }}" title="Klik untuk scan RFID">
+                                                    class="text-primary fw-bold text-decoration-none"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#scanRfidModal"
+                                                    data-siswa-id="{{ $siswa->id }}"
+                                                    data-siswa-nama="{{ $siswa->nama }}"
+                                                    title="Klik untuk scan RFID">
                                                     <i class="bi bi-person-circle me-1"></i>{{ $siswa->nama }}
                                                 </a>
                                             </td>
                                             <td>
                                                 <span class="badge bg-info">{{ $siswa->kelas->nama ?? '-' }}</span>
                                             </td>
+                                            <td>{{ $siswa->orang_tua_id ?? '-' }}</td>
                                             <td id="rfid-{{ $siswa->id }}">
                                                 @if ($siswa->rfid)
                                                     <code class="text-muted">{{ $siswa->rfid }}</code>
@@ -90,27 +90,35 @@
                                                     <span class="text-muted">-</span>
                                                 @endif
                                             </td>
-                                            <td>
+                                            <td class="status-cell">
                                                 @if ($siswa->status === 'aktif')
-                                                    <span class="badge bg-success"><i
-                                                            class="bi bi-check-circle me-1"></i>Aktif</span>
+                                                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Aktif</span>
                                                 @else
-                                                    <span class="badge bg-warning text-dark"><i
-                                                            class="bi bi-clock me-1"></i>Pending</span>
+                                                    <span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Pending</span>
                                                 @endif
                                             </td>
                                             <td>
                                                 <div class="btn-group" role="group">
-                                                    <button type="button" class="btn btn-sm btn-outline-info editSiswaBtn"
-                                                        data-nisn="{{ $siswa->nisn }}" data-id="{{ $siswa->id }}"
+                                                    {{--
+                                                        PERBAIKAN ROUTE: gunakan route() helper untuk generate URL yang benar,
+                                                        lalu simpan di data-update-url. JS tidak perlu hardcode path lagi.
+                                                        PERBAIKAN RFID: gunakan ?? '' agar null tidak jadi string "null"
+                                                    --}}
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-outline-info editSiswaBtn"
+                                                        data-id="{{ $siswa->id }}"
+                                                        data-nisn="{{ $siswa->nisn }}"
                                                         data-nama="{{ $siswa->nama }}"
                                                         data-kelas="{{ $siswa->kelas_id }}"
-                                                        data-rfid="{{ $siswa->rfid }}" data-status="{{ $siswa->status }}"
+                                                        data-orang-tua-id="{{ $siswa->orang_tua_id }}"
+                                                        data-rfid="{{ $siswa->rfid ?? '' }}"
+                                                        data-status="{{ $siswa->status }}"
+                                                        data-update-url="{{ route('siswa.update', $siswa->id) }}"
                                                         title="Edit Siswa">
                                                         <i class="bi bi-pencil-square"></i>
                                                     </button>
-                                                    <form action="{{ route('siswa.destroy', $siswa->id) }}" method="POST"
-                                                        class="d-inline deleteSiswaForm">
+                                                    <form action="{{ route('siswa.destroy', $siswa->id) }}"
+                                                        method="POST" class="d-inline deleteSiswaForm">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="button"
@@ -124,7 +132,7 @@
                                         </tr>
                                     @empty
                                         <tr>
-                                            <td colspan="7" class="text-center py-4">
+                                            <td colspan="8" class="text-center py-4">
                                                 <div class="text-muted">
                                                     <i class="bi bi-inbox display-4 d-block mb-2"></i>
                                                     <h6>Belum ada data siswa</h6>
@@ -136,11 +144,6 @@
                                 </tbody>
                             </table>
                         </div>
-                        <!-- End Default Table -->
-
-
-
-
                     </div>
                 </div>
 
@@ -167,7 +170,6 @@
                                 accept=".xlsx,.xls,.csv" required>
                             <div class="form-text">File yang diizinkan: .xlsx, .xls, .csv</div>
                         </div>
-
                         <div class="alert alert-info">
                             <h6 class="alert-heading"><i class="bi bi-info-circle me-1"></i>Format File</h6>
                             <p class="mb-0">
@@ -244,8 +246,7 @@
                     <div class="modal-body">
                         @if ($errors->any())
                             <div class="alert alert-danger">
-                                <h6 class="alert-heading"><i class="bi bi-exclamation-triangle me-1"></i>Terjadi
-                                    Kesalahan!</h6>
+                                <h6 class="alert-heading"><i class="bi bi-exclamation-triangle me-1"></i>Terjadi Kesalahan!</h6>
                                 <ul class="mb-0">
                                     @foreach ($errors->all() as $error)
                                         <li>{{ $error }}</li>
@@ -261,18 +262,14 @@
                                     class="form-control" required placeholder="Masukkan NISN">
                             </div>
                         </div>
-
-
                         <div class="mb-3">
-                            <label for="nama" class="form-label">Nama Lengkap <span
-                                    class="text-danger">*</span></label>
+                            <label for="nama" class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-person"></i></span>
                                 <input type="text" name="nama" id="nama" value="{{ old('nama') }}"
                                     class="form-control" required placeholder="Masukkan nama lengkap">
                             </div>
                         </div>
-
                         <div class="mb-3">
                             <label for="kelas_id" class="form-label">Kelas <span class="text-danger">*</span></label>
                             <div class="input-group">
@@ -280,16 +277,27 @@
                                 <select name="kelas_id" id="kelas_id" class="form-select" required>
                                     <option value="">-- Pilih Kelas --</option>
                                     @foreach ($kelas as $k)
-                                        <option value="{{ $k->id }}"
-                                            {{ old('kelas_id') == $k->id ? 'selected' : '' }}>
+                                        <option value="{{ $k->id }}" {{ old('kelas_id') == $k->id ? 'selected' : '' }}>
                                             {{ $k->nama }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
-
-                        {{-- RFID & Status otomatis di controller --}}
+                        <div class="mb-3">
+                            <label for="orang_tua_id" class="form-label">Orang Tua (Opsional)</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-people"></i></span>
+                                <select name="orang_tua_id" id="orang_tua_id" class="form-select">
+                                    <option value="">-- Pilih Orang Tua --</option>
+                                    @foreach ($orangTuas as $ortu)
+                                        <option value="{{ $ortu->id }}" {{ old('orang_tua_id') == $ortu->id ? 'selected' : '' }}>
+                                            {{ $ortu->nama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -303,7 +311,6 @@
             </div>
         </div>
     </div>
-
 
     <!-- Modal Edit Siswa -->
     <div class="modal fade" id="editSiswaModal" tabindex="-1" aria-labelledby="editSiswaLabel" aria-hidden="true">
@@ -320,36 +327,28 @@
                     @method('PUT')
                     <div class="modal-body">
                         <input type="hidden" id="edit_siswa_id" name="siswa_id">
-
                         <div class="row">
                             <div class="col-12">
                                 <div class="mb-3">
-                                    <label for="edit_nisn" class="form-label">NISN <span
-                                            class="text-danger">*</span></label>
+                                    <label for="edit_nisn" class="form-label">NISN <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-card-list"></i></span>
-                                        <input type="text" name="nisn" id="edit_nisn" class="form-control"
-                                            required>
+                                        <input type="text" name="nisn" id="edit_nisn" class="form-control" required>
                                     </div>
                                 </div>
                             </div>
-
                             <div class="col-12">
                                 <div class="mb-3">
-                                    <label for="edit_nama" class="form-label">Nama Lengkap <span
-                                            class="text-danger">*</span></label>
+                                    <label for="edit_nama" class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                        <input type="text" name="nama" id="edit_nama" class="form-control"
-                                            required>
+                                        <input type="text" name="nama" id="edit_nama" class="form-control" required>
                                     </div>
                                 </div>
                             </div>
-
                             <div class="col-12">
                                 <div class="mb-3">
-                                    <label for="edit_kelas_id" class="form-label">Kelas <span
-                                            class="text-danger">*</span></label>
+                                    <label for="edit_kelas_id" class="form-label">Kelas <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-house"></i></span>
                                         <select name="kelas_id" id="edit_kelas_id" class="form-select" required>
@@ -361,21 +360,33 @@
                                     </div>
                                 </div>
                             </div>
-
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label for="edit_orang_tua_id" class="form-label">Orang Tua (Opsional)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-people"></i></span>
+                                        <select name="orang_tua_id" id="edit_orang_tua_id" class="form-select">
+                                            <option value="">-- Pilih Orang Tua --</option>
+                                            @foreach ($orangTuas as $ortu)
+                                                <option value="{{ $ortu->id }}">{{ $ortu->nama }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="col-12">
                                 <div class="mb-3">
                                     <label for="edit_rfid" class="form-label">RFID</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-credit-card"></i></span>
-                                        <input type="text" name="rfid" id="edit_rfid" class="form-control">
+                                        <input type="text" name="rfid" id="edit_rfid" class="form-control"
+                                            placeholder="Kosongkan jika tidak ada RFID">
                                     </div>
                                 </div>
                             </div>
-
                             <div class="col-12">
                                 <div class="mb-3">
-                                    <label for="edit_status" class="form-label">Status <span
-                                            class="text-danger">*</span></label>
+                                    <label for="edit_status" class="form-label">Status <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-toggle-on"></i></span>
                                         <select name="status" id="edit_status" class="form-select" required>
@@ -406,19 +417,13 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="{{ asset('js/siswa.js') }}"></script>
     <script>
-        document.getElementById("searchInput").addEventListener("keyup", function() {
+        document.getElementById("searchInput").addEventListener("keyup", function () {
             let filter = this.value.toLowerCase();
             let rows = document.querySelectorAll("#siswaTable tbody tr");
-
             rows.forEach(row => {
                 let nisn = row.cells[1]?.textContent.toLowerCase() || "";
                 let nama = row.cells[2]?.textContent.toLowerCase() || "";
-
-                if (nisn.includes(filter) || nama.includes(filter)) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
+                row.style.display = (nisn.includes(filter) || nama.includes(filter)) ? "" : "none";
             });
         });
     </script>

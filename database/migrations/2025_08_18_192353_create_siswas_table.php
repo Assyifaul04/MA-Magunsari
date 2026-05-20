@@ -6,26 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('siswas', function (Blueprint $table) {
             $table->id();
             $table->string('nisn')->unique();
             $table->string('nama');
-            $table->foreignId('kelas_id')->constrained('kelas')->onDelete('cascade');
+
+            $table->foreignId('kelas_id')
+                ->constrained('kelas')
+                ->onDelete('cascade');
+
+            $table->foreignId('orang_tua_id')
+                ->nullable()
+                ->constrained('orang_tuas')
+                ->nullOnDelete();
+
             $table->string('rfid')->nullable()->unique();
             $table->enum('status', ['aktif', 'pending'])->default('aktif');
             $table->timestamps();
-        });
+        }); 
     }
-    
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('siswas');

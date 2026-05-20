@@ -13,6 +13,7 @@ class Siswa extends Model
         'nisn',
         'nama',
         'kelas_id',
+        'orang_tua_id',
         'rfid',
         'status'
     ];
@@ -25,5 +26,10 @@ class Siswa extends Model
     public function absensi()
     {
         return $this->hasMany(Absensi::class);
+    }
+
+    public function orangTua()
+    {
+        return $this->belongsTo(OrangTua::class, 'orang_tua_id');
     }
 }

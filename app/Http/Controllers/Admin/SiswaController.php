@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Siswa;
 use App\Models\Kelas;
+use App\Models\OrangTua; // 1. Tambahkan model OrangTua di sini
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\SiswaImport;
 
@@ -13,29 +14,34 @@ class SiswaController extends Controller
 {
     public function index()
     {
-        $siswas = Siswa::with('kelas')->get();
+        $siswas = Siswa::with(['kelas', 'orangTua'])->get();
         $kelas = Kelas::all();
-        return view('admin.siswa.index', compact('siswas', 'kelas'));
+        $orangTuas = OrangTua::all(); 
+        return view('admin.siswa.index', compact('siswas', 'kelas', 'orangTuas'));
     }
 
     public function create()
     {
         $kelas = Kelas::all();
-        return view('admin.siswa.create', compact('kelas'));
+        $orangTuas = OrangTua::all();
+        return view('admin.siswa.create', compact('kelas', 'orangTuas'));
     }
 
     public function store(Request $request)
     {
+        
         $request->validate([
             'nisn' => 'required|string|max:20|unique:siswas,nisn',
             'nama' => 'required|string|max:255',
             'kelas_id' => 'required|exists:kelas,id',
+            'orang_tua_id' => 'nullable|exists:orang_tuas,id',
         ]);
 
         $siswa = Siswa::create([
             'nisn' => $request->nisn,
             'nama' => $request->nama,
             'kelas_id' => $request->kelas_id,
+            'orang_tua_id' => $request->orang_tua_id,
             'rfid' => null,
             'status' => 'pending',
         ]);
@@ -53,7 +59,8 @@ class SiswaController extends Controller
     public function edit(Siswa $siswa)
     {
         $kelas = Kelas::all();
-        return view('admin.siswa.edit', compact('siswa', 'kelas'));
+        $orangTuas = OrangTua::all();
+        return view('admin.siswa.edit', compact('siswa', 'kelas', 'orangTuas'));
     }
 
     public function update(Request $request, Siswa $siswa)
@@ -62,9 +69,11 @@ class SiswaController extends Controller
             'nisn' => 'required|string|max:20|unique:siswas,nisn,' . $siswa->id,
             'nama' => 'required|string|max:255',
             'kelas_id' => 'required|exists:kelas,id',
+            'orang_tua_id' => 'nullable|exists:orang_tuas,id',
             'rfid' => 'nullable|unique:siswas,rfid,' . $siswa->id,
             'status' => 'required|in:aktif,pending',
         ]);
+
 
         $siswa->update($request->all());
 
@@ -80,9 +89,11 @@ class SiswaController extends Controller
 
     public function show(Siswa $siswa)
     {
+        $siswa->load(['kelas', 'orangTua']);
         return view('admin.siswa.show', compact('siswa'));
     }
 
+    // Fungsi destroy, scan, dan import tetap sama seperti kode Anda sebelumnya
     public function destroy(Request $request, Siswa $siswa)
     {
         $siswa->delete();
@@ -104,7 +115,6 @@ class SiswaController extends Controller
             'rfid' => 'required',
         ]);
 
-        // Check if RFID already exists for another student
         $exists = Siswa::where('rfid', $request->rfid)
             ->where('id', '<>', $request->siswa_id)
             ->exists();
