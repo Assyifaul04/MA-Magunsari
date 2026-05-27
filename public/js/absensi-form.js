@@ -1,62 +1,44 @@
 $(document).ready(function () {
-    const $rfidInput = $("#rfidInput");
-    const $jenisInput = $("#jenisInput");
-    const $statusMessage = $("#statusMessage");
-    const $progressBar = $("#progressBar");
+    const $rfidInput      = $("#rfidInput");
+    const $jenisInput     = $("#jenisInput");
+    const $statusMessage  = $("#statusMessage");
+    const $progressBar    = $("#progressBar");
     const $loadingSpinner = $("#loadingSpinner");
-    
+
     let isProcessing = false;
 
     $.ajaxSetup({
-        headers: {
-            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
-        },
+        headers: { "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content") },
     });
 
     $rfidInput.focus();
 
+    /* ── Clock ────────────────────────────── */
     function updateTime() {
-        const now = new Date();
-        $("#currentTime").text(now.toLocaleString("id-ID"));
+        $("#currentTime").text(new Date().toLocaleString("id-ID"));
     }
     updateTime();
     setInterval(updateTime, 1000);
 
-    function showAlert(type, title, message, duration = 3000) {
-        const alertConfigs = {
-            success: {
-                icon: "success",
-                iconColor: "#28a745",
-                timer: 3000,
-            },
-            error: {
-                icon: "error",
-                iconColor: "#dc3545",
-                timer: 3000,
-            },
-            warning: {
-                icon: "warning",
-                iconColor: "#ffc107",
-                timer: 3000,
-            },
-            info: {
-                icon: "info",
-                iconColor: "#17a2b8",
-                timer: 3000,
-            },
+    /* ── SweetAlert helper ────────────────── */
+    function showAlert(type, title, message) {
+        const configs = {
+            success: { icon: "success", iconColor: "#0ca678" },
+            error:   { icon: "error",   iconColor: "#e03131" },
+            warning: { icon: "warning", iconColor: "#f59f00" },
+            info:    { icon: "info",    iconColor: "#1098ad" },
         };
-
-        const config = alertConfigs[type];
-        if (!config) return;
+        const cfg = configs[type];
+        if (!cfg) return;
 
         Swal.fire({
-            title: title,
+            title,
             text: message,
-            icon: config.icon,
-            iconColor: config.iconColor,
-            color: "#000000",
-            background: "#ffffff",
-            timer: config.timer,
+            icon: cfg.icon,
+            iconColor: cfg.iconColor,
+            color: "#000",
+            background: "#fff",
+            timer: 3000,
             timerProgressBar: true,
             showConfirmButton: false,
             allowOutsideClick: true,
@@ -64,57 +46,23 @@ $(document).ready(function () {
             position: "center",
             width: "450px",
             padding: "1.5rem",
-            customClass: {
-                title: "swal2-title-bold",
-                htmlContainer: "swal2-text-bold",
-            },
-            showClass: {
-                popup: "swal2-show",
-                backdrop: "swal2-backdrop-show",
-            },
-            hideClass: {
-                popup: "swal2-hide",
-                backdrop: "swal2-backdrop-hide",
-            },
-            didOpen: () => {
-                // Add custom CSS for bold text
-                const style = document.createElement("style");
-                style.innerHTML = `
-                    .swal2-title-bold {
-                        font-weight: bold !important;
-                        color: #000000 !important;
-                    }
-                    .swal2-text-bold {
-                        font-weight: bold !important;
-                        color: #000000 !important;
-                    }
-                `;
-                document.head.appendChild(style);
-
-                // Auto close untuk success alerts
-                if (type === "success") {
-                    setTimeout(() => Swal.close(), 3000);
-                }
-            },
         });
     }
 
-    // Optimized interval checking with reduced frequency
-    let intervalId = setInterval(function () {
+    /* ── Poll jenis absen setiap 2 detik ─── */
+    const intervalId = setInterval(function () {
         $.get("/admin/absensi/check-jenis", function (res) {
-            const currentJenis = $("#jenisAbsen").text();
             const newJenis = res.jenis.toUpperCase();
-
-            if (currentJenis !== newJenis) {
+            if ($("#jenisAbsen").text() !== newJenis) {
                 $("#jenisAbsen").text(newJenis);
                 $jenisInput.val(res.jenis);
             }
         }).fail(function () {
-            console.warn("Failed to check jenis absen");
+            console.warn("Gagal mengambil jenis absen");
         });
     }, 2000);
 
-    // Optimized form submission with faster processing
+    /* ── Submit form ──────────────────────── */
     $("#rfidForm").on("submit", function (e) {
         e.preventDefault();
 
@@ -122,18 +70,12 @@ $(document).ready(function () {
 
         const rfidValue = $rfidInput.val().trim();
         if (!rfidValue) {
-            showAlert(
-                "warning",
-                "Peringatan",
-                "Silahkan tempelkan kartu RFID terlebih dahulu"
-            );
+            showAlert("warning", "Peringatan", "Silahkan tempelkan kartu RFID terlebih dahulu");
             return;
         }
 
         isProcessing = true;
-        const data = $(this).serialize();
 
-        // Immediate UI feedback
         $loadingSpinner.show();
         $progressBar.addClass("pulse-animation").css("width", "100%");
         $rfidInput.prop("readonly", true);
@@ -141,8 +83,8 @@ $(document).ready(function () {
         $.ajax({
             url: "/admin/absensi/store",
             method: "POST",
-            data: data,
-            timeout: 10000, // 10 second timeout
+            data: $(this).serialize(),
+            timeout: 10000,
 
             success: function (res) {
                 $statusMessage
@@ -152,58 +94,81 @@ $(document).ready(function () {
 
                 showAlert("success", "Berhasil!", res.message);
 
-                if (res.success && res.data) {
-                    const status = (res.data.status || "").toLowerCase();
-                    
-                    let ttsMessage = "oke"; // Default suara untuk hadir / terlambat / pulang
+                if (res.success) {
+                    /*
+                     * Absen masuk  → "Oke"
+                     * Absen pulang → "Sampai jumpa"
+                     */
+                    const jenisRaw = (res.data && res.data.jenis)
+                        ? res.data.jenis
+                        : $("#jenisAbsen").text();
 
-                    if (status.includes("sudah")) {
-                        ttsMessage = "sudah absen";
-                    }
+                    const ttsMessage = jenisRaw.toLowerCase().includes("pulang")
+                        ? "Sampai jumpa"
+                        : "Oke";
+
+                    console.log("[TTS] jenis raw:", jenisRaw, "| akan berbunyi:", ttsMessage);
 
                     speakMessage(ttsMessage);
                 }
 
                 setTimeout(() => {
-                    $statusMessage
-                        .text("")
-                        .removeClass("text-green-600 font-semibold");
+                    $statusMessage.text("").removeClass("text-green-600 font-semibold");
                 }, 1500);
             },
 
             error: function (xhr) {
-                const msg =
-                    xhr.responseJSON?.message || "Terjadi kesalahan sistem.";
+                const msg      = xhr.responseJSON?.message || "";
+                const msgLower = msg.toLowerCase();
+
+                let alertType, alertTitle, ttsMessage;
+
+                if (
+                    msgLower.includes("sudah absen") ||
+                    msgLower.includes("sudah tercatat") ||
+                    msgLower.includes("sudah melakukan")
+                ) {
+                    /* ── Sudah absen ── */
+                    alertType  = "warning";
+                    alertTitle = "Sudah Tercatat";
+                    ttsMessage = "Absensi sudah tercatat";
+
+                } else if (
+                    msgLower.includes("tidak dikenal") ||
+                    msgLower.includes("tidak terdaftar") ||
+                    msgLower.includes("kartu tidak") ||
+                    msgLower.includes("rfid tidak") ||
+                    msgLower.includes("not found") ||
+                    msgLower.includes("karyawan tidak")
+                ) {
+                    /* ── Kartu tidak dikenal ── */
+                    alertType  = "error";
+                    alertTitle = "Kartu Tidak Dikenal";
+                    ttsMessage = "Kartu tidak dikenal";
+
+                } else {
+                    /* ── Error lain ── */
+                    alertType  = "error";
+                    alertTitle = "Absensi Gagal";
+                    ttsMessage = "Absensi gagal";
+                }
+
+                const displayMsg = msg || "Terjadi kesalahan sistem.";
 
                 $statusMessage
-                    .text("❌ " + msg)
+                    .text("❌ " + displayMsg)
                     .removeClass("text-green-600")
                     .addClass("text-red-600 font-semibold");
 
-                // Tampilkan notifikasi visual
-                const alertType = msg.toLowerCase().includes("sudah")
-                    ? "warning"
-                    : "error";
-                showAlert(alertType, "Informasi", msg);
-
-                // --- LOGIKA SUARA UNTUK ERROR ---
-                let ttsMessage = "gagal"; 
-
-                if (msg.toLowerCase().includes("sudah")) {
-                    ttsMessage = "sudah absen";
-                }
-
+                showAlert(alertType, alertTitle, displayMsg);
                 speakMessage(ttsMessage);
 
                 setTimeout(() => {
-                    $statusMessage
-                        .text("")
-                        .removeClass("text-red-600 font-semibold");
+                    $statusMessage.text("").removeClass("text-red-600 font-semibold");
                 }, 2500);
             },
 
             complete: function () {
-                // Immediate cleanup
                 $progressBar.removeClass("pulse-animation").css("width", "0%");
                 $loadingSpinner.hide();
                 $rfidInput.prop("readonly", false).val("").focus();
@@ -212,6 +177,7 @@ $(document).ready(function () {
         });
     });
 
+    /* ── Auto-submit setelah selesai mengetik ── */
     let typingTimer;
     const TYPING_DELAY = 300;
 
@@ -226,33 +192,69 @@ $(document).ready(function () {
         }
     });
 
+    /* ── Cleanup saat halaman ditutup ───── */
     $(window).on("beforeunload", function () {
-        if (intervalId) {
-            clearInterval(intervalId);
-        }
+        clearInterval(intervalId);
     });
 
-    // Suara voice Indonesia
+    /* ── Text-to-Speech Indonesia ─────────── */
+    if ("speechSynthesis" in window) {
+        window.speechSynthesis.getVoices();
+        window.speechSynthesis.onvoiceschanged = function () {
+            window.speechSynthesis.getVoices();
+        };
+    }
+
+    function getBestVoice() {
+        const voices = window.speechSynthesis.getVoices();
+        const priority = [
+            (v) => v.lang === "id-ID" && !v.name.toLowerCase().includes("google"),
+            (v) => v.lang === "id-ID",
+            (v) => v.lang.startsWith("id"),
+            (v) => v.lang === "ms-MY",
+            (v) => v.lang.startsWith("ms"),
+        ];
+
+        for (const test of priority) {
+            const found = voices.find(test);
+            if (found) return found;
+        }
+
+        return null;
+    }
+
     function speakMessage(message) {
-        if ("speechSynthesis" in window) {
-            window.speechSynthesis.cancel();
+        if (!("speechSynthesis" in window)) {
+            console.warn("Browser tidak mendukung Speech Synthesis API");
+            return;
+        }
 
-            const utterance = new SpeechSynthesisUtterance(message);
-            utterance.lang = "id-ID";
-            utterance.rate = 1.1;
-            utterance.pitch = 1.1;
+        window.speechSynthesis.cancel();
 
-            const voices = window.speechSynthesis.getVoices();
-            const indonesianVoice = voices.find(
-                (voice) => voice.lang === "id-ID"
-            );
-            if (indonesianVoice) {
-                utterance.voice = indonesianVoice;
+        /*
+         * Chrome membutuhkan jeda singkat setelah cancel()
+         * sebelum utterance baru bisa diputar dengan benar.
+         */
+        setTimeout(function () {
+            const utterance  = new SpeechSynthesisUtterance(message);
+            utterance.lang   = "id-ID";
+            utterance.rate   = 0.92;   
+            utterance.pitch  = 1.0;    
+            utterance.volume = 1.0;    
+
+            const voice = getBestVoice();
+            if (voice) {
+                utterance.voice = voice;
+                console.log("[TTS] Menggunakan suara:", voice.name, voice.lang);
+            } else {
+                console.warn("[TTS] Suara Indonesia tidak ditemukan, menggunakan default browser");
             }
 
+            utterance.onerror = function (e) {
+                console.error("[TTS] Error:", e.error);
+            };
+
             window.speechSynthesis.speak(utterance);
-        } else {
-            console.warn("Browser tidak mendukung Speech Synthesis API");
-        }
+        }, 120);
     }
 });

@@ -8,6 +8,7 @@ use App\Models\Siswa;
 use App\Models\Kelas;
 use App\Models\OrangTua; // 1. Tambahkan model OrangTua di sini
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Excel as ExcelFormat;
 use App\Imports\SiswaImport;
 
 class SiswaController extends Controller
@@ -148,16 +149,31 @@ class SiswaController extends Controller
     }
 
     public function import(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|mimes:xlsx,xls,csv'
-        ]);
+{
+    $request->validate([
+        'file' => 'required|file|mimes:xlsx,xls,csv'
+    ]);
 
-        try {
-            Excel::import(new SiswaImport, $request->file('file'));
-            return redirect()->route('siswa.index')->with('success', 'Data siswa berhasil diimport.');
-        } catch (\Exception $e) {
-            return redirect()->route('siswa.index')->with('error', 'Gagal import data: ' . $e->getMessage());
+    try {
+
+        $file = $request->file('file');
+        $filename = time() . '.' . $file->getClientOriginalExtension();
+        $file->move(public_path('uploads'), $filename);
+        $path = public_path('uploads/' . $filename);
+        Excel::import(new SiswaImport, $path);
+        if (file_exists($path)) {
+            unlink($path);
         }
+
+        return redirect()
+            ->route('siswa.index')
+            ->with('success', 'Data siswa berhasil diimport.');
+
+    } catch (\Exception $e) {
+
+        return redirect()
+            ->route('siswa.index')
+            ->with('error', $e->getMessage());
     }
+}
 }

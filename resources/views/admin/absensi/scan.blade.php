@@ -7,236 +7,536 @@
     <title>Absensi RFID</title>
     <link href="{{ asset('image/logo.png') }}" rel="icon">
 
-    <!-- NiceAdmin CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800;900&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <style>
         :root {
-            --bs-font-sans-serif: "Nunito", sans-serif;
+            --blue-primary: #4154f1;
+            --blue-dark: #2c3cdd;
+            --blue-deeper: #1a2ab5;
+            --blue-light: #eef0fe;
+            --blue-glow: rgba(65, 84, 241, 0.18);
+            --ink: #012970;
+            --ink-soft: #344767;
+            --surface: #ffffff;
+            --bg-page: #f0f2ff;
+            --border-subtle: rgba(65, 84, 241, 0.12);
+            --success: #13c296;
+            --shadow-card: 0 20px 60px rgba(65, 84, 241, 0.13), 0 4px 16px rgba(0,0,0,0.06);
         }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            font-family: "Nunito", sans-serif;
-            background: linear-gradient(135deg, #fafafb 0%, #f8f6f9 100%);
+            font-family: 'Nunito', sans-serif;
+            background: var(--bg-page);
             min-height: 100vh;
-        }
-
-        .scan-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .rfid-image {
-            max-width: 200px;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-            transition: transform 0.3s ease;
-        }
-
-        .rfid-image:hover {
-            transform: scale(1.05);
-        }
-
-        .progress-custom {
-            height: 8px;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 50px;
-            overflow: hidden;
-        }
-
-        .progress-bar-custom {
-            height: 100%;
-            background: linear-gradient(90deg, #4154f1, #2c3cdd);
-            border-radius: 50px;
-            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             position: relative;
             overflow: hidden;
         }
 
-        .progress-bar-custom::after {
+        /* ─── Decorative background ─── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 900px 600px at 110% 10%, rgba(65,84,241,0.10) 0%, transparent 70%),
+                radial-gradient(ellipse 700px 500px at -10% 90%, rgba(65,84,241,0.07) 0%, transparent 65%);
+            pointer-events: none;
+        }
+
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(65,84,241,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(65,84,241,0.04) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        /* ─── Page wrapper ─── */
+        .page-wrap {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* ─── Brand strip ─── */
+        .brand-strip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .brand-logo {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--blue-primary), var(--blue-deeper));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px var(--blue-glow);
+        }
+
+        .brand-logo i { color: white; font-size: 18px; }
+
+        .brand-name {
+            font-family: 'Sora', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--ink);
+            letter-spacing: 0.02em;
+        }
+
+        .brand-name span { color: var(--blue-primary); }
+
+        /* ─── Main card ─── */
+        .scan-card {
+            background: var(--surface);
+            border-radius: 24px;
+            border: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-card);
+            width: 100%;
+            max-width: 460px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Top accent bar */
+        .card-accent {
+            height: 4px;
+            background: linear-gradient(90deg, var(--blue-primary), #818cf8, var(--blue-primary));
+            background-size: 200% 100%;
+            animation: slide-gradient 3s linear infinite;
+        }
+
+        @keyframes slide-gradient {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
+        }
+
+        .card-body-inner {
+            padding: 36px 40px 40px;
+        }
+
+        /* ─── Header section ─── */
+        .header-section {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .rfid-icon-wrap {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 18px;
+            position: relative;
+        }
+
+        .rfid-icon-bg {
+            width: 80px;
+            height: 80px;
+            background: var(--blue-light);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: icon-float 3.5s ease-in-out infinite;
+        }
+
+        .rfid-icon-bg i {
+            font-size: 36px;
+            color: var(--blue-primary);
+        }
+
+        /* Ripple rings */
+        .rfid-icon-bg::before,
+        .rfid-icon-bg::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            animation: shimmer 2s infinite;
+            inset: -8px;
+            border-radius: 28px;
+            border: 1.5px solid rgba(65,84,241,0.20);
+            animation: ring-pulse 2.8s ease-out infinite;
+        }
+        .rfid-icon-bg::after {
+            inset: -16px;
+            border-radius: 34px;
+            border-color: rgba(65,84,241,0.10);
+            animation-delay: 0.5s;
         }
 
-        @keyframes shimmer {
-            0% {
-                left: -100%;
-            }
-
-            100% {
-                left: 100%;
-            }
+        @keyframes ring-pulse {
+            0% { opacity: 1; transform: scale(1); }
+            70% { opacity: 0; transform: scale(1.12); }
+            100% { opacity: 0; transform: scale(1.12); }
         }
 
-        .pulse-animation {
-            animation: pulse 2s infinite;
+        @keyframes icon-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
         }
 
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.05);
-            }
-
-            100% {
-                transform: scale(1);
-            }
+        .page-title {
+            font-family: 'Sora', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--ink);
+            margin-bottom: 4px;
+            letter-spacing: -0.02em;
         }
 
-        .rfid-input {
-            border: 2px solid #e6e9ff;
-            border-radius: 15px;
-            padding: 15px 20px;
-            font-size: 16px;
-            text-align: center;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.8);
-        }
-
-        .rfid-input:focus {
-            border-color: #4154f1;
-            box-shadow: 0 0 0 0.25rem rgba(65, 84, 241, 0.25);
-            background: white;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 8px 16px;
-            border-radius: 50px;
+        .page-subtitle {
+            font-size: 13px;
+            color: #8898aa;
             font-weight: 600;
-            font-size: 14px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.08em;
+        }
+
+        /* ─── Status badge ─── */
+        .status-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(19,194,150,0.4);
+            animation: dot-ping 1.8s ease-in-out infinite;
+        }
+
+        @keyframes dot-ping {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(19,194,150,0.5); }
+            50% { box-shadow: 0 0 0 6px rgba(19,194,150,0); }
+        }
+
+        .status-label {
+            font-size: 11.5px;
+            color: #8898aa;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
         }
 
         .jenis-badge {
-            font-size: 1.5rem;
-            padding: 10px 25px;
-            border-radius: 50px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            background: linear-gradient(135deg, #4154f1, #2c3cdd);
+            display: inline-block;
+            padding: 5px 18px;
+            border-radius: 100px;
+            background: linear-gradient(135deg, var(--blue-primary), var(--blue-dark));
             color: white;
-            box-shadow: 0 5px 15px rgba(65, 84, 241, 0.4);
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            box-shadow: 0 4px 14px var(--blue-glow);
         }
 
-        .instruction-text {
-            font-size: 1.1rem;
-            color: #6c757d;
-            font-weight: 500;
+        /* ─── Divider ─── */
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-subtle), transparent);
+            margin: 24px 0;
         }
 
+        /* ─── RFID image ─── */
+        .rfid-visual-wrap {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .rfid-image {
+            width: 140px;
+            height: auto;
+            border-radius: 14px;
+            box-shadow: 0 10px 30px rgba(65,84,241,0.15), 0 2px 8px rgba(0,0,0,0.08);
+            border: 3px solid white;
+            transition: transform 0.35s ease, box-shadow 0.35s ease;
+            display: inline-block;
+        }
+
+        .rfid-image:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 16px 40px rgba(65,84,241,0.22), 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .tap-hint {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #8898aa;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .tap-hint i { color: var(--blue-primary); font-size: 15px; }
+
+        /* ─── Progress bar ─── */
+        .progress-track {
+            height: 5px;
+            background: #eef0fe;
+            border-radius: 100px;
+            overflow: hidden;
+            margin-bottom: 22px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--blue-primary), #818cf8);
+            border-radius: 100px;
+            transition: width 0.35s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.55) 50%, transparent 100%);
+            animation: shimmer 1.6s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* ─── Input ─── */
+        .input-wrap {
+            position: relative;
+            margin-bottom: 6px;
+        }
+
+        .rfid-input {
+            width: 100%;
+            padding: 13px 50px 13px 18px;
+            border: 2px solid #e2e6ff;
+            border-radius: 12px;
+            font-family: 'Nunito', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--ink);
+            background: #fafbff;
+            transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+            outline: none;
+            text-align: center;
+            caret-color: var(--blue-primary);
+        }
+
+        .rfid-input::placeholder { color: #c0c9f0; font-weight: 500; }
+
+        .rfid-input:focus {
+            border-color: var(--blue-primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(65,84,241,0.10);
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #c0c9f0;
+            font-size: 18px;
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+
+        .rfid-input:focus ~ .input-icon { color: var(--blue-primary); }
+
+        /* Loading spinner */
         .loading-spinner {
             display: none;
             width: 20px;
             height: 20px;
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #4154f1;
+            border: 2.5px solid #e2e6ff;
+            border-top-color: var(--blue-primary);
             border-radius: 50%;
-            animation: spin 1s linear infinite;
+            animation: spin 0.8s linear infinite;
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
         }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
+        @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
 
-            100% {
-                transform: rotate(360deg);
-            }
+        /* ─── Status message ─── */
+        #statusMessage {
+            min-height: 22px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* ─── Footer strip ─── */
+        .footer-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 40px;
+            background: #fafbff;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .footer-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #8898aa;
+        }
+
+        .footer-badge i.bi-shield-check { color: var(--success); }
+
+        #currentTime {
+            font-family: 'Sora', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--ink);
+            letter-spacing: 0.03em;
+        }
+
+        /* ─── Alert toast container ─── */
+        #alertContainer { min-width: 300px; }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 520px) {
+            .card-body-inner { padding: 28px 22px 30px; }
+            .footer-strip { padding: 12px 22px; }
+            .page-title { font-size: 19px; }
         }
     </style>
 </head>
 
 <body>
-    <div class="container-fluid d-flex align-items-center justify-content-center min-vh-100 p-4">
-        <div class="scan-container p-5 text-center" style="max-width: 500px; width: 100%;">
+    <div class="bg-grid"></div>
 
-            <!-- Header -->
-            <div class="mb-4">
-                <i class="bi bi-credit-card-2-front text-primary" style="font-size: 3rem;"></i>
-                <h1 class="h3 mb-3 fw-bold text-dark">Sistem Absensi RFID</h1>
-                <p class="mb-2">Status Absen:</p>
-                <span class="jenis-badge" id="jenisAbsen">...</span>
-            </div>
+    <div class="page-wrap">
 
-            <!-- Instruction -->
-            <p class="instruction-text mb-4">
-                <i class="bi bi-hand-index me-2"></i>
-                Silahkan Tempelkan Kartu RFID Anda
-            </p>
-
-            <!-- RFID Image -->
-            <div class="mb-4">
-                <img src="{{ asset('image/RFID.jpeg') }}" alt="RFID Card" class="rfid-image img-fluid">
-            </div>
-
-            <!-- Progress Bar -->
-            <div class="progress-custom mb-4" style="width: 200px; margin: 0 auto;">
-                <div id="progressBar" class="progress-bar-custom" style="width: 0%;"></div>
-            </div>
-
-            <!-- RFID Form -->
-            <form id="rfidForm" class="mb-4" autocomplete="off">
-                <div class="position-relative">
-                    <input type="text" name="rfid" id="rfidInput" placeholder="Tempelkan RFID Anda..."
-                        class="form-control rfid-input" inputmode="none" autocomplete="off" />
-                    <input type="hidden" name="jenis" id="jenisInput">
-                    <div class="loading-spinner position-absolute"
-                        style="right: 15px; top: 50%; transform: translateY(-50%);" id="loadingSpinner"></div>
-                </div>
-            </form>
-
-            <!-- Status Message -->
-            <div id="statusMessage" class="mt-3"></div>
-
-            <!-- System Info -->
-            <div class="mt-4 pt-3 border-top">
-                <small class="text-muted">
-                    <i class="bi bi-shield-check me-1"></i>
-                    Sistem Keamanan Aktif •
-                    <span id="currentTime"></span>
-                </small>
-            </div>
+        <!-- Brand -->
+        <div class="brand-strip">
+            <div class="brand-logo"><i class="bi bi-building"></i></div>
+            <div class="brand-name">Smart<span>Absensi</span></div>
         </div>
-    </div>
 
-    <!-- Alert Container untuk Notifikasi -->
-    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055; min-width: 300px;">
+        <!-- Main card -->
+        <div class="scan-card">
+
+            <!-- Top gradient bar -->
+            <div class="card-accent"></div>
+
+            <!-- Body -->
+            <div class="card-body-inner">
+
+                <!-- Header -->
+                <div class="header-section">
+                    <div class="rfid-icon-wrap">
+                        <div class="rfid-icon-bg">
+                            <i class="bi bi-credit-card-2-front"></i>
+                        </div>
+                    </div>
+
+                    <h1 class="page-title">Sistem Absensi RFID</h1>
+                    <p class="page-subtitle">Tap kartu untuk mencatat kehadiran</p>
+
+                    <div class="status-wrap mt-3">
+                        <div class="status-dot"></div>
+                        <span class="status-label">Status Absen</span>
+                        <span class="jenis-badge" id="jenisAbsen">MEMUAT...</span>
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+
+                <!-- RFID visual -->
+                <div class="rfid-visual-wrap">
+                    <img src="{{ asset('image/RFID.jpeg') }}" alt="RFID Card" class="rfid-image">
+                    <div class="tap-hint">
+                        <i class="bi bi-hand-index-thumb"></i>
+                        Tempelkan kartu Anda pada reader
+                    </div>
+                </div>
+
+                <!-- Progress bar -->
+                <div class="progress-track">
+                    <div id="progressBar" class="progress-fill" style="width: 0%;"></div>
+                </div>
+
+                <!-- Form -->
+                <form id="rfidForm" autocomplete="off">
+                    <div class="input-wrap">
+                        <input
+                            type="text"
+                            name="rfid"
+                            id="rfidInput"
+                            placeholder="Menunggu scan kartu..."
+                            class="rfid-input"
+                            inputmode="none"
+                            autocomplete="off"
+                            autofocus
+                        />
+                        <input type="hidden" name="jenis" id="jenisInput">
+                        <i class="bi bi-wifi input-icon" id="inputIcon"></i>
+                        <div class="loading-spinner" id="loadingSpinner"></div>
+                    </div>
+                </form>
+
+                <!-- Status message -->
+                <div id="statusMessage" class="mt-2"></div>
+
+            </div><!-- /card-body-inner -->
+
+            <!-- Footer strip -->
+            <div class="footer-strip">
+                <div class="footer-badge">
+                    <i class="bi bi-shield-check"></i>
+                    Sistem Aktif
+                </div>
+                <div id="currentTime"></div>
+            </div>
+
+        </div><!-- /scan-card -->
+
+    </div><!-- /page-wrap -->
+
+    <!-- Alert toast -->
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1055;">
         <div id="alertContainer"></div>
     </div>
-    <!-- Bootstrap JS -->
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
-
-    <!-- Custom Script -->
-    <!-- Include external JS file if you prefer -->
     <script src="{{ asset('js/absensi-form.js') }}"></script>
-    {{-- <script>
-        window.APP_URL = "http://192.168.1.6:8000";
-    </script> --}}
 </body>
 
 </html>

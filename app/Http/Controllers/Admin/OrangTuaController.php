@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Imports\OrangTuaImport;
 use App\Models\OrangTua;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class OrangTuaController extends Controller
 {
@@ -61,4 +63,33 @@ class OrangTuaController extends Controller
 
         return back()->with('success', 'Data orang tua berhasil dihapus');
     }
+
+    public function import(Request $request)
+{
+    $request->validate([
+        'file' => 'required|file|mimes:xlsx,xls,csv'
+    ]);
+
+    try {
+
+        // SOLUSI AGAR TIDAK PATH CANNOT BE EMPTY
+        $file = $request->file('file');
+        $fileName = time() . '.' . $file->getClientOriginalExtension();
+
+        $file->move(public_path('imports'), $fileName);
+
+        Excel::import(
+            new OrangTuaImport,
+            public_path('imports/' . $fileName)
+        );
+
+        return redirect()->route('orangtua.index')
+            ->with('success', 'Data orang tua berhasil diimport.');
+
+    } catch (\Exception $e) {
+
+        return redirect()->route('orangtua.index')
+            ->with('error', 'Gagal import: ' . $e->getMessage());
+    }
+}
 }

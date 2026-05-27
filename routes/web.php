@@ -111,6 +111,7 @@ Route::middleware(['auth', 'chaceLogout', 'role:admin'])->group(function () {
             Route::get('{orangTua}/edit', [OrangTuaController::class, 'edit'])->name('orangtua.edit');
             Route::put('{orangTua}', [OrangTuaController::class, 'update'])->name('orangtua.update');
             Route::delete('{orangTua}', [OrangTuaController::class, 'destroy'])->name('orangtua.destroy');
+            Route::post('orangtua/import', [OrangTuaController::class, 'import'])->name('orangtua.import');
         });
 
         Route::prefix('template-whatsapp')->group(function () {
@@ -133,8 +134,8 @@ Route::middleware(['auth', 'chaceLogout', 'role:admin'])->group(function () {
 });
 
 
-// Route::middleware(['auth', 'chaceLogout', 'role:guru'])->group(function () {
-//     Route::prefix('guru')->group(function () {
-//         Route::get('dashboard', [DashboardGuruController::class, 'index'])->name('guru.dashboard');
-//     });
-// });
+Route::middleware(['auth', 'chaceLogout', 'role:guru'])->group(function () {
+    Route::prefix('guru')->group(function () {
+        Route::get('dashboard', [DashboardGuruController::class, 'index'])->name('guru.dashboard');
+    });
+});

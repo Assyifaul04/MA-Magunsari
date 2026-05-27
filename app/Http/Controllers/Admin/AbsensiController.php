@@ -10,25 +10,13 @@ use App\Models\Absensi;
 use App\Models\Kelas;
 use App\Models\Siswa;
 use App\Models\Pengaturan;
-use App\Models\TemplateWhatsapp;
-use App\Models\NotifikasiWhatsapp;
-use App\Services\WhatsappService;
+use App\Jobs\SendWhatsappNotification;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AbsensiController extends Controller
 {
-    protected $waService;
-
-    /**
-     * Inisialisasi WhatsappService melalui Constructor
-     */
-    public function __construct(WhatsappService $waService)
-    {
-        $this->waService = $waService;
-    }
-
     public function scan()
     {
         return view('admin.absensi.scan');
@@ -73,7 +61,7 @@ class AbsensiController extends Controller
     }
 
     /**
-     * Proses absensi RFID & Pengiriman WhatsApp Otomatis
+     * Proses absensi RFID & Dispatch Job Pengiriman WhatsApp
      */
     public function store(Request $request)
     {
@@ -129,6 +117,7 @@ class AbsensiController extends Controller
             }
         }
 
+        // Cek jika siswa sudah absen jenis ini di hari ini (Mencegah ganda & notif berulang)
         $cekAbsensi = Absensi::where('siswa_id', $siswa->id)
             ->where('jenis', $jenis)
             ->whereDate('tanggal', $now->toDateString())
@@ -173,63 +162,14 @@ class AbsensiController extends Controller
             'jam'        => $now->toTimeString(),
         ]);
 
-        // Kirim Notifikasi WhatsApp
-        $this->kirimNotifikasiWA($siswa, $absensi, $jenis, $status, $now);
+        // Masukkan proses pengiriman WhatsApp ke dalam Antrean (Queue)
+        SendWhatsappNotification::dispatch($siswa, $absensi, $jenis, $status, $now);
 
         return response()->json([
             'success' => true,
             'message' => "Absensi {$jenis} berhasil dicatat dengan status {$status}.",
             'data' => $absensi->load('siswa.kelas')
         ]);
-    }
-
-    /**
-     * Logic Pengiriman Pesan WA
-     */
-    private function kirimNotifikasiWA($siswa, $absensi, $jenis, $status, $now)
-    {
-        $template = TemplateWhatsapp::where('jenis', $jenis)
-            ->where('is_active', true)
-            ->first();
-
-        if ($template && $siswa->orangTua && $siswa->orangTua->nomor_whatsapp) {
-            $pesan = str_replace(
-                ['{nama_siswa}', '{kelas}', '{tanggal}', '{jam}', '{status}'],
-                [
-                    $siswa->nama,
-                    $siswa->kelas->nama ?? '-',
-                    $now->format('d-m-Y'),
-                    $now->format('H:i:s'),
-                    $status
-                ],
-                $template->isi_pesan
-            );
-
-            try {
-                $response = $this->waService->send($siswa->orangTua->nomor_whatsapp, $pesan);
-
-                NotifikasiWhatsapp::create([
-                    'absensi_id' => $absensi->id,
-                    'siswa_id' => $siswa->id,
-                    'orang_tua_id' => $siswa->orang_tua_id,
-                    'nomor_whatsapp' => $siswa->orangTua->nomor_whatsapp,
-                    'pesan' => $pesan,
-                    'status' => 'terkirim',
-                    'response_gateway' => json_encode($response),
-                    'dikirim_pada' => now(),
-                ]);
-            } catch (\Exception $e) {
-                NotifikasiWhatsapp::create([
-                    'absensi_id' => $absensi->id,
-                    'siswa_id' => $siswa->id,
-                    'orang_tua_id' => $siswa->orang_tua_id,
-                    'nomor_whatsapp' => $siswa->orangTua->nomor_whatsapp,
-                    'pesan' => $pesan,
-                    'status' => 'gagal',
-                    'response_gateway' => $e->getMessage(),
-                ]);
-            }
-        }
     }
 
     public function checkJenis()
@@ -291,10 +231,26 @@ class AbsensiController extends Controller
         $siswaList = Siswa::whereNotNull('rfid')->get();
         $periode = CarbonPeriod::create($tanggalMulai, $tanggalSelesai);
 
+        $now = Carbon::now();
+        $hariIni = $now->toDateString();
+
+        $pengaturan = Pengaturan::where('tanggal', $hariIni)->first();
+        $jamPulang = $pengaturan->jam_pulang ?? '15:00:00';
+
         foreach ($periode as $tanggal) {
+            $tanggalCek = $tanggal->toDateString();
+
+            if ($tanggalCek === $hariIni && $now->format('H:i:s') <= $jamPulang) {
+                continue;
+            }
+
+            if ($tanggal->isFuture()) {
+                continue;
+            }
+
             foreach ($siswaList as $siswa) {
                 $cek = Absensi::where('siswa_id', $siswa->id)
-                    ->whereDate('tanggal', $tanggal->toDateString())
+                    ->whereDate('tanggal', $tanggalCek)
                     ->exists();
 
                 if (!$cek) {
@@ -304,7 +260,7 @@ class AbsensiController extends Controller
                         'status'     => 'tidak hadir',
                         'rfid'       => $siswa->rfid,
                         'keterangan' => 'tidak melakukan absen',
-                        'tanggal'    => $tanggal->toDateString(),
+                        'tanggal'    => $tanggalCek,
                         'jam'        => '00:00:00'
                     ]);
                 }
