@@ -93,6 +93,7 @@
         margin-bottom: 16px;
     }
     .alert-pro-success { background: var(--brand-success-light); color: #087f5b; }
+    .alert-pro-danger { background: var(--brand-danger-light); color: var(--brand-danger); }
     .alert-pro .btn-close { margin-left: auto; }
 
     /* ── Data Card ────────────────────────── */
@@ -152,7 +153,7 @@
         display: grid; place-items: center;
     }
 
-    /* class name cell */
+    /* class name cell & wali badge */
     .kelas-cell {
         display: flex; align-items: center; gap: 12px;
     }
@@ -165,6 +166,17 @@
         flex-shrink: 0;
     }
     .kelas-name { font-weight: 600; color: var(--text-primary); font-size: .875rem; }
+    .wali-badge {
+        background: var(--surface-soft);
+        border: 1px solid var(--surface-border);
+        padding: 5px 10px;
+        border-radius: var(--radius-sm);
+        font-size: .8rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
 
     /* action buttons */
     .action-wrap { display: flex; gap: 6px; align-items: center; }
@@ -231,7 +243,8 @@
         text-transform: uppercase; letter-spacing: .04em;
         color: var(--text-secondary); margin-bottom: 6px; display: block;
     }
-    .form-control {
+    /* Ditambahkan class .form-select agar desainnya sama persis dengan form-control */
+    .form-control, .form-select {
         font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: .875rem;
         border: 1.5px solid var(--surface-border);
@@ -239,13 +252,15 @@
         color: var(--text-primary);
         padding: 9px 13px;
         transition: border-color .2s, box-shadow .2s;
+        width: 100%;
+        background-color: var(--surface);
     }
-    .form-control:focus {
+    .form-control:focus, .form-select:focus {
         border-color: var(--brand-primary);
         box-shadow: 0 0 0 3px rgba(59,91,219,.1);
         outline: none;
     }
-    .form-control.is-invalid { border-color: var(--brand-danger); }
+    .form-control.is-invalid, .form-select.is-invalid { border-color: var(--brand-danger); }
 
     .btn-modal {
         font-family: 'Plus Jakarta Sans', sans-serif;
@@ -260,7 +275,6 @@
     .btn-mp:hover { background: var(--brand-primary-dark); box-shadow: 0 4px 12px rgba(59,91,219,.3); }
 </style>
 
-<!-- ══════════════ PAGE HERO ══════════════ -->
 <div class="page-hero">
     <div>
         <h1><i class="bi bi-building me-2" style="opacity:.9"></i>Data Kelas</h1>
@@ -289,9 +303,16 @@
                 </div>
             @endif
 
+            @if(session('error'))
+                <div class="alert-pro alert-pro-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <span>{{ session('error') }}</span>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
+
             <div class="data-card">
 
-                <!-- Card Header -->
                 <div class="data-card-header">
                     <div class="header-icon"><i class="bi bi-building"></i></div>
                     <div>
@@ -300,13 +321,13 @@
                     </div>
                 </div>
 
-                <!-- Table -->
                 <div class="table-responsive">
                     <table class="table-pro datatable">
                         <thead>
                             <tr>
                                 <th style="width:6%">#</th>
-                                <th style="width:74%">Nama Kelas</th>
+                                <th style="width:34%">Nama Kelas</th>
+                                <th style="width:40%">Wali Kelas</th>
                                 <th style="width:20%">Aksi</th>
                             </tr>
                         </thead>
@@ -319,6 +340,16 @@
                                             <div class="kelas-icon"><i class="bi bi-door-open"></i></div>
                                             <span class="kelas-name">{{ $k->nama }}</span>
                                         </div>
+                                    </td>
+                                    <td>
+                                        @if($k->waliKelas)
+                                            <span class="wali-badge">
+                                                <i class="bi bi-person-fill text-primary"></i> 
+                                                {{ $k->waliKelas->nama }}
+                                            </span>
+                                        @else
+                                            <span style="color: var(--text-muted); font-style: italic; font-size: .8rem;">Belum Diatur</span>
+                                        @endif
                                     </td>
                                     <td>
                                         <div class="action-wrap">
@@ -341,7 +372,6 @@
                                     </td>
                                 </tr>
 
-                                <!-- Modal Edit Kelas -->
                                 <div class="modal fade modal-pro" id="editKelasModal{{ $k->id }}" tabindex="-1">
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content">
@@ -360,10 +390,20 @@
                                                     <input type="text"
                                                            name="nama"
                                                            id="nama{{ $k->id }}"
-                                                           class="form-control"
+                                                           class="form-control mb-3"
                                                            value="{{ old('nama', $k->nama) }}"
                                                            placeholder="Contoh: X IPA 1"
                                                            required>
+
+                                                    <label for="guru_id{{ $k->id }}" class="flabel">Wali Kelas (Opsional)</label>
+                                                    <select name="guru_id" id="guru_id{{ $k->id }}" class="form-select">
+                                                        <option value="">-- Belum Diatur / Kosongkan --</option>
+                                                        @foreach($gurus as $guru)
+                                                            <option value="{{ $guru->id }}" {{ (old('guru_id', $k->guru_id) == $guru->id) ? 'selected' : '' }}>
+                                                                {{ $guru->nama }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn-modal btn-mc" data-bs-dismiss="modal">
@@ -380,7 +420,7 @@
 
                             @empty
                                 <tr>
-                                    <td colspan="3">
+                                    <td colspan="4">
                                         <div class="empty-state">
                                             <div class="empty-state-icon"><i class="bi bi-building"></i></div>
                                             <h6>Belum ada data kelas</h6>
@@ -398,8 +438,6 @@
     </div>
 </section>
 
-
-<!-- ══════════════ MODAL: TAMBAH KELAS ══════════════ -->
 <div class="modal fade modal-pro" id="tambahKelasModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -417,7 +455,7 @@
                     <input type="text"
                            name="nama"
                            id="nama"
-                           class="form-control @error('nama') is-invalid @enderror"
+                           class="form-control mb-3 @error('nama') is-invalid @enderror"
                            value="{{ old('nama') }}"
                            placeholder="Contoh: X IPA 1"
                            required>
@@ -426,6 +464,16 @@
                             <i class="bi bi-exclamation-circle me-1"></i>{{ $message }}
                         </div>
                     @enderror
+
+                    <label for="guru_id" class="flabel">Wali Kelas (Opsional)</label>
+                    <select name="guru_id" id="guru_id" class="form-select @error('guru_id') is-invalid @enderror">
+                        <option value="">-- Pilih Wali Kelas --</option>
+                        @foreach($gurus as $guru)
+                            <option value="{{ $guru->id }}" {{ old('guru_id') == $guru->id ? 'selected' : '' }}>
+                                {{ $guru->nama }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-modal btn-mc" data-bs-dismiss="modal">

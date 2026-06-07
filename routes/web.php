@@ -6,11 +6,14 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Admin\SiswaController;
 use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\GuruController;
 use App\Http\Controllers\Admin\OrangTuaController;
 use App\Http\Controllers\Admin\PengaturanController;
 use App\Http\Controllers\Admin\TemplateWhatsappController;
 use App\Http\Controllers\Admin\NotifikasiWhatsappController;
+use App\Http\Controllers\Guru\AbsensiGuruController;
 use App\Http\Controllers\Guru\DashboardGuruController;
+use App\Http\Controllers\Guru\SiswaGuruController;
 use App\Http\Controllers\Super\SuperAdminController;
 use App\Http\Controllers\Super\TambahUserController;
 use App\Services\WhatsappService;
@@ -83,6 +86,13 @@ Route::middleware(['auth', 'chaceLogout', 'role:admin'])->group(function () {
             Route::post('import', [SiswaController::class, 'import'])->name('siswa.import');
         });
 
+        Route::prefix('guru')->group(function () {
+            Route::get('/', [GuruController::class, 'index'])->name('guru.index');
+            Route::post('store', [GuruController::class, 'store'])->name('guru.store');
+            Route::put('update/{guru}', [GuruController::class, 'update'])->name('guru.update');
+            Route::delete('delete/{guru}', [GuruController::class, 'destroy'])->name('guru.destroy');
+        });
+
         Route::prefix('pengaturan')->group(function () {
             Route::get('/', [PengaturanController::class, 'edit'])->name('pengaturan.edit');
             Route::post('update', [PengaturanController::class, 'update'])->name('pengaturan.update');
@@ -135,7 +145,20 @@ Route::middleware(['auth', 'chaceLogout', 'role:admin'])->group(function () {
 
 
 Route::middleware(['auth', 'chaceLogout', 'role:guru'])->group(function () {
-    Route::prefix('guru')->group(function () {
-        Route::get('dashboard', [DashboardGuruController::class, 'index'])->name('guru.dashboard');
+    Route::prefix('guru')->name('guru.')->group(function () {
+        // Dashboard Utama
+        Route::get('dashboard', [DashboardGuruController::class, 'index'])->name('dashboard');
+
+        // Manajemen & Monitoring Siswa + Absensi RFID
+        Route::prefix('siswa')->name('siswa.')->group(function () {
+            Route::get('/', [SiswaGuruController::class, 'index'])->name('index'); // Lihat daftar siswa & status RFID
+            Route::get('/{siswa}', [SiswaGuruController::class, 'show'])->name('show'); // Detail absensi per siswa
+        });
+
+        Route::prefix('absensi')->name('absensi.')->group(function () {
+            Route::get('/hari-ini', [AbsensiGuruController::class, 'hariIni'])->name('hari-ini'); // Live monitoring hari ini
+            Route::post('/manual-update/{id}', [AbsensiGuruController::class, 'updateManual'])->name('update-manual'); // Override Izin/Sakit/Kartu Ketinggalan
+            Route::get('/rekap', [AbsensiGuruController::class, 'rekap'])->name('rekap'); // Rekap bulanan untuk laporan
+        });
     });
 });

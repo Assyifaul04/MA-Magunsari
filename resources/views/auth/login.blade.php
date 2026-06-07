@@ -275,7 +275,6 @@
     <div class="login-card">
         <div class="card-body">
 
-            <!-- Brand Header -->
             <div class="brand-header">
                 <div class="brand-icon-wrap" id="logoWrap">
                     <img src="{{ asset('image/logo.png') }}" alt="Logo" id="logoImage">
@@ -288,13 +287,11 @@
 
             <div class="card-divider"></div>
 
-            <!-- Heading -->
             <div class="login-heading">
                 <h2>Masuk ke Akun Anda</h2>
                 <p>Masukkan kredensial untuk melanjutkan ke dashboard</p>
             </div>
 
-            <!-- Alert Error -->
             @if (session('error'))
                 <div class="alert-pro alert-dismissible fade show" role="alert">
                     <i class="bi bi-exclamation-circle-fill"></i>
@@ -303,18 +300,16 @@
                 </div>
             @endif
 
-            <!-- Form Login -->
             <form method="POST" action="{{ route('login') }}" class="needs-validation" novalidate>
                 @csrf
 
-                <!-- Email -->
                 <div class="field-group">
-                    <label for="email" class="field-label">Alamat Email</label>
+                    <label for="email" class="field-label">Email / NIP</label>
                     <div class="field-input-wrap @error('email') is-error @enderror">
-                        <div class="field-icon"><i class="bi bi-envelope"></i></div>
-                        <input type="email" name="email" id="email"
+                        <div class="field-icon"><i class="bi bi-person-badge"></i></div>
+                        <input type="text" name="email" id="email"
                                value="{{ old('email') }}" required autofocus
-                               placeholder="nama@sekolah.sch.id">
+                               placeholder="Masukkan Email atau NIP">
                     </div>
                     @error('email')
                         <div class="field-error">
@@ -324,7 +319,6 @@
                     @enderror
                 </div>
 
-                <!-- Password -->
                 <div class="field-group">
                     <label for="password" class="field-label">Password</label>
                     <div class="field-input-wrap @error('password') is-error @enderror">
@@ -340,14 +334,12 @@
                     @enderror
                 </div>
 
-                <!-- Submit -->
                 <button class="btn-submit" type="submit" id="loginBtn">
                     <i class="bi bi-box-arrow-in-right"></i>
                     Masuk
                 </button>
             </form>
 
-            <!-- Footer note -->
             <div class="card-footer-note">
                 <i class="bi bi-shield-check"></i>
                 Koneksi aman &amp; terenkripsi
@@ -356,7 +348,6 @@
         </div>
     </div>
 
-    <!-- Vendor JS -->
     <script src="{{ asset('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('assets/js/main.js') }}"></script>
 

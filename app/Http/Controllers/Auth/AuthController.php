@@ -15,11 +15,13 @@ class AuthController extends Controller
 
     public function authenticated(Request $request)
     {
+        // 1. Ubah validasi 'email' menjadi 'string' agar bisa menerima NIP (angka) atau Email
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'email'    => ['required', 'string'], 
             'password' => ['required'],
         ]);
     
+        // Auth::attempt otomatis akan mencocokkan input dengan kolom 'email' di database
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
     
@@ -38,13 +40,12 @@ class AuthController extends Controller
             ]);
         }
     
+        // 2. Sesuaikan pesan error agar pengguna tahu bisa pakai NIP
         return back()->withErrors([
-            'email' => 'Email atau password salah.',
+            'email' => 'Email atau NIP / Password salah.',
         ])->onlyInput('email');
     }
     
-    
-
     public function logout(Request $request)
     {
         Auth::logout();

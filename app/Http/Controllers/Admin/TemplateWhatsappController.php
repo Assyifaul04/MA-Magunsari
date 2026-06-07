@@ -72,27 +72,27 @@ class TemplateWhatsappController extends Controller
 
     public function generateDefault()
     {
-        // Siapkan kata-kata default untuk masing-masing jenis
+        // Siapkan kata-kata default untuk masing-masing jenis tanpa ikon
         $defaults = [
             'masuk' => [
                 'nama_template' => 'Default Masuk Pagi',
-                'isi_pesan' => "Pemberitahuan Akademik:\n\nDiberitahukan kepada Bapak/Ibu orang tua dari *{nama_siswa}*, bahwa ananda hari ini telah tiba dan melakukan absen *{status}* di sekolah pada pukul *{jam}*.\n\nTerima kasih atas perhatiannya.",
+                'isi_pesan' => "*INFORMASI KEHADIRAN SISWA*\n*Sekolah Nurul Huda*\n\nAssalamu'alaikum Wr. Wb.\nYth. Bapak/Ibu Wali Murid,\n\nBerikut adalah informasi kehadiran putra/putri Anda pada hari ini:\n\n*Nama* : {nama_siswa}\n*Kelas* : {kelas}\n*Tanggal* : {tanggal}\n*Jam* : {jam} WIB\n*Status* : *{status}*\n\nAlhamdulillah, ananda telah tiba di sekolah dengan selamat. Semoga mendapatkan ilmu yang bermanfaat hari ini.\n\nTerima kasih atas perhatian dan kerjasamanya.\nWassalamu'alaikum Wr. Wb.",
             ],
             'terlambat' => [
                 'nama_template' => 'Default Terlambat',
-                'isi_pesan' => "Pemberitahuan Akademik:\n\nMohon maaf Bapak/Ibu, ananda *{nama_siswa}* tiba di sekolah pada pukul *{jam}*, berstatus *{status}* (melewati batas jam masuk yang ditentukan).\n\nTerima kasih atas perhatiannya.",
+                'isi_pesan' => "*INFORMASI KEHADIRAN SISWA*\n*Sekolah Nurul Huda*\n\nAssalamu'alaikum Wr. Wb.\nYth. Bapak/Ibu Wali Murid,\n\nBerikut adalah informasi kehadiran putra/putri Anda pada hari ini:\n\n*Nama* : {nama_siswa}\n*Kelas* : {kelas}\n*Tanggal* : {tanggal}\n*Jam* : {jam} WIB\n*Status* : *{status}*\n\nAnanda telah berada di sekolah, namun tercatat datang melewati batas waktu yang ditentukan. Mohon bantuan Bapak/Ibu untuk memotivasi ananda agar dapat berangkat lebih awal ke depannya.\n\nTerima kasih atas perhatian dan kerjasamanya.\nWassalamu'alaikum Wr. Wb.",
             ],
             'pulang' => [
                 'nama_template' => 'Default Pulang',
-                'isi_pesan' => "Pemberitahuan Akademik:\n\nDiberitahukan kepada Bapak/Ibu, pembelajaran hari ini telah usai. Ananda *{nama_siswa}* telah melakukan absen *{status}* pada pukul *{jam}*.\n\nTerima kasih.",
+                'isi_pesan' => "*INFORMASI KEHADIRAN SISWA*\n*Sekolah Nurul Huda*\n\nAssalamu'alaikum Wr. Wb.\nYth. Bapak/Ibu Wali Murid,\n\nBerikut adalah informasi kepulangan putra/putri Anda:\n\n*Nama* : {nama_siswa}\n*Kelas* : {kelas}\n*Tanggal* : {tanggal}\n*Jam* : {jam} WIB\n*Status* : *{status}*\n\nAlhamdulillah, kegiatan belajar mengajar hari ini telah selesai dan ananda telah melakukan absensi pulang.\n\nTerima kasih atas perhatiannya.\nWassalamu'alaikum Wr. Wb.",
             ],
             'izin' => [
                 'nama_template' => 'Default Izin',
-                'isi_pesan' => "Pemberitahuan Akademik:\n\nBerdasarkan konfirmasi, ananda *{nama_siswa}* (Kelas {kelas}) pada tanggal *{tanggal}* tercatat *{status}*.\n\nTerima kasih atas informasinya.",
+                'isi_pesan' => "*INFORMASI KEHADIRAN SISWA*\n*Sekolah Nurul Huda*\n\nAssalamu'alaikum Wr. Wb.\nYth. Bapak/Ibu Wali Murid,\n\nBerikut adalah pencatatan absensi putra/putri Anda pada hari ini:\n\n*Nama* : {nama_siswa}\n*Kelas* : {kelas}\n*Tanggal* : {tanggal}\n*Status* : *{status}*\n\nData izin ananda telah kami konfirmasi dan catat dalam sistem akademik sekolah.\n\nTerima kasih atas informasinya.\nWassalamu'alaikum Wr. Wb.",
             ],
             'sakit' => [
                 'nama_template' => 'Default Sakit',
-                'isi_pesan' => "Pemberitahuan Akademik:\n\nKami telah mencatat bahwa ananda *{nama_siswa}* berhalangan hadir pada tanggal *{tanggal}* dikarenakan *{status}*.\n\nMari kita doakan semoga ananda lekas sembuh.",
+                'isi_pesan' => "*INFORMASI KEHADIRAN SISWA*\n*Sekolah Nurul Huda*\n\nAssalamu'alaikum Wr. Wb.\nYth. Bapak/Ibu Wali Murid,\n\nBerikut adalah pencatatan absensi putra/putri Anda pada hari ini:\n\n*Nama* : {nama_siswa}\n*Kelas* : {kelas}\n*Tanggal* : {tanggal}\n*Status* : *{status}*\n\nKami telah menerima informasi terkait kondisi ananda. Mari kita doakan bersama agar ananda lekas diberikan kesembuhan dan dapat kembali beraktivitas di sekolah seperti sedia kala.\n\nTerima kasih.\nWassalamu'alaikum Wr. Wb.",
             ],
         ];
 
