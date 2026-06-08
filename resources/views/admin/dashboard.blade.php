@@ -21,6 +21,8 @@
     --brand-danger-light:   #fff5f5;
     --brand-info:           #1098ad;
     --brand-info-light:     #e3fafc;
+    --brand-purple:         #7048e8;
+    --brand-purple-light:   #f3f0ff;
     --surface:              #ffffff;
     --surface-soft:         #f8f9fc;
     --surface-border:       #e9ecef;
@@ -74,7 +76,6 @@ body, .section, .card, .modal-content {
     background: rgba(255,255,255,.04); border-radius: 50%;
     pointer-events: none;
 }
-.page-hero-left {}
 .page-hero h1 {
     font-size: 1.5rem; font-weight: 800;
     color: #fff; margin: 0 0 6px;
@@ -87,25 +88,20 @@ body, .section, .card, .modal-content {
 .page-hero .breadcrumb-item.active { color: rgba(255,255,255,.7); text-decoration: none; }
 .page-hero .breadcrumb-item a:hover { color: #fff; }
 .page-hero .breadcrumb-item + .breadcrumb-item::before { color: rgba(255,255,255,.35); }
-
 .hero-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; position: relative; z-index: 1; }
 .hero-time-pill {
     background: rgba(255,255,255,.14);
     border: 1px solid rgba(255,255,255,.22);
-    border-radius: 50px;
-    padding: 9px 18px;
-    color: #fff;
-    font-size: .82rem; font-weight: 600;
+    border-radius: 50px; padding: 9px 18px;
+    color: #fff; font-size: .82rem; font-weight: 600;
     display: inline-flex; align-items: center; gap: 8px;
     backdrop-filter: blur(8px);
 }
 .hero-status-pill {
     background: rgba(255,255,255,.14);
     border: 1px solid rgba(255,255,255,.22);
-    border-radius: 50px;
-    padding: 9px 16px;
-    color: #fff;
-    font-size: .8rem; font-weight: 600;
+    border-radius: 50px; padding: 9px 16px;
+    color: #fff; font-size: .8rem; font-weight: 600;
     display: inline-flex; align-items: center; gap: 7px;
     backdrop-filter: blur(8px);
 }
@@ -129,13 +125,9 @@ body, .section, .card, .modal-content {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
     padding: 20px 22px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
+    display: flex; align-items: center; gap: 16px;
     transition: transform var(--transition), box-shadow var(--transition);
-    height: 100%;
-    position: relative;
-    overflow: hidden;
+    height: 100%; position: relative; overflow: hidden;
 }
 .stat-card::after {
     content: '';
@@ -143,14 +135,12 @@ body, .section, .card, .modal-content {
     width: 4px; height: 100%;
     border-radius: 4px 0 0 4px;
 }
-.stat-card.accent-blue::after  { background: var(--brand-primary); }
-.stat-card.accent-green::after { background: var(--brand-success); }
-.stat-card.accent-yellow::after{ background: var(--brand-warning); }
-.stat-card.accent-teal::after  { background: var(--brand-info); }
-.stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-lg);
-}
+.stat-card.accent-blue::after   { background: var(--brand-primary); }
+.stat-card.accent-green::after  { background: var(--brand-success); }
+.stat-card.accent-yellow::after { background: var(--brand-warning); }
+.stat-card.accent-teal::after   { background: var(--brand-info); }
+.stat-card.accent-purple::after { background: var(--brand-purple); }
+.stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
 .stat-icon {
     width: 52px; height: 52px;
     border-radius: var(--radius-md);
@@ -161,7 +151,7 @@ body, .section, .card, .modal-content {
 .stat-icon-green  { background: var(--brand-success-light); color: var(--brand-success); }
 .stat-icon-yellow { background: var(--brand-warning-light); color: var(--brand-warning); }
 .stat-icon-teal   { background: var(--brand-info-light);    color: var(--brand-info); }
-
+.stat-icon-purple { background: var(--brand-purple-light);  color: var(--brand-purple); }
 .stat-body { flex: 1; min-width: 0; }
 .stat-label {
     font-size: .7rem; font-weight: 700;
@@ -181,11 +171,55 @@ body, .section, .card, .modal-content {
 .stat-sub .dot-green { color: var(--brand-success); }
 
 /* ═══════════════════════════════════════════════
-   REKAP BULAN INI — mini badges
+   KPI KEHADIRAN CARD
+═══════════════════════════════════════════════ */
+.kpi-card {
+    background: linear-gradient(135deg, #1c3faa 0%, var(--brand-primary) 60%, #4f75ff 100%);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 6px 24px rgba(59,91,219,.25);
+    padding: 20px 24px;
+    display: flex; align-items: center; gap: 20px;
+    color: #fff; position: relative; overflow: hidden;
+    margin-bottom: 28px;
+}
+.kpi-card::before {
+    content: '';
+    position: absolute; right: -40px; top: -40px;
+    width: 140px; height: 140px;
+    background: rgba(255,255,255,.06); border-radius: 50%;
+}
+.kpi-main { flex: 1; min-width: 0; }
+.kpi-label {
+    font-size: .7rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .1em; opacity: .75; margin-bottom: 4px;
+}
+.kpi-value {
+    font-size: 2.6rem; font-weight: 800; letter-spacing: -.03em;
+    line-height: 1; margin-bottom: 4px;
+}
+.kpi-sub { font-size: .78rem; opacity: .8; font-weight: 500; }
+.kpi-divider {
+    width: 1px; height: 60px;
+    background: rgba(255,255,255,.2); flex-shrink: 0;
+}
+.kpi-side { text-align: center; flex-shrink: 0; min-width: 90px; }
+.kpi-side-label { font-size: .68rem; font-weight: 700; opacity: .7; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 4px; }
+.kpi-side-value { font-size: 1.5rem; font-weight: 800; letter-spacing: -.02em; }
+.kpi-tren {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: .72rem; font-weight: 700; padding: 3px 10px;
+    border-radius: 50px; margin-top: 6px;
+}
+.kpi-tren-up   { background: rgba(81,207,102,.2); color: #a9e34b; }
+.kpi-tren-down { background: rgba(255,107,107,.2); color: #ff8787; }
+.kpi-tren-flat { background: rgba(255,255,255,.12); color: rgba(255,255,255,.7); }
+
+/* ═══════════════════════════════════════════════
+   REKAP STRIP BULAN INI
 ═══════════════════════════════════════════════ */
 .rekap-strip {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     margin-bottom: 28px;
 }
@@ -221,16 +255,14 @@ body, .section, .card, .modal-content {
     border: 1px solid var(--surface-border);
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-md);
-    overflow: hidden;
-    height: 100%;
+    overflow: hidden; height: 100%;
     display: flex; flex-direction: column;
 }
 .data-card-header {
     padding: 16px 22px;
     display: flex; align-items: center; justify-content: space-between;
     border-bottom: 1px solid var(--surface-border);
-    background: var(--surface-soft);
-    flex-shrink: 0;
+    background: var(--surface-soft); flex-shrink: 0;
 }
 .data-card-header-left { display: flex; align-items: center; gap: 10px; }
 .header-icon {
@@ -244,21 +276,10 @@ body, .section, .card, .modal-content {
 .header-icon-yellow { background: var(--brand-warning-light); color: var(--brand-warning); }
 .header-icon-danger { background: var(--brand-danger-light);  color: var(--brand-danger); }
 .header-icon-info   { background: var(--brand-info-light);    color: var(--brand-info); }
+.header-icon-purple { background: var(--brand-purple-light);  color: var(--brand-purple); }
 .data-card-title    { font-size: .9rem; font-weight: 700; color: var(--text-primary); margin: 0; }
 .data-card-subtitle { font-size: .7rem; color: var(--text-muted); margin: 0; }
 .data-card-body     { padding: 20px 22px; flex: 1; }
-
-/* ── Kehadiran big number inside card ── */
-.attendance-ring-wrap {
-    display: flex; align-items: center; justify-content: center;
-    gap: 24px; flex-wrap: wrap;
-    padding: 8px 0 0;
-}
-.attendance-number {
-    font-size: 3rem; font-weight: 800; color: var(--brand-primary);
-    letter-spacing: -.04em; line-height: 1;
-}
-.attendance-label { font-size: .78rem; color: var(--text-muted); font-weight: 500; }
 
 /* ── Kelas Progress List ── */
 .kelas-item { margin-bottom: 14px; }
@@ -267,10 +288,7 @@ body, .section, .card, .modal-content {
 .kelas-meta-name { font-size: .83rem; font-weight: 700; color: var(--text-primary); }
 .kelas-meta-count { font-size: .73rem; color: var(--text-muted); font-weight: 500; }
 .kelas-progress-wrap { display: flex; align-items: center; gap: 10px; }
-.kelas-bar {
-    flex: 1; height: 7px;
-    background: #f1f3f7; border-radius: 10px; overflow: hidden;
-}
+.kelas-bar { flex: 1; height: 7px; background: #f1f3f7; border-radius: 10px; overflow: hidden; }
 .kelas-bar-fill { height: 100%; border-radius: 10px; transition: width .7s cubic-bezier(.22,1,.36,1); }
 .bar-success { background: linear-gradient(90deg, var(--brand-success), #38d9a9); }
 .bar-warning { background: linear-gradient(90deg, var(--brand-warning), #fcc419); }
@@ -283,21 +301,16 @@ body, .section, .card, .modal-content {
 /* ── Late Students List ── */
 .late-item {
     display: flex; align-items: center; gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--surface-border);
+    padding: 10px 0; border-bottom: 1px solid var(--surface-border);
 }
 .late-item:last-child { border-bottom: none; padding-bottom: 0; }
 .late-avatar {
     width: 36px; height: 36px; border-radius: 50%;
-    background: var(--brand-warning-light);
-    color: var(--brand-warning);
+    background: var(--brand-warning-light); color: var(--brand-warning);
     display: grid; place-items: center;
     font-size: .83rem; font-weight: 800; flex-shrink: 0;
 }
-.late-rank {
-    font-size: .68rem; font-weight: 800; color: var(--text-muted);
-    min-width: 18px; text-align: center;
-}
+.late-rank { font-size: .68rem; font-weight: 800; color: var(--text-muted); min-width: 18px; text-align: center; }
 .late-name  { font-size: .83rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1px; }
 .late-kelas { font-size: .72rem; color: var(--text-muted); }
 .late-badge {
@@ -307,11 +320,32 @@ body, .section, .card, .modal-content {
     padding: 3px 10px; border-radius: 50px;
 }
 
+/* ── Guru List ── */
+.guru-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 9px 0; border-bottom: 1px solid var(--surface-border);
+}
+.guru-item:last-child { border-bottom: none; padding-bottom: 0; }
+.guru-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--brand-purple-light); color: var(--brand-purple);
+    display: grid; place-items: center;
+    font-size: .8rem; font-weight: 800; flex-shrink: 0;
+}
+.guru-name  { font-size: .82rem; font-weight: 700; color: var(--text-primary); }
+.guru-nip   { font-size: .7rem; color: var(--text-muted); }
+.guru-kelas-badge {
+    margin-left: auto; flex-shrink: 0;
+    font-size: .68rem; font-weight: 700;
+    padding: 2px 9px; border-radius: 50px;
+}
+.guru-kelas-badge.wali { background: var(--brand-success-light); color: var(--brand-success); }
+.guru-kelas-badge.no-wali { background: var(--surface-soft); color: var(--text-muted); border: 1px solid var(--surface-border); }
+
 /* ── Live Feed ── */
 .feed-row {
     display: flex; align-items: center; gap: 12px;
-    padding: 9px 0;
-    border-bottom: 1px solid var(--surface-border);
+    padding: 9px 0; border-bottom: 1px solid var(--surface-border);
     font-size: .8rem;
 }
 .feed-row:last-child { border-bottom: none; padding-bottom: 0; }
@@ -328,9 +362,8 @@ body, .section, .card, .modal-content {
     font-size: .68rem; font-weight: 700; padding: 2px 8px;
     border-radius: 50px; flex-shrink: 0;
 }
-.feed-hadir    { background: var(--brand-success-light); color: var(--brand-success); }
-.feed-terlambat{ background: var(--brand-warning-light); color: var(--brand-warning); }
-.feed-izin     { background: var(--brand-info-light);    color: var(--brand-info); }
+.feed-hadir     { background: var(--brand-success-light); color: var(--brand-success); }
+.feed-terlambat { background: var(--brand-warning-light); color: var(--brand-warning); }
 
 /* ── Jam Pengaturan Info ── */
 .jam-info-row {
@@ -339,8 +372,7 @@ body, .section, .card, .modal-content {
     border-radius: var(--radius-sm);
     background: var(--surface-soft);
     border: 1px solid var(--surface-border);
-    margin-bottom: 8px;
-    font-size: .8rem;
+    margin-bottom: 8px; font-size: .8rem;
 }
 .jam-info-row:last-child { margin-bottom: 0; }
 .jam-info-icon {
@@ -361,28 +393,18 @@ body, .section, .card, .modal-content {
 .scroll-list::-webkit-scrollbar { width: 3px; }
 .scroll-list::-webkit-scrollbar-thumb { background: #dee2e6; border-radius: 4px; }
 
-/* ── Tren chip ── */
-.tren-chip {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-size: .7rem; font-weight: 700;
-    padding: 3px 9px; border-radius: 50px;
-}
-.tren-up   { background: var(--brand-success-light); color: var(--brand-success); }
-.tren-down { background: var(--brand-danger-light);  color: var(--brand-danger); }
-.tren-flat { background: var(--surface-soft); color: var(--text-muted); }
-
 /* ── Section divider label ── */
 .section-label {
     font-size: .7rem; font-weight: 800;
     text-transform: uppercase; letter-spacing: .1em;
-    color: var(--text-muted);
-    padding: 4px 0 12px;
+    color: var(--text-muted); padding: 4px 0 12px;
 }
 
 @media (max-width: 767px) {
     .rekap-strip { grid-template-columns: repeat(2, 1fr); }
     .hero-right  { display: none; }
     .page-hero   { padding: 20px 20px; }
+    .kpi-divider, .kpi-side { display: none; }
 }
 </style>
 
@@ -416,10 +438,10 @@ body, .section, .card, .modal-content {
 </div>
 
 <!-- ══════════════════════════════════════════════
-     STAT CARDS
+     STAT CARDS (5 kolom: Siswa, Kelas, Guru, Absensi, Status)
 ══════════════════════════════════════════════ -->
 <div class="row g-3 mb-4">
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl col-md-6">
         <div class="stat-card accent-blue">
             <div class="stat-icon stat-icon-blue"><i class="bi bi-people-fill"></i></div>
             <div class="stat-body">
@@ -432,7 +454,7 @@ body, .section, .card, .modal-content {
             </div>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl col-md-6">
         <div class="stat-card accent-green">
             <div class="stat-icon stat-icon-green"><i class="bi bi-building"></i></div>
             <div class="stat-body">
@@ -442,7 +464,17 @@ body, .section, .card, .modal-content {
             </div>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl col-md-6">
+        <div class="stat-card accent-purple">
+            <div class="stat-icon stat-icon-purple"><i class="bi bi-person-badge-fill"></i></div>
+            <div class="stat-body">
+                <div class="stat-label">Total Guru</div>
+                <div class="stat-value">{{ $totalGuru }}</div>
+                <div class="stat-sub">{{ $guruDenganKelas }} wali kelas &bull; {{ $guruTanpaKelas }} lainnya</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl col-md-6">
         <div class="stat-card accent-yellow">
             <div class="stat-icon stat-icon-yellow"><i class="bi bi-calendar-check-fill"></i></div>
             <div class="stat-body">
@@ -452,7 +484,7 @@ body, .section, .card, .modal-content {
             </div>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl col-md-6">
         <div class="stat-card accent-teal">
             <div class="stat-icon stat-icon-teal"><i class="bi bi-clock-fill"></i></div>
             <div class="stat-body">
@@ -465,7 +497,37 @@ body, .section, .card, .modal-content {
 </div>
 
 <!-- ══════════════════════════════════════════════
-     REKAP STRIP BULAN INI
+     KPI KEHADIRAN
+══════════════════════════════════════════════ -->
+<div class="section-label"><i class="bi bi-graph-up-arrow me-1"></i>KPI Kehadiran</div>
+<div class="kpi-card mb-4">
+    <div class="kpi-main">
+        <div class="kpi-label">Kehadiran Bulan Ini</div>
+        <div class="kpi-value">{{ $kpiKehadiranBulan }}%</div>
+        <div class="kpi-sub">Persentase siswa hadir + terlambat dari total absensi masuk</div>
+    </div>
+    <div class="kpi-divider"></div>
+    <div class="kpi-side">
+        <div class="kpi-side-label">Minggu Ini</div>
+        <div class="kpi-side-value">{{ $kpiKehadiranMinggu }}%</div>
+        @if($kpiTren > 0)
+            <div class="kpi-tren kpi-tren-up"><i class="bi bi-arrow-up-short"></i>+{{ number_format($kpiTren, 1) }}%</div>
+        @elseif($kpiTren < 0)
+            <div class="kpi-tren kpi-tren-down"><i class="bi bi-arrow-down-short"></i>{{ number_format($kpiTren, 1) }}%</div>
+        @else
+            <div class="kpi-tren kpi-tren-flat"><i class="bi bi-dash"></i>Stabil</div>
+        @endif
+    </div>
+    <div class="kpi-divider"></div>
+    <div class="kpi-side">
+        <div class="kpi-side-label">Hari Ini</div>
+        <div class="kpi-side-value">{{ $persentaseHadir }}%</div>
+        <div class="kpi-tren kpi-tren-flat">{{ $hadirHariIni }} / {{ $siswaAktif }} siswa</div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     REKAP STRIP BULAN INI (tanpa izin)
 ══════════════════════════════════════════════ -->
 <div class="section-label"><i class="bi bi-calendar3 me-1"></i>Rekap Bulan Ini</div>
 <div class="rekap-strip mb-4">
@@ -485,15 +547,6 @@ body, .section, .card, .modal-content {
         <div>
             <div class="rekap-badge-label">Terlambat</div>
             <div class="rekap-badge-value">{{ $rekapBulanIni['terlambat'] }}</div>
-        </div>
-    </div>
-    <div class="rekap-badge">
-        <div class="rekap-badge-icon" style="background:var(--brand-info-light);color:var(--brand-info);">
-            <i class="bi bi-file-earmark-text-fill"></i>
-        </div>
-        <div>
-            <div class="rekap-badge-label">Izin</div>
-            <div class="rekap-badge-value">{{ $rekapBulanIni['izin'] }}</div>
         </div>
     </div>
     <div class="rekap-badge">
@@ -525,7 +578,7 @@ body, .section, .card, .modal-content {
                                 <div class="header-icon"><i class="bi bi-bar-chart-line-fill"></i></div>
                                 <div>
                                     <p class="data-card-title">Statistik Absensi</p>
-                                    <p class="data-card-subtitle">7 hari terakhir — hadir, terlambat, izin, pulang</p>
+                                    <p class="data-card-subtitle">7 hari terakhir — hadir, terlambat, pulang, tidak hadir</p>
                                 </div>
                             </div>
                         </div>
@@ -580,7 +633,7 @@ body, .section, .card, .modal-content {
                                         <div class="feed-name">{{ $item->siswa->nama ?? '-' }}</div>
                                         <div class="feed-kelas">{{ $item->siswa->kelas->nama ?? '-' }}</div>
                                     </div>
-                                    <span class="feed-status feed-{{ $item->status === 'terlambat' ? 'terlambat' : ($item->status === 'izin' ? 'izin' : 'hadir') }}">
+                                    <span class="feed-status feed-{{ $item->status === 'terlambat' ? 'terlambat' : 'hadir' }}">
                                         {{ ucfirst($item->status) }}
                                     </span>
                                     <span class="feed-time">{{ \Carbon\Carbon::parse($item->jam)->format('H:i') }}</span>
@@ -700,6 +753,52 @@ body, .section, .card, .modal-content {
                     </div>
                 </div>
 
+                <!-- Daftar Guru -->
+                <div class="col-12">
+                    <div class="data-card">
+                        <div class="data-card-header">
+                            <div class="data-card-header-left">
+                                <div class="header-icon header-icon-purple"><i class="bi bi-person-badge-fill"></i></div>
+                                <div>
+                                    <p class="data-card-title">Data Guru</p>
+                                    <p class="data-card-subtitle">{{ $totalGuru }} guru terdaftar</p>
+                                </div>
+                            </div>
+                            <a href="{{ route('guru.index') }}"
+                               style="font-size:.72rem;font-weight:700;color:var(--brand-purple);text-decoration:none;">
+                                Kelola <i class="bi bi-arrow-right ms-1" style="font-size:.65rem;"></i>
+                            </a>
+                        </div>
+                        <div class="data-card-body" style="padding-top:10px;">
+                            <div class="scroll-list">
+                                @forelse(\App\Models\Guru::with('kelas')->take(8)->get() as $guru)
+                                    <div class="guru-item">
+                                        <div class="guru-avatar">
+                                            {{ strtoupper(substr($guru->nama, 0, 1)) }}
+                                        </div>
+                                        <div style="flex:1;min-width:0;overflow:hidden;">
+                                            <div class="guru-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $guru->nama }}</div>
+                                            <div class="guru-nip">NIP: {{ $guru->nip }}</div>
+                                        </div>
+                                        @if($guru->kelas->count() > 0)
+                                            <span class="guru-kelas-badge wali">
+                                                Wali {{ $guru->kelas->pluck('nama')->join(', ') }}
+                                            </span>
+                                        @else
+                                            <span class="guru-kelas-badge no-wali">Belum wali</span>
+                                        @endif
+                                    </div>
+                                @empty
+                                    <div class="empty-state">
+                                        <div class="empty-state-icon"><i class="bi bi-person-x"></i></div>
+                                        <p>Belum ada data guru</p>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Info Jam Pengaturan -->
                 <div class="col-12">
                     <div class="data-card">
@@ -758,14 +857,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const absensiStatus    = @json($absensiHariIniStatus);
     const absensiMingguIni = @json($absensiMingguIni);
 
-    /* ── Chart 1: Statistik 7 Hari — ApexCharts area ────── */
+    /* ── Chart 1: Statistik 7 Hari — ApexCharts area (tanpa izin) ── */
     new ApexCharts(document.querySelector("#reportsChart"), {
         series: [
-            { name: 'Hadir',        data: absensi7Hari.map(i => i.hadir),        color: '#0ca678' },
-            { name: 'Terlambat',    data: absensi7Hari.map(i => i.terlambat),    color: '#f59f00' },
-            { name: 'Izin',         data: absensi7Hari.map(i => i.izin),         color: '#1098ad' },
-            { name: 'Pulang',       data: absensi7Hari.map(i => i.pulang),       color: '#adb5bd' },
-            { name: 'Tidak Hadir',  data: absensi7Hari.map(i => i.tidak_hadir), color: '#e03131' },
+            { name: 'Hadir',       data: absensi7Hari.map(i => i.hadir),        color: '#0ca678' },
+            { name: 'Terlambat',   data: absensi7Hari.map(i => i.terlambat),    color: '#f59f00' },
+            { name: 'Pulang',      data: absensi7Hari.map(i => i.pulang),       color: '#adb5bd' },
+            { name: 'Tidak Hadir', data: absensi7Hari.map(i => i.tidak_hadir), color: '#e03131' },
         ],
         chart: {
             type: 'area', height: 310,
@@ -800,7 +898,7 @@ document.addEventListener("DOMContentLoaded", function () {
         tooltip: { theme: 'light', x: { show: true } },
     }).render();
 
-    /* ── Chart 2: Status Absensi — ECharts donut ────────── */
+    /* ── Chart 2: Status Absensi — ECharts donut (tanpa izin) ── */
     const totalDonut = Object.values(absensiStatus).reduce((a, b) => a + b, 0) || 0;
     echarts.init(document.querySelector("#budgetChart")).setOption({
         tooltip: {
@@ -835,16 +933,15 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             itemStyle: { borderRadius: 5, borderColor: '#fff', borderWidth: 2 },
             data: [
-                { value: absensiStatus.hadir     || 0, name: 'Hadir',       itemStyle: { color: '#0ca678' } },
-                { value: absensiStatus.terlambat || 0, name: 'Terlambat',   itemStyle: { color: '#f59f00' } },
-                { value: absensiStatus.izin      || 0, name: 'Izin',        itemStyle: { color: '#1098ad' } },
-                { value: absensiStatus.pulang    || 0, name: 'Pulang',      itemStyle: { color: '#adb5bd' } },
-                { value: absensiStatus['tidak hadir'] || 0, name: 'Tdk Hadir', itemStyle: { color: '#e03131' } },
+                { value: absensiStatus.hadir          || 0, name: 'Hadir',       itemStyle: { color: '#0ca678' } },
+                { value: absensiStatus.terlambat      || 0, name: 'Terlambat',   itemStyle: { color: '#f59f00' } },
+                { value: absensiStatus.pulang         || 0, name: 'Pulang',      itemStyle: { color: '#adb5bd' } },
+                { value: absensiStatus['tidak hadir'] || 0, name: 'Tdk Hadir',  itemStyle: { color: '#e03131' } },
             ]
         }]
     });
 
-    /* ── Chart 3: Masuk vs Pulang — ECharts bar+line ────── */
+    /* ── Chart 3: Masuk vs Pulang — ECharts bar ── */
     echarts.init(document.querySelector("#trafficChart")).setOption({
         tooltip: {
             trigger: 'axis',
@@ -861,10 +958,7 @@ document.addEventListener("DOMContentLoaded", function () {
         xAxis: [{
             type: 'category',
             data: absensiMingguIni.map(i => i.hari + '\n' + i.tanggal),
-            axisLabel: {
-                fontSize: 10, fontFamily: 'Plus Jakarta Sans',
-                color: '#868e96', interval: 0,
-            },
+            axisLabel: { fontSize: 10, fontFamily: 'Plus Jakarta Sans', color: '#868e96', interval: 0 },
             axisBorder: { show: false }, axisTick: { show: false },
         }],
         yAxis: [{
@@ -879,10 +973,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 barMaxWidth: 28, barGap: '15%',
                 itemStyle: {
                     color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
-                        colorStops: [
-                            { offset: 0, color: '#4f75ff' },
-                            { offset: 1, color: '#3b5bdb' }
-                        ]
+                        colorStops: [{ offset: 0, color: '#4f75ff' }, { offset: 1, color: '#3b5bdb' }]
                     },
                     borderRadius: [5, 5, 0, 0],
                 },
@@ -894,10 +985,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 barMaxWidth: 28,
                 itemStyle: {
                     color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
-                        colorStops: [
-                            { offset: 0, color: '#38d9a9' },
-                            { offset: 1, color: '#0ca678' }
-                        ]
+                        colorStops: [{ offset: 0, color: '#38d9a9' }, { offset: 1, color: '#0ca678' }]
                     },
                     borderRadius: [5, 5, 0, 0],
                 },
@@ -906,7 +994,7 @@ document.addEventListener("DOMContentLoaded", function () {
         ]
     });
 
-    /* ── Real-time clock ─────────────────────────────────── */
+    /* ── Real-time clock ── */
     function tick() {
         const el = document.getElementById('currentTime');
         if (el) el.textContent = new Date().toLocaleTimeString('id-ID');

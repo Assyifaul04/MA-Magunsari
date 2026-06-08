@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Siswa;
 use App\Models\Kelas;
+use App\Models\Guru;
 use App\Models\Absensi;
 use App\Models\Pengaturan;
 use Carbon\Carbon;
@@ -20,11 +21,17 @@ class DashboardController extends Controller
         $thisMonth = Carbon::now()->startOfMonth();
 
         // ── Stat Cards ──────────────────────────────────────────
-        $totalSiswa      = Siswa::count();
-        $totalKelas      = Kelas::count();
-        $siswaAktif      = Siswa::where('status', 'aktif')->count();
-        $siswaPending    = Siswa::where('status', 'pending')->count();
-        $absensiHariIni  = Absensi::whereDate('tanggal', $today)->count();
+        $totalSiswa   = Siswa::count();
+        $totalKelas   = Kelas::count();
+        $totalGuru    = Guru::count();
+        $siswaAktif   = Siswa::where('status', 'aktif')->count();
+        $siswaPending = Siswa::where('status', 'pending')->count();
+
+        // Guru dengan & tanpa kelas (wali kelas)
+        $guruDenganKelas = Guru::whereHas('kelas')->count();
+        $guruTanpaKelas  = $totalGuru - $guruDenganKelas;
+
+        $absensiHariIni = Absensi::whereDate('tanggal', $today)->count();
 
         // Persentase kehadiran hari ini vs total siswa aktif
         $hadirHariIni = Absensi::whereDate('tanggal', $today)
@@ -35,6 +42,46 @@ class DashboardController extends Controller
             ? round(($hadirHariIni / $siswaAktif) * 100, 1)
             : 0;
 
+        // ── KPI Kehadiran ────────────────────────────────────────
+        // Bulan ini
+        $totalHadirBulanIni     = Absensi::where('tanggal', '>=', $thisMonth)
+                                      ->where('jenis', 'masuk')
+                                      ->whereIn('status', ['hadir', 'terlambat'])
+                                      ->count();
+        $totalAbsensiIdealBulan = Absensi::where('tanggal', '>=', $thisMonth)
+                                      ->where('jenis', 'masuk')
+                                      ->count();
+        $kpiKehadiranBulan = $totalAbsensiIdealBulan > 0
+            ? round(($totalHadirBulanIni / $totalAbsensiIdealBulan) * 100, 1)
+            : 0;
+
+        // Minggu ini
+        $totalHadirMingguIni     = Absensi::whereBetween('tanggal', [$thisWeek->toDateString(), Carbon::now()->toDateString()])
+                                       ->where('jenis', 'masuk')
+                                       ->whereIn('status', ['hadir', 'terlambat'])
+                                       ->count();
+        $totalAbsensiIdealMinggu = Absensi::whereBetween('tanggal', [$thisWeek->toDateString(), Carbon::now()->toDateString()])
+                                       ->where('jenis', 'masuk')
+                                       ->count();
+        $kpiKehadiranMinggu = $totalAbsensiIdealMinggu > 0
+            ? round(($totalHadirMingguIni / $totalAbsensiIdealMinggu) * 100, 1)
+            : 0;
+
+        // Tren: minggu ini vs minggu lalu
+        $lastWeekStart   = $thisWeek->copy()->subWeek();
+        $lastWeekEnd     = $lastWeekStart->copy()->endOfWeek();
+        $hadirMingguLalu = Absensi::whereBetween('tanggal', [$lastWeekStart->toDateString(), $lastWeekEnd->toDateString()])
+                               ->where('jenis', 'masuk')
+                               ->whereIn('status', ['hadir', 'terlambat'])
+                               ->count();
+        $totalMingguLalu = Absensi::whereBetween('tanggal', [$lastWeekStart->toDateString(), $lastWeekEnd->toDateString()])
+                               ->where('jenis', 'masuk')
+                               ->count();
+        $kpiMingguLalu = $totalMingguLalu > 0
+            ? round(($hadirMingguLalu / $totalMingguLalu) * 100, 1)
+            : 0;
+        $kpiTren = $kpiKehadiranMinggu - $kpiMingguLalu;
+
         // ── Absensi hari ini per status ─────────────────────────
         $absensiHariIniStatus = Absensi::whereDate('tanggal', $today)
             ->select('status', DB::raw('count(*) as total'))
@@ -42,16 +89,15 @@ class DashboardController extends Controller
             ->pluck('total', 'status')
             ->toArray();
 
-        // ── Absensi 7 hari terakhir ─────────────────────────────
+        // ── Absensi 7 hari terakhir (tanpa izin) ────────────────
         $absensi7Hari = [];
         for ($i = 6; $i >= 0; $i--) {
             $date           = Carbon::today()->subDays($i);
             $absensi7Hari[] = [
-                'tanggal'   => $date->format('d M'),
-                'hadir'     => Absensi::whereDate('tanggal', $date)->where('status', 'hadir')->count(),
-                'terlambat' => Absensi::whereDate('tanggal', $date)->where('status', 'terlambat')->count(),
-                'izin'      => Absensi::whereDate('tanggal', $date)->where('status', 'izin')->count(),
-                'pulang'    => Absensi::whereDate('tanggal', $date)->where('status', 'pulang')->count(),
+                'tanggal'     => $date->format('d M'),
+                'hadir'       => Absensi::whereDate('tanggal', $date)->where('status', 'hadir')->count(),
+                'terlambat'   => Absensi::whereDate('tanggal', $date)->where('status', 'terlambat')->count(),
+                'pulang'      => Absensi::whereDate('tanggal', $date)->where('status', 'pulang')->count(),
                 'tidak_hadir' => Absensi::whereDate('tanggal', $date)->where('status', 'tidak hadir')->count(),
             ];
         }
@@ -99,26 +145,25 @@ class DashboardController extends Controller
             ];
         }
 
-        // ── Tren kehadiran 4 minggu terakhir (persentase) ───────
+        // ── Tren kehadiran 4 minggu terakhir ────────────────────
         $trenKehadiran = [];
         for ($w = 3; $w >= 0; $w--) {
-            $weekStart      = Carbon::now()->startOfWeek()->subWeeks($w);
-            $weekEnd        = $weekStart->copy()->endOfWeek();
-            $totalMasuk     = Absensi::whereBetween('tanggal', [$weekStart->toDateString(), $weekEnd->toDateString()])
-                                ->where('jenis', 'masuk')->count();
-            $totalHadir     = Absensi::whereBetween('tanggal', [$weekStart->toDateString(), $weekEnd->toDateString()])
-                                ->whereIn('status', ['hadir', 'terlambat'])->count();
+            $weekStart       = Carbon::now()->startOfWeek()->subWeeks($w);
+            $weekEnd         = $weekStart->copy()->endOfWeek();
+            $totalMasuk      = Absensi::whereBetween('tanggal', [$weekStart->toDateString(), $weekEnd->toDateString()])
+                                   ->where('jenis', 'masuk')->count();
+            $totalHadir      = Absensi::whereBetween('tanggal', [$weekStart->toDateString(), $weekEnd->toDateString()])
+                                   ->whereIn('status', ['hadir', 'terlambat'])->count();
             $trenKehadiran[] = [
-                'label'      => 'W' . ($weekStart->weekOfYear),
+                'label'      => 'W' . $weekStart->weekOfYear,
                 'persentase' => $totalMasuk > 0 ? round(($totalHadir / $totalMasuk) * 100, 1) : 0,
             ];
         }
 
-        // ── Rekap bulan ini (ringkasan angka) ───────────────────
+        // ── Rekap bulan ini (tanpa izin) ────────────────────────
         $rekapBulanIni = [
             'hadir'      => Absensi::where('tanggal', '>=', $thisMonth)->where('status', 'hadir')->count(),
             'terlambat'  => Absensi::where('tanggal', '>=', $thisMonth)->where('status', 'terlambat')->count(),
-            'izin'       => Absensi::where('tanggal', '>=', $thisMonth)->where('status', 'izin')->count(),
             'tidakHadir' => Absensi::where('tanggal', '>=', $thisMonth)->where('status', 'tidak hadir')->count(),
         ];
 
@@ -141,8 +186,8 @@ class DashboardController extends Controller
         }
 
         // ── Status waktu absensi saat ini ───────────────────────
-        $now         = Carbon::now();
-        $currentTime = $now->format('H:i:s');
+        $now           = Carbon::now();
+        $currentTime   = $now->format('H:i:s');
         $jamMasukAwal  = $pengaturanHariIni->jam_masuk_awal  ?? '05:00:00';
         $jamMasukAkhir = $pengaturanHariIni->jam_masuk_akhir ?? '07:00:00';
         $jamPulang     = $pengaturanHariIni->jam_pulang       ?? '15:00:00';
@@ -164,6 +209,9 @@ class DashboardController extends Controller
         return view('admin.dashboard', compact(
             'totalSiswa',
             'totalKelas',
+            'totalGuru',
+            'guruDenganKelas',
+            'guruTanpaKelas',
             'siswaAktif',
             'siswaPending',
             'absensiHariIni',
@@ -179,7 +227,10 @@ class DashboardController extends Controller
             'absensiTerbaru',
             'pengaturanHariIni',
             'statusWaktu',
-            'jenisAbsensi'
+            'jenisAbsensi',
+            'kpiKehadiranBulan',
+            'kpiKehadiranMinggu',
+            'kpiTren'
         ));
     }
 }
