@@ -3,16 +3,15 @@
 @section('content')
 
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-{{-- SweetAlert2 CSS --}}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
 <style>
     :root {
-        --brand-primary:       #3b5bdb;
-        --brand-primary-light: #eef2ff;
-        --brand-primary-dark:  #2f4ac2;
-        --brand-success-light: #e6fcf5;
-        --brand-success:       #0ca678;
+        --brand-primary:       #16a34a;
+        --brand-primary-light: #e6fcf5;
+        --brand-primary-dark:  #15803d;
+        --brand-success-light: #dcfce7;
+        --brand-success:       #16a34a;
         --brand-danger:        #e03131;
         --brand-danger-light:  #fff5f5;
         --brand-warning-light: #fff9db;
@@ -33,7 +32,7 @@
 
     body, .section, .card, .modal-content { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-    .page-hero { background: linear-gradient(135deg, #1c3faa 0%, var(--brand-primary) 55%, #4f75ff 100%); border-radius: var(--radius-xl); padding: 26px 32px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 8px 32px rgba(59,91,219,.28); position: relative; overflow: hidden; }
+    .page-hero { background: linear-gradient(135deg, #0b6e4f 0%, var(--brand-primary) 55%, #20c997 100%); border-radius: var(--radius-xl); padding: 26px 32px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 8px 32px rgba(9,146,104,.28); position: relative; overflow: hidden; }
     .page-hero::before { content: ''; position: absolute; right: -50px; top: -50px; width: 200px; height: 200px; background: rgba(255,255,255,.07); border-radius: 50%; }
     .page-hero::after { content: ''; position: absolute; right: 70px; bottom: -65px; width: 140px; height: 140px; background: rgba(255,255,255,.05); border-radius: 50%; }
     .page-hero h1 { font-size: 1.45rem; font-weight: 700; color: #fff; margin: 0 0 4px; }
@@ -42,7 +41,7 @@
     .page-hero .breadcrumb-item + .breadcrumb-item::before { color: rgba(255,255,255,.4); }
 
     .btn-hero { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 600; font-size: .82rem; border-radius: 50px; padding: 9px 22px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: all .2s; z-index: 1; position: relative; background: #fff; color: var(--brand-primary); }
-    .btn-hero:hover { background: #f0f4ff; color: var(--brand-primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.12); }
+    .btn-hero:hover { background: #e6fcf5; color: var(--brand-primary-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.12); }
 
     .alert-pro { border: none; border-radius: var(--radius-md); padding: 14px 18px; font-size: .875rem; font-weight: 500; display: flex; align-items: center; gap: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.06); margin-bottom: 16px; }
     .alert-pro-success { background: var(--brand-success-light); color: #087f5b; }
@@ -58,7 +57,7 @@
     .table-pro { width: 100%; border-collapse: separate; border-spacing: 0; }
     .table-pro thead th { background: var(--surface-soft); color: var(--text-secondary); font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; padding: 13px 20px; border-bottom: 1px solid var(--surface-border); white-space: nowrap; }
     .table-pro tbody tr { transition: background .15s; }
-    .table-pro tbody tr:hover { background: #f5f8ff; }
+    .table-pro tbody tr:hover { background: #f0faf5; }
     .table-pro tbody td, .table-pro tbody th { padding: 14px 20px; border-bottom: 1px solid #f1f3f7; vertical-align: middle; font-size: .875rem; }
     .table-pro tbody tr:last-child td, .table-pro tbody tr:last-child th { border-bottom: none; }
 
@@ -72,7 +71,7 @@
 
     .action-wrap { display: flex; gap: 6px; align-items: center; }
     .btn-act { width: 32px; height: 32px; border-radius: var(--radius-sm); border: 1.5px solid; background: transparent; display: grid; place-items: center; font-size: .82rem; cursor: pointer; transition: all .2s; }
-    .btn-act-edit { border-color: #74c0fc; color: var(--brand-primary); background: var(--brand-primary-light); }
+    .btn-act-edit { border-color: #63e6be; color: var(--brand-primary); background: var(--brand-primary-light); }
     .btn-act-edit:hover { background: var(--brand-primary); border-color: var(--brand-primary); color: #fff; }
     .btn-act-delete { border-color: #ffa8a8; color: var(--brand-danger); background: var(--brand-danger-light); }
     .btn-act-delete:hover { background: var(--brand-danger); border-color: var(--brand-danger); color: #fff; }
@@ -94,14 +93,14 @@
 
     .flabel { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--text-secondary); margin-bottom: 6px; display: block; }
     .form-control, .form-select { font-family: 'Plus Jakarta Sans', sans-serif; font-size: .875rem; border: 1.5px solid var(--surface-border); border-radius: var(--radius-sm); color: var(--text-primary); padding: 9px 13px; transition: border-color .2s, box-shadow .2s; width: 100%; background-color: var(--surface); }
-    .form-control:focus, .form-select:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(59,91,219,.1); outline: none; }
+    .form-control:focus, .form-select:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(9,146,104,.12); outline: none; }
     .form-control.is-invalid, .form-select.is-invalid { border-color: var(--brand-danger); }
 
     .btn-modal { font-family: 'Plus Jakarta Sans', sans-serif; font-size: .84rem; font-weight: 600; padding: 9px 20px; border-radius: 50px; border: none; display: inline-flex; align-items: center; gap: 6px; transition: all .2s; cursor: pointer; }
     .btn-mc { background: var(--surface-border); color: var(--text-secondary); }
     .btn-mc:hover { background: #dee2e6; color: var(--text-primary); }
     .btn-mp { background: var(--brand-primary); color: #fff; }
-    .btn-mp:hover { background: var(--brand-primary-dark); box-shadow: 0 4px 12px rgba(59,91,219,.3); }
+    .btn-mp:hover { background: var(--brand-primary-dark); box-shadow: 0 4px 12px rgba(9,146,104,.3); }
 
     /* SweetAlert2 custom theme */
     .swal2-popup { font-family: 'Plus Jakarta Sans', sans-serif !important; border-radius: 16px !important; }
@@ -203,16 +202,22 @@
                                     </td>
                                     <td>
                                         <div class="action-wrap">
+                                            {{-- Tombol Edit: buka modal, submit dicegat JS → AJAX → SweetAlert sukses --}}
                                             <button type="button" class="btn-act btn-act-edit" data-bs-toggle="modal" data-bs-target="#editGuruModal{{ $g->id }}" title="Edit Guru">
                                                 <i class="bi bi-pencil"></i>
                                             </button>
-                                            <button type="button" class="btn-act btn-act-delete delete-btn" data-url="{{ route('guru.destroy', $g->id) }}" data-id="{{ $g->id }}" data-nama="{{ $g->nama }}" title="Hapus Guru">
+                                            {{-- Tombol Hapus: konfirmasi SweetAlert → AJAX DELETE → SweetAlert sukses --}}
+                                            <button type="button" class="btn-act btn-act-delete delete-btn"
+                                                data-url="{{ route('guru.destroy', $g->id) }}"
+                                                data-nama="{{ $g->nama }}"
+                                                title="Hapus Guru">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
 
+                                {{-- Modal Edit Guru --}}
                                 <div class="modal fade modal-pro" id="editGuruModal{{ $g->id }}" tabindex="-1">
                                     <div class="modal-dialog modal-dialog-centered">
                                         <div class="modal-content">
@@ -222,7 +227,11 @@
                                                 </h5>
                                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
-                                            <form action="{{ route('guru.update', $g->id) }}" method="POST">
+                                            {{-- Form edit: action & method tetap, JS yang intercept submit-nya --}}
+                                            <form class="edit-guru-form"
+                                                  action="{{ route('guru.update', $g->id) }}"
+                                                  method="POST"
+                                                  data-nama="{{ $g->nama }}">
                                                 @csrf
                                                 @method('PUT')
                                                 <div class="modal-body">
@@ -230,28 +239,23 @@
                                                         <label class="flabel">Kaitkan ke Akun Existing (Opsional)</label>
                                                         <select name="user_id" class="form-control">
                                                             <option value="">-- Biarkan Seperti Saat Ini / Tidak Ada --</option>
-
                                                             @if($g->user_id && $g->user)
                                                                 <option value="{{ $g->user_id }}" selected>Akun Saat Ini: {{ $g->user->name }} ({{ $g->user->email }})</option>
                                                             @endif
-
                                                             @foreach($availableUsers as $user)
                                                                 <option value="{{ $user->id }}">{{ $user->name }} ({{ $user->email }})</option>
                                                             @endforeach
                                                         </select>
                                                         <small class="text-muted" style="font-size: 0.75rem;">Jika diganti, nama & email akun terkait otomatis diperbarui menjadi NIP.</small>
                                                     </div>
-
                                                     <div class="mb-3">
                                                         <label for="nip{{ $g->id }}" class="flabel">NIP (Juga jadi Username) <span class="text-danger">*</span></label>
                                                         <input type="text" name="nip" id="nip{{ $g->id }}" class="form-control mb-3" value="{{ old('nip', $g->nip) }}" required>
                                                     </div>
-
                                                     <div class="mb-3">
                                                         <label for="nama{{ $g->id }}" class="flabel">Nama Lengkap <span class="text-danger">*</span></label>
                                                         <input type="text" name="nama" id="nama{{ $g->id }}" class="form-control mb-3" value="{{ old('nama', $g->nama) }}" required>
                                                     </div>
-
                                                     <div class="mb-3">
                                                         <label for="no_hp{{ $g->id }}" class="flabel">No HP (Opsional)</label>
                                                         <input type="text" name="no_hp" id="no_hp{{ $g->id }}" class="form-control" value="{{ old('no_hp', $g->no_hp) }}">
@@ -297,7 +301,6 @@
             <form action="{{ route('guru.store') }}" method="POST">
                 @csrf
                 <div class="modal-body">
-
                     <div class="mb-3">
                         <label for="user_id" class="flabel">Kaitkan ke Akun Existing (Opsional)</label>
                         <select name="user_id" id="user_id" class="form-control @error('user_id') is-invalid @enderror">
@@ -310,7 +313,6 @@
                         </select>
                         <small class="text-muted mt-1 d-block" style="font-size: 0.75rem;">Pilih jika akun sudah ada. Jika pilih "Buat Akun Baru", Passwordnya adalah: <strong>password123</strong></small>
                     </div>
-
                     <div class="mb-3">
                         <label for="nip" class="flabel">NIP (Username Login) <span class="text-danger">*</span></label>
                         <input type="text" name="nip" id="nip" class="form-control @error('nip') is-invalid @enderror" value="{{ old('nip') }}" placeholder="Nomor Induk Pegawai" required>
@@ -320,12 +322,10 @@
                             </div>
                         @enderror
                     </div>
-
                     <div class="mb-3">
                         <label for="nama" class="flabel">Nama Lengkap <span class="text-danger">*</span></label>
                         <input type="text" name="nama" id="nama" class="form-control @error('nama') is-invalid @enderror" value="{{ old('nama') }}" placeholder="Nama Guru beserta Gelar" required>
                     </div>
-
                     <div class="mb-3">
                         <label for="no_hp" class="flabel">No HP / WhatsApp (Opsional)</label>
                         <input type="text" name="no_hp" id="no_hp" class="form-control" value="{{ old('no_hp') }}" placeholder="Contoh: 08123456789">
@@ -341,99 +341,164 @@
 </div>
 
 @if($errors->any() && !request()->isMethod('put'))
-    <span id="flag-error-tambah" class="d-none" style="display: none;"></span>
+    <span id="flag-error-tambah" class="d-none"></span>
 @endif
 
 @endsection
 
 @push('scripts')
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    {{-- SweetAlert2 JS --}}
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        $(document).ready(function() {
-            // 1. Membaca flag error untuk otomatis membuka modal tambah jika validasi gagal
-            if ($('#flag-error-tambah').length > 0) {
-                var myModal = new bootstrap.Modal(document.getElementById('tambahGuruModal'));
-                myModal.show();
-            }
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+$(document).ready(function () {
 
-            // 2. Handler AJAX untuk tombol Hapus Data Guru
-            $('.delete-btn').on('click', function(e) {
-                e.preventDefault();
+    /* ─────────────────────────────────────────────
+       1. Buka modal Tambah otomatis jika ada error validasi
+    ───────────────────────────────────────────── */
+    if ($('#flag-error-tambah').length > 0) {
+        new bootstrap.Modal(document.getElementById('tambahGuruModal')).show();
+    }
 
-                var url      = $(this).data('url');
-                var namaGuru = $(this).data('nama');
+    /* ─────────────────────────────────────────────
+       2. EDIT GURU – intercept submit → AJAX → SweetAlert sukses
+    ───────────────────────────────────────────── */
+    $(document).on('submit', '.edit-guru-form', function (e) {
+        e.preventDefault(); // cegah submit biasa
 
-                // Konfirmasi menggunakan SweetAlert2 (menggantikan confirm() bawaan browser)
+        var $form    = $(this);
+        var url      = $form.attr('action');
+        var namaGuru = $form.data('nama');
+        var formData = $form.serialize(); // sudah termasuk _method=PUT & _token
+
+        // Nonaktifkan tombol submit agar tidak dobel klik
+        var $submitBtn = $form.find('button[type="submit"]');
+        $submitBtn.prop('disabled', true).html('<i class="bi bi-hourglass-split me-1"></i> Menyimpan...');
+
+        $.ajax({
+            url: url,
+            type: 'POST',          // Laravel menerima POST dengan _method=PUT
+            data: formData,
+            success: function (response) {
+                // Tutup modal edit terlebih dahulu
+                var modalEl = $form.closest('.modal');
+                var bsModal = bootstrap.Modal.getInstance(modalEl[0]);
+                if (bsModal) bsModal.hide();
+
+                // Tampilkan SweetAlert sukses
                 Swal.fire({
-                    title: 'Hapus Data Guru?',
-                    html: 'Anda akan menghapus data guru:<br><strong>' + namaGuru + '</strong><br><span style="font-size:.82rem;color:#6c757d;">Akun user yang terhubung juga akan ikut terhapus.</span>',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#e03131',
-                    cancelButtonColor: '#868e96',
-                    confirmButtonText: '<i class="bi bi-trash me-1"></i> Ya, Hapus!',
-                    cancelButtonText: '<i class="bi bi-x-lg me-1"></i> Batal',
-                    reverseButtons: true,
-                    focusCancel: true,
-                    customClass: {
-                        popup:         'swal2-popup',
-                        title:         'swal2-title',
-                        htmlContainer: 'swal2-html-container',
-                        confirmButton: 'swal2-confirm',
-                        cancelButton:  'swal2-cancel',
-                    }
-                }).then(function(result) {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: url,
-                            type: 'POST',
-                            data: {
-                                _method: 'DELETE',           // Beritahu Laravel ini adalah request DELETE
-                                _token: '{{ csrf_token() }}' // Token CSRF keamanan Laravel
-                            },
-                            success: function(response) {
-                                if (response.success) {
-                                    // Notifikasi sukses menggunakan SweetAlert2 (menggantikan alert() bawaan)
-                                    Swal.fire({
-                                        title: 'Berhasil!',
-                                        text: response.message,
-                                        icon: 'success',
-                                        confirmButtonColor: '#3b5bdb',
-                                        confirmButtonText: 'OK',
-                                        timer: 2000,
-                                        timerProgressBar: true,
-                                    }).then(function() {
-                                        location.reload(); // Refresh halaman otomatis untuk memperbarui tabel
-                                    });
-                                } else {
-                                    Swal.fire({
-                                        title: 'Gagal!',
-                                        text: 'Gagal menghapus data.',
-                                        icon: 'error',
-                                        confirmButtonColor: '#3b5bdb',
-                                    });
-                                }
-                            },
-                            error: function(xhr) {
-                                // Antisipasi jika ada error database/sistem tersembunyi
-                                var pesan = xhr.status === 500
-                                    ? 'Terjadi kesalahan pada server. Pastikan relasi database aman.'
-                                    : 'Terjadi kesalahan sistem saat mencoba menghapus data.';
+                    title: 'Berhasil Diperbarui!',
+                    html: 'Data guru <strong>' + namaGuru + '</strong> berhasil diperbarui.',
+                    icon: 'success',
+                    confirmButtonColor: '#099268',
+                    confirmButtonText: 'OK',
+                    timer: 2000,
+                    timerProgressBar: true,
+                }).then(function () {
+                    location.reload();
+                });
+            },
+            error: function (xhr) {
+                $submitBtn.prop('disabled', false).html('<i class="bi bi-check-lg"></i> Update Guru');
 
-                                Swal.fire({
-                                    title: 'Error!',
-                                    text: pesan,
-                                    icon: 'error',
-                                    confirmButtonColor: '#3b5bdb',
-                                });
-                                console.error(xhr.responseText);
-                            }
+                // Tangani error validasi Laravel (422)
+                if (xhr.status === 422) {
+                    var errors   = xhr.responseJSON.errors;
+                    var pesanErr = Object.values(errors).flat().join('<br>');
+                    Swal.fire({
+                        title: 'Validasi Gagal!',
+                        html: pesanErr,
+                        icon: 'error',
+                        confirmButtonColor: '#e03131',
+                        confirmButtonText: 'Tutup',
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.',
+                        icon: 'error',
+                        confirmButtonColor: '#e03131',
+                    });
+                }
+            }
+        });
+    });
+
+    /* ─────────────────────────────────────────────
+       3. HAPUS GURU – konfirmasi SweetAlert → AJAX DELETE → SweetAlert sukses
+    ───────────────────────────────────────────── */
+    $('.delete-btn').on('click', function (e) {
+        e.preventDefault();
+
+        var url      = $(this).data('url');
+        var namaGuru = $(this).data('nama');
+
+        Swal.fire({
+            title: 'Hapus Data Guru?',
+            html: 'Anda akan menghapus data guru:<br><strong>' + namaGuru + '</strong><br>'
+                + '<span style="font-size:.82rem;color:#6c757d;">Akun user yang terhubung juga akan ikut terhapus.</span>',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e03131',
+            cancelButtonColor: '#868e96',
+            confirmButtonText: '<i class="bi bi-trash me-1"></i> Ya, Hapus!',
+            cancelButtonText: '<i class="bi bi-x-lg me-1"></i> Batal',
+            reverseButtons: true,
+            focusCancel: true,
+            customClass: {
+                popup:         'swal2-popup',
+                title:         'swal2-title',
+                htmlContainer: 'swal2-html-container',
+                confirmButton: 'swal2-confirm',
+                cancelButton:  'swal2-cancel',
+            }
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: {
+                        _method: 'DELETE',
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire({
+                                title: 'Berhasil Dihapus!',
+                                html: 'Data guru <strong>' + namaGuru + '</strong> telah dihapus.',
+                                icon: 'success',
+                                confirmButtonColor: '#099268',
+                                confirmButtonText: 'OK',
+                                timer: 2000,
+                                timerProgressBar: true,
+                            }).then(function () {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Gagal!',
+                                text: 'Gagal menghapus data.',
+                                icon: 'error',
+                                confirmButtonColor: '#e03131',
+                            });
+                        }
+                    },
+                    error: function (xhr) {
+                        var pesan = xhr.status === 500
+                            ? 'Terjadi kesalahan pada server. Pastikan relasi database aman.'
+                            : 'Terjadi kesalahan sistem saat mencoba menghapus data.';
+                        Swal.fire({
+                            title: 'Error!',
+                            text: pesan,
+                            icon: 'error',
+                            confirmButtonColor: '#e03131',
                         });
+                        console.error(xhr.responseText);
                     }
                 });
-            });
+            }
         });
-    </script>
+    });
+
+});
+</script>
 @endpush

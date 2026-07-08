@@ -7,12 +7,12 @@
 
 <style>
 /* ═══════════════════════════════════════════════
-   CSS VARIABLES — warna tidak diubah
+   CSS VARIABLES
 ═══════════════════════════════════════════════ */
 :root {
-    --brand-primary:        #3b5bdb;
-    --brand-primary-dark:   #2f4ac2;
-    --brand-primary-light:  #eef2ff;
+    --brand-primary:        #1e8a4a;
+    --brand-primary-dark:   #166b39;
+    --brand-primary-light:  #edfff5;
     --brand-success:        #0ca678;
     --brand-success-light:  #e6fcf5;
     --brand-warning:        #f59f00;
@@ -50,7 +50,7 @@ body, .section, .card, .modal-content {
    PAGE HERO
 ═══════════════════════════════════════════════ */
 .page-hero {
-    background: linear-gradient(135deg, #1c3faa 0%, var(--brand-primary) 55%, #4f75ff 100%);
+    background: linear-gradient(135deg, #145e30 0%, var(--brand-primary) 55%, #27ae60 100%);
     border-radius: var(--radius-xl);
     padding: 28px 32px;
     margin-bottom: 28px;
@@ -58,7 +58,7 @@ body, .section, .card, .modal-content {
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    box-shadow: 0 8px 32px rgba(59,91,219,.28);
+    box-shadow: 0 8px 32px rgba(30,138,74,.28);
     position: relative;
     overflow: hidden;
 }
@@ -174,9 +174,9 @@ body, .section, .card, .modal-content {
    KPI KEHADIRAN CARD
 ═══════════════════════════════════════════════ */
 .kpi-card {
-    background: linear-gradient(135deg, #1c3faa 0%, var(--brand-primary) 60%, #4f75ff 100%);
+    background: linear-gradient(135deg, #145e30 0%, var(--brand-primary) 60%, #27ae60 100%);
     border-radius: var(--radius-lg);
-    box-shadow: 0 6px 24px rgba(59,91,219,.25);
+    box-shadow: 0 6px 24px rgba(30,138,74,.25);
     padding: 20px 24px;
     display: flex; align-items: center; gap: 20px;
     color: #fff; position: relative; overflow: hidden;
@@ -438,7 +438,7 @@ body, .section, .card, .modal-content {
 </div>
 
 <!-- ══════════════════════════════════════════════
-     STAT CARDS (5 kolom: Siswa, Kelas, Guru, Absensi, Status)
+     STAT CARDS
 ══════════════════════════════════════════════ -->
 <div class="row g-3 mb-4">
     <div class="col-xl col-md-6">
@@ -527,7 +527,7 @@ body, .section, .card, .modal-content {
 </div>
 
 <!-- ══════════════════════════════════════════════
-     REKAP STRIP BULAN INI (tanpa izin)
+     REKAP STRIP BULAN INI
 ══════════════════════════════════════════════ -->
 <div class="section-label"><i class="bi bi-calendar3 me-1"></i>Rekap Bulan Ini</div>
 <div class="rekap-strip mb-4">
@@ -857,7 +857,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const absensiStatus    = @json($absensiHariIniStatus);
     const absensiMingguIni = @json($absensiMingguIni);
 
-    /* ── Chart 1: Statistik 7 Hari — ApexCharts area (tanpa izin) ── */
+    /* ── Chart 1: Statistik 7 Hari ── */
     new ApexCharts(document.querySelector("#reportsChart"), {
         series: [
             { name: 'Hadir',       data: absensi7Hari.map(i => i.hadir),        color: '#0ca678' },
@@ -898,7 +898,7 @@ document.addEventListener("DOMContentLoaded", function () {
         tooltip: { theme: 'light', x: { show: true } },
     }).render();
 
-    /* ── Chart 2: Status Absensi — ECharts donut (tanpa izin) ── */
+    /* ── Chart 2: Status Absensi — ECharts donut ── */
     const totalDonut = Object.values(absensiStatus).reduce((a, b) => a + b, 0) || 0;
     echarts.init(document.querySelector("#budgetChart")).setOption({
         tooltip: {
@@ -933,10 +933,10 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             itemStyle: { borderRadius: 5, borderColor: '#fff', borderWidth: 2 },
             data: [
-                { value: absensiStatus.hadir          || 0, name: 'Hadir',       itemStyle: { color: '#0ca678' } },
-                { value: absensiStatus.terlambat      || 0, name: 'Terlambat',   itemStyle: { color: '#f59f00' } },
-                { value: absensiStatus.pulang         || 0, name: 'Pulang',      itemStyle: { color: '#adb5bd' } },
-                { value: absensiStatus['tidak hadir'] || 0, name: 'Tdk Hadir',  itemStyle: { color: '#e03131' } },
+                { value: absensiStatus.hadir          || 0, name: 'Hadir',      itemStyle: { color: '#0ca678' } },
+                { value: absensiStatus.terlambat      || 0, name: 'Terlambat',  itemStyle: { color: '#f59f00' } },
+                { value: absensiStatus.pulang         || 0, name: 'Pulang',     itemStyle: { color: '#adb5bd' } },
+                { value: absensiStatus['tidak hadir'] || 0, name: 'Tdk Hadir', itemStyle: { color: '#e03131' } },
             ]
         }]
     });
@@ -973,7 +973,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 barMaxWidth: 28, barGap: '15%',
                 itemStyle: {
                     color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1,
-                        colorStops: [{ offset: 0, color: '#4f75ff' }, { offset: 1, color: '#3b5bdb' }]
+                        colorStops: [{ offset: 0, color: '#27ae60' }, { offset: 1, color: '#1e8a4a' }]
                     },
                     borderRadius: [5, 5, 0, 0],
                 },

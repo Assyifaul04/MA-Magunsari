@@ -77,6 +77,7 @@ class AbsensiController extends Controller
             'orangTua'
         ])->where('rfid', $request->rfid)->first();
 
+        // 1. Cek apakah RFID ditemukan
         if (!$siswa) {
             return response()->json([
                 'success' => false,
@@ -84,6 +85,15 @@ class AbsensiController extends Controller
             ], 404);
         }
 
+        // 2. Validasi status non_aktif (Mencegah non_aktif iseng absen)
+        if ($siswa->status === 'non_aktif') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Akses ditolak! Kartu ini milik non_aktif dan tidak dapat digunakan untuk absensi.'
+            ], 403);
+        }
+
+        // 3. Cek data orang tua siswa
         if (!$siswa->orangTua) {
             return response()->json([
                 'success' => false,
@@ -162,9 +172,6 @@ class AbsensiController extends Controller
             'jam'        => $now->toTimeString(),
         ]);
 
-        // Masukkan proses pengiriman WhatsApp ke dalam Antrean (Queue)
-        SendWhatsappNotification::dispatch($siswa, $absensi, $jenis, $status, $now);
-
         return response()->json([
             'success' => true,
             'message' => "Absensi {$jenis} berhasil dicatat dengan status {$status}.",
@@ -228,7 +235,11 @@ class AbsensiController extends Controller
 
     public function generateRange($tanggalMulai, $tanggalSelesai)
     {
-        $siswaList = Siswa::whereNotNull('rfid')->get();
+        // FILTER TAMBAHAN: Hanya ambil data siswa yang statusnya BUKAN non_aktif
+        $siswaList = Siswa::whereNotNull('rfid')
+            ->where('status', '!=', 'non_aktif')
+            ->get();
+            
         $periode = CarbonPeriod::create($tanggalMulai, $tanggalSelesai);
 
         $now = Carbon::now();

@@ -7,9 +7,9 @@
 
 <style>
 :root {
-    --brand-primary:        #3b5bdb;
-    --brand-primary-dark:   #2f4ac2;
-    --brand-primary-light:  #eef2ff;
+    --brand-primary:        #2f9e44;
+    --brand-primary-dark:   #237032;
+    --brand-primary-light:  #ebfbee;
     --brand-success:        #0ca678;
     --brand-success-light:  #e6fcf5;
     --brand-warning:        #f59f00;
@@ -41,12 +41,12 @@ body, .section, .card, .modal-content { font-family: 'Plus Jakarta Sans', sans-s
 
 /* PAGE HERO */
 .page-hero {
-    background: linear-gradient(135deg, #1c3faa 0%, var(--brand-primary) 55%, #4f75ff 100%);
+    background: linear-gradient(135deg, #1a6b2a 0%, var(--brand-primary) 55%, #52c46a 100%);
     border-radius: var(--radius-xl);
     padding: 28px 32px;
     margin-bottom: 28px;
     display: flex; align-items: center; justify-content: space-between; gap: 16px;
-    box-shadow: 0 8px 32px rgba(59,91,219,.28);
+    box-shadow: 0 8px 32px rgba(47,158,68,.28);
     position: relative; overflow: hidden;
 }
 .page-hero::before {

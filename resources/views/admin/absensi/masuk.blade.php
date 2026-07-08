@@ -6,9 +6,9 @@
 
 <style>
     :root {
-        --brand-primary:       #3b5bdb;
-        --brand-primary-light: #eef2ff;
-        --brand-primary-dark:  #2f4ac2;
+        --brand-primary:       #1e8a4a;
+        --brand-primary-light: #edfff5;
+        --brand-primary-dark:  #166b39;
         --brand-success-light: #e6fcf5;
         --brand-success:       #0ca678;
         --brand-danger:        #e03131;
@@ -35,14 +35,14 @@
 
     /* ── Page Hero ─────────────────────────── */
     .page-hero {
-        background: linear-gradient(135deg, #1c3faa 0%, var(--brand-primary) 55%, #4f75ff 100%);
+        background: linear-gradient(135deg, #145e30 0%, var(--brand-primary) 55%, #27ae60 100%);
         border-radius: var(--radius-xl);
         padding: 26px 32px;
         margin-bottom: 24px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        box-shadow: 0 8px 32px rgba(59,91,219,.28);
+        box-shadow: 0 8px 32px rgba(30,138,74,.28);
         position: relative;
         overflow: hidden;
     }
@@ -100,12 +100,12 @@
     .filter-bar {
         display: flex; align-items: center; justify-content: space-between; gap: 12px;
         padding: 12px 24px;
-        background: #eff6ff;
-        border-bottom: 1px solid #dbeafe;
+        background: #f0fff6;
+        border-bottom: 1px solid #b2f0d0;
         font-size: .82rem;
         flex-wrap: wrap;
     }
-    .filter-bar-left { display: flex; align-items: center; gap: 8px; color: #1e40af; }
+    .filter-bar-left { display: flex; align-items: center; gap: 8px; color: #145e30; }
     .filter-bar-left i { font-size: .9rem; }
     .filter-badge {
         display: inline-flex; align-items: center; gap: 5px;
@@ -118,7 +118,7 @@
         padding: 2px 8px; border-radius: 4px;
         font-weight: 700;
     }
-    .time-chip-start { background: #dbeafe; color: #1d4ed8; }
+    .time-chip-start { background: #d1fae5; color: #065f46; }
     .time-chip-end   { background: #fee2e2; color: #b91c1c; }
 
     /* ── Table ────────────────────────────── */
@@ -133,7 +133,7 @@
         white-space: nowrap;
     }
     .table-pro tbody tr { transition: background .15s; }
-    .table-pro tbody tr:hover { background: #f5f8ff; }
+    .table-pro tbody tr:hover { background: #f0fff6; }
     .table-pro tbody td {
         padding: 14px 20px;
         border-bottom: 1px solid #f1f3f7;
@@ -159,7 +159,7 @@
         font-size: .78rem; font-weight: 700;
         display: grid; place-items: center;
         flex-shrink: 0;
-        border: 2px solid rgba(59,91,219,.12);
+        border: 2px solid rgba(30,138,74,.12);
     }
     .student-cell { display: flex; align-items: center; gap: 10px; }
     .student-name { font-weight: 600; color: var(--text-primary); font-size: .875rem; }
@@ -169,7 +169,7 @@
     .kelas-badge {
         display: inline-flex; align-items: center; gap: 5px;
         padding: 4px 10px; border-radius: var(--radius-sm);
-        background: #e0f2fe; color: #0369a1;
+        background: #d1fae5; color: #065f46;
         font-size: .75rem; font-weight: 600;
     }
 
@@ -188,7 +188,7 @@
         padding: 5px 12px; border-radius: 50px;
         font-size: .72rem; font-weight: 700; letter-spacing: .02em;
     }
-    .badge-masuk   { background: #dbeafe; color: #1d4ed8; }
+    .badge-masuk   { background: #d1fae5; color: #065f46; }
     .badge-pulang  { background: #f3e8ff; color: #7c3aed; }
     .badge-hadir   { background: #d1fae5; color: #065f46; }
     .badge-terlambat { background: #fef9c3; color: #92400e; }
@@ -203,7 +203,7 @@
         padding: 6px 16px; border-radius: 50px;
         background: var(--brand-primary-light); color: var(--brand-primary);
         font-size: .8rem; font-weight: 700;
-        border: 1px solid rgba(59,91,219,.15);
+        border: 1px solid rgba(30,138,74,.15);
     }
 
     /* empty state */

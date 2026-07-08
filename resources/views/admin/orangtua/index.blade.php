@@ -4,12 +4,14 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+{{-- SweetAlert2 --}}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
 <style>
     :root {
-        --brand-primary: #3b5bdb;
-        --brand-primary-light: #eef2ff;
-        --brand-primary-dark: #2f4ac2;
+        --brand-primary: #2f9e44;
+        --brand-primary-light: #ebfbee;
+        --brand-primary-dark: #237032;
         --brand-success: #0ca678;
         --brand-success-light: #e6fcf5;
         --brand-warning: #f59f00;
@@ -17,7 +19,7 @@
         --brand-danger: #e03131;
         --brand-danger-light: #fff5f5;
         --surface: #ffffff;
-        --surface-soft: #f8f9fc;
+        --surface-soft: #f8fdf9;
         --surface-border: #e9ecef;
         --text-primary: #1a1d23;
         --text-secondary: #6c757d;
@@ -35,14 +37,14 @@
 
     /* ── Page Header ─────────────────────────────────── */
     .page-hero {
-        background: linear-gradient(135deg, var(--brand-primary) 0%, #4f75ff 60%, #6c8fff 100%);
+        background: linear-gradient(135deg, #1a5c2a 0%, var(--brand-primary) 55%, #52c46a 100%);
         border-radius: var(--radius-xl);
         padding: 28px 32px;
         margin-bottom: 24px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        box-shadow: 0 8px 32px rgba(59,91,219,.25);
+        box-shadow: 0 8px 32px rgba(47,158,68,.25);
         position: relative;
         overflow: hidden;
     }
@@ -110,7 +112,7 @@
         color: var(--brand-primary);
     }
     .btn-hero-solid:hover {
-        background: #f0f4ff;
+        background: #f0fdf4;
         color: var(--brand-primary-dark);
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(0,0,0,.12);
@@ -177,7 +179,7 @@
     .table-pro tbody tr {
         transition: background .15s ease;
     }
-    .table-pro tbody tr:hover { background: var(--surface-soft); }
+    .table-pro tbody tr:hover { background: #f0fdf4; }
     .table-pro tbody td {
         padding: 15px 20px;
         border-bottom: 1px solid #f1f3f7;
@@ -314,7 +316,7 @@
     }
     .form-control-pro:focus, .form-control:focus {
         border-color: var(--brand-primary);
-        box-shadow: 0 0 0 3px rgba(59,91,219,.1);
+        box-shadow: 0 0 0 3px rgba(47,158,68,.12);
         outline: none;
     }
     .input-group .input-group-text {
@@ -328,7 +330,7 @@
 
     /* import info box */
     .import-info {
-        background: #eff6ff;
+        background: #f0fdf4;
         border-radius: var(--radius-md);
         padding: 14px 16px;
         border-left: 4px solid var(--brand-primary);
@@ -361,7 +363,7 @@
     .btn-modal-cancel { background: var(--surface-border); color: var(--text-secondary); }
     .btn-modal-cancel:hover { background: #dee2e6; color: var(--text-primary); }
     .btn-modal-primary { background: var(--brand-primary); color: #fff; }
-    .btn-modal-primary:hover { background: var(--brand-primary-dark); box-shadow: 0 4px 12px rgba(59,91,219,.3); }
+    .btn-modal-primary:hover { background: var(--brand-primary-dark); box-shadow: 0 4px 12px rgba(47,158,68,.3); }
     .btn-modal-success { background: var(--brand-success); color: #fff; }
     .btn-modal-success:hover { background: #099268; box-shadow: 0 4px 12px rgba(12,166,120,.3); }
 
@@ -419,14 +421,6 @@
 <section class="section">
     <div class="row">
         <div class="col-lg-12">
-
-            @if(session('success'))
-                <div class="alert-pro alert-pro-success alert-dismissible fade show mb-3" role="alert">
-                    <i class="bi bi-check-circle-fill"></i>
-                    <span>{{ session('success') }}</span>
-                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
 
             @if(session('error'))
                 <div class="alert-pro alert-pro-danger alert-dismissible fade show mb-3" role="alert">
@@ -495,15 +489,20 @@
                                                 title="Edit Data">
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
-                                        <form action="{{ route('orangtua.destroy', $o) }}"
+                                        {{-- Hapus: tombol trigger SweetAlert konfirmasi --}}
+                                        <button type="button"
+                                                class="btn-act btn-act-delete"
+                                                title="Hapus Data"
+                                                onclick="confirmDelete('{{ route('orangtua.destroy', $o) }}', '{{ $o->nama }}')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                        {{-- Hidden form untuk submit hapus --}}
+                                        <form id="deleteForm-{{ $o->id }}"
+                                              action="{{ route('orangtua.destroy', $o) }}"
                                               method="POST"
-                                              class="d-inline"
-                                              onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                                              class="d-none">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn-act btn-act-delete" title="Hapus Data">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
                                         </form>
                                     </div>
                                 </td>
@@ -533,7 +532,11 @@
 @foreach($orangTuas as $o)
 <div class="modal fade modal-pro" id="edit{{ $o->id }}" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <form method="POST" action="{{ route('orangtua.update', $o) }}" class="modal-content">
+        {{-- Tambah class edit-form dan data-name untuk SweetAlert --}}
+        <form method="POST"
+              action="{{ route('orangtua.update', $o) }}"
+              class="modal-content edit-form"
+              data-name="{{ $o->nama }}">
             @csrf
             @method('PUT')
             <div class="modal-header">
@@ -675,8 +678,10 @@
 
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
 
 <script>
+    /* ── Leaflet map helpers ─────────────────────────── */
     const maps = {};
     const markers = {};
 
@@ -730,6 +735,64 @@
             mapContainer.style.height = "0px";
         }
     }
+
+    /* ── SweetAlert2 – Konfirmasi Hapus ─────────────── */
+    function confirmDelete(actionUrl, namaOrangTua) {
+        Swal.fire({
+            title: 'Hapus Data?',
+            html: `Data <strong>${namaOrangTua}</strong> akan dihapus secara permanen.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e03131',
+            cancelButtonColor: '#adb5bd',
+            confirmButtonText: '<i class="bi bi-trash me-1"></i> Ya, Hapus',
+            cancelButtonText: 'Batal',
+            reverseButtons: true,
+            customClass: {
+                popup: 'swal-font',
+                confirmButton: 'swal-btn',
+                cancelButton: 'swal-btn',
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Submit hidden form yang action-nya sudah sesuai
+                const form = document.querySelector(`form[action="${actionUrl}"]`);
+                if (form) form.submit();
+            }
+        });
+    }
+
+    /* ── SweetAlert2 – Notifikasi dari Session ──────── */
+    @if(session('success'))
+        const successMsg = @json(session('success'));
+        // Deteksi tipe aksi dari pesan session
+        const isEdit   = successMsg.toLowerCase().includes('diupdate') ||
+                         successMsg.toLowerCase().includes('diubah')   ||
+                         successMsg.toLowerCase().includes('berhasil diperbarui') ||
+                         successMsg.toLowerCase().includes('edit');
+        const isDelete = successMsg.toLowerCase().includes('dihapus') ||
+                         successMsg.toLowerCase().includes('hapus');
+
+        Swal.fire({
+            title: isDelete ? 'Berhasil Dihapus!' : (isEdit ? 'Berhasil Diperbarui!' : 'Berhasil!'),
+            text: successMsg,
+            icon: 'success',
+            timer: 3000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            toast: false,
+            position: 'center',
+            customClass: { popup: 'swal-font' }
+        });
+    @endif
 </script>
+
+<style>
+    /* SweetAlert2 – sesuaikan font dengan halaman */
+    .swal-font { font-family: 'Plus Jakarta Sans', sans-serif !important; border-radius: 14px !important; }
+    .swal2-title { font-size: 1.1rem !important; font-weight: 700 !important; }
+    .swal2-html-container { font-size: .9rem !important; }
+    .swal-btn { font-family: 'Plus Jakarta Sans', sans-serif !important; font-weight: 600 !important; border-radius: 50px !important; padding: 9px 22px !important; }
+</style>
 
 @endsection

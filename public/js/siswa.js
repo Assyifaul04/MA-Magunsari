@@ -10,7 +10,7 @@ $(document).ready(function () {
 
     // ================= Flag & Debounce Handle =================
     let isSubmitting = false;
-    let rfidDebounceTimer = null; // simpan timer agar bisa dibatalkan
+    let rfidDebounceTimer = null;
 
     // ================= Utility Functions =================
     function isValidElement(element) {
@@ -23,12 +23,40 @@ $(document).ready(function () {
         return (value !== undefined && value !== null) ? value : defaultValue;
     }
 
-    // Batalkan debounce RFID yang sedang menunggu
     function cancelRfidDebounce() {
         if (rfidDebounceTimer) {
             clearTimeout(rfidDebounceTimer);
             rfidDebounceTimer = null;
         }
+    }
+
+    // ================= SVG Helper =================
+    // Menghasilkan HTML status icon (animated SVG, tanpa teks)
+    function buildStatusIcon(status) {
+        if (status === 'aktif') {
+            return `<span class="status-icon" title="Aktif">
+                <svg class="check-svg" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle class="check-circle" cx="14" cy="14" r="10.5"/>
+                    <polyline class="check-tick" points="9,14 12.5,17.5 19,11"/>
+                </svg>
+            </span>`;
+        } else {
+            return `<span class="status-icon" title="Pending">
+                <svg class="pending-svg" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle class="pending-circle" cx="13" cy="13" r="10"/>
+                    <line class="pending-hands" x1="13" y1="8" x2="13" y2="13.5"/>
+                    <line class="pending-hands" x1="13" y1="13.5" x2="16.5" y2="16"/>
+                </svg>
+            </span>`;
+        }
+    }
+
+    // Paksa restart animasi SVG dengan clone trick
+    function restartSvgAnimation(cell) {
+        const old = cell.find('svg')[0];
+        if (!old) return;
+        const clone = old.cloneNode(true);
+        old.parentNode.replaceChild(clone, old);
     }
 
     // ================= Button Loading =================
@@ -68,7 +96,7 @@ $(document).ready(function () {
         Swal.fire({ title: 'Error!', html: message, icon: 'error', confirmButtonText: 'OK' });
     }
 
-    // ================= Success Handler =================
+    // ================= Success Handler (non-RFID) =================
     function handleSuccess(response, button = null, shouldReload = true) {
         if (button) hideButtonLoading(button);
         Swal.fire({
@@ -97,14 +125,24 @@ $(document).ready(function () {
         return isValid;
     }
 
+    // ================= Konteks "datang dari Laporan RFID" =================
+    // Dibaca dari data attribute pada #siswaSection (di-set oleh siswa.blade.php
+    // berdasarkan query string ?from_laporan=1). Dipakai untuk menampilkan
+    // SweetAlert "Kembali ke Laporan" setelah RFID berhasil disimpan.
+    function getLaporanContext() {
+        const section = document.getElementById('siswaSection');
+        return {
+            fromLaporan: section?.dataset.fromLaporan === '1',
+            laporanUrl: section?.dataset.laporanUrl || null
+        };
+    }
+
     // ================= Scan RFID =================
     function doScanRfid() {
-        // Batalkan debounce yang masih pending agar tidak terpicu dua kali
         cancelRfidDebounce();
-
         if (isSubmitting) return;
 
-        const form = $("#scanRfidForm");
+        const form      = $("#scanRfidForm");
         if (!isValidElement(form)) return;
 
         const rfidInput = form.find("#rfid");
@@ -112,21 +150,13 @@ $(document).ready(function () {
         const siswaId   = form.find("#siswa_id").val();
 
         if (!rfidValue || rfidValue.length < CONFIG.RFID_MIN_LENGTH) {
-            Swal.fire({
-                title: 'Error!',
-                text: `RFID minimal ${CONFIG.RFID_MIN_LENGTH} karakter`,
-                icon: 'error'
-            });
+            Swal.fire({ title: 'Error!', text: `RFID minimal ${CONFIG.RFID_MIN_LENGTH} karakter`, icon: 'error' });
             rfidInput.focus();
             return;
         }
 
         if (!siswaId) {
-            Swal.fire({
-                title: 'Error!',
-                text: 'ID siswa tidak ditemukan. Tutup modal dan coba lagi.',
-                icon: 'error'
-            });
+            Swal.fire({ title: 'Error!', text: 'ID siswa tidak ditemukan. Tutup modal dan coba lagi.', icon: 'error' });
             return;
         }
 
@@ -150,28 +180,52 @@ $(document).ready(function () {
                 hideButtonLoading(submitBtn);
 
                 if (response?.success) {
-                    // Update RFID cell di tabel
-                    const rfidCell = $("#rfid-" + response.siswa_id);
+                    const usedRfid   = response.rfid   || rfidValue;
+                    const usedStatus = response.status || 'aktif';
+                    const usedId     = response.siswa_id || siswaId;
+
+                    // ── Update kolom RFID ──
+                    const rfidCell = $("#rfid-" + usedId);
                     if (isValidElement(rfidCell)) {
-                        rfidCell.html('<code class="text-muted">' + response.rfid + '</code>');
-                        const statusCell = rfidCell.closest('tr').find('.status-cell');
-                        if (isValidElement(statusCell)) {
-                            if (response.status === 'aktif') {
-                                statusCell.html('<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Aktif</span>');
-                            } else {
-                                statusCell.html('<span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Pending</span>');
-                            }
-                        }
+                        rfidCell.html('<span class="rfid-code">' + usedRfid + '</span>');
+                        rfidCell.addClass('rfid-updated');
+                        setTimeout(() => rfidCell.removeClass('rfid-updated'), 800);
                     }
 
+                    // ── Update kolom Status → animated SVG (tanpa teks, tanpa Swal) ──
+                    const row = rfidCell.closest('tr');
+                    const statusCell = row.find('.status-cell');
+                    if (isValidElement(statusCell)) {
+                        statusCell.html(buildStatusIcon(usedStatus));
+                        // restart animasi
+                        restartSvgAnimation(statusCell);
+                    }
+
+                    // ── Tutup modal & reset form ──
                     $("#scanRfidModal").modal("hide");
-                    Swal.fire({
-                        title: 'Berhasil!',
-                        text: response.message || 'RFID berhasil disimpan',
-                        icon: 'success',
-                        timer: CONFIG.SUCCESS_TIMER,
-                        showConfirmButton: false
-                    });
+
+                    // ── Jika datang dari Laporan RFID Hilang, tawarkan untuk kembali ──
+                    const { fromLaporan, laporanUrl } = getLaporanContext();
+                    if (fromLaporan && laporanUrl) {
+                        setTimeout(function () {
+                            Swal.fire({
+                                title: 'RFID Berhasil Disimpan!',
+                                text: 'Kartu RFID baru sudah tersimpan. Kembali ke Laporan RFID Hilang sekarang?',
+                                icon: 'success',
+                                showCancelButton: true,
+                                confirmButtonText: 'Kembali ke Laporan',
+                                cancelButtonText: 'Tetap di Halaman Ini',
+                                confirmButtonColor: '#16a34a',
+                                cancelButtonColor: '#6c757d',
+                                reverseButtons: true
+                            }).then(function (result) {
+                                if (result.isConfirmed) {
+                                    window.location.href = laporanUrl;
+                                }
+                            });
+                        }, 350); // beri waktu modal scan tertutup dulu
+                    }
+
                 } else {
                     Swal.fire({
                         title: 'Warning!',
@@ -198,12 +252,8 @@ $(document).ready(function () {
     // Auto-submit via debounce saat user mengetik/scan
     $(document).on("input", "#rfid", function () {
         if (isSubmitting) return;
-
         const val = $(this).val()?.toString().trim() || "";
-
-        // Batalkan timer lama sebelum buat yang baru
         cancelRfidDebounce();
-
         if (val.length >= CONFIG.RFID_MIN_LENGTH) {
             rfidDebounceTimer = setTimeout(function () {
                 rfidDebounceTimer = null;
@@ -214,10 +264,8 @@ $(document).ready(function () {
 
     // Set data siswa saat modal akan muncul
     $('#scanRfidModal').on('show.bs.modal', function (event) {
-        // Reset semua state
         cancelRfidDebounce();
         isSubmitting = false;
-
         const trigger = $(event.relatedTarget);
         if (isValidElement(trigger)) {
             $(this).find('#siswa_id').val(safeGetData(trigger, 'siswa-id') || '');
@@ -271,10 +319,11 @@ $(document).ready(function () {
         const nisn       = safeGetData(button, "nisn", "");
         const nama       = safeGetData(button, "nama", "");
         const kelas      = safeGetData(button, "kelas", "");
+        const angkatan   = safeGetData(button, "angkatan", "");
         const orangTuaId = safeGetData(button, "orangTuaId", "");
         const rfid       = safeGetData(button, "rfid", "");
         const status     = safeGetData(button, "status", "");
-        const updateUrl  = safeGetData(button, "updateUrl"); // Menangkap update URL dari blade
+        const updateUrl  = safeGetData(button, "updateUrl");
 
         if (!id) {
             Swal.fire({ title: 'Error!', text: 'ID siswa tidak ditemukan', icon: 'error' });
@@ -293,13 +342,12 @@ $(document).ready(function () {
                 return;
             }
 
-            // Memasukkan URL yang benar ke dalam atribut action form
             editForm.attr("action", updateUrl);
-            
             $("#edit_siswa_id").val(id);
             $("#edit_nisn").val(nisn);
             $("#edit_nama").val(nama);
             $("#edit_kelas_id").val(kelas);
+            $("#edit_angkatan").val(angkatan);
             $("#edit_orang_tua_id").val(orangTuaId);
             $("#edit_rfid").val(rfid === 'null' || rfid === null ? '' : rfid);
             $("#edit_status").val(status);
@@ -347,7 +395,7 @@ $(document).ready(function () {
     // ================= Reset Modal =================
     $('.modal').on('hidden.bs.modal', function () {
         if ($(this).attr('id') === 'scanRfidModal') {
-            cancelRfidDebounce(); // batalkan debounce pending saat modal ditutup
+            cancelRfidDebounce();
             isSubmitting = false;
         }
         $(this).find('form').each(function () { if (this.reset) this.reset(); });

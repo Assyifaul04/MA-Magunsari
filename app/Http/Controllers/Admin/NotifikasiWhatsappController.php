@@ -10,7 +10,6 @@ class NotifikasiWhatsappController extends Controller
 {
     public function index()
     {
-        // Eager load relasi untuk mencegah N+1 query
         $notifikasis = NotifikasiWhatsapp::with([
             'siswa.kelas',
             'orangTua',
@@ -23,7 +22,6 @@ class NotifikasiWhatsappController extends Controller
     public function show(NotifikasiWhatsapp $notifikasi)
     {
         $notifikasi->load(['siswa.kelas', 'orangTua', 'absensi']);
-
         $notifikasi->response_gateway_decoded = json_decode($notifikasi->response_gateway);
 
         return response()->json([
@@ -35,7 +33,6 @@ class NotifikasiWhatsappController extends Controller
     public function destroy(NotifikasiWhatsapp $notifikasi)
     {
         $notifikasi->delete();
-
         return back()->with('success', 'Log notifikasi berhasil dihapus');
     }
 }

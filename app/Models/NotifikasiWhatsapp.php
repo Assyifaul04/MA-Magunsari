@@ -24,7 +24,6 @@ class NotifikasiWhatsapp extends Model
         'dikirim_pada' => 'datetime',
     ];
 
-
     public function siswa()
     {
         return $this->belongsTo(Siswa::class);

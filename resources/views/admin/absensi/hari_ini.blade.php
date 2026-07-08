@@ -6,15 +6,15 @@
 
 <style>
     :root {
-        --brand-primary:       #3b5bdb;
-        --brand-primary-light: #eef2ff;
-        --brand-primary-dark:  #2f4ac2;
-        --brand-success-light: #e6fcf5;
-        --brand-success:       #0ca678;
+        --brand-primary:       #166534;
+        --brand-primary-light: #dcfce7;
+        --brand-primary-dark:  #14532d;
+        --brand-success-light: #d1fae5;
+        --brand-success:       #16a34a;
         --brand-danger:        #e03131;
         --brand-danger-light:  #fff5f5;
-        --brand-warning-light: #fff9db;
-        --brand-warning:       #f59f00;
+        --brand-warning-light: #fefce8;
+        --brand-warning:       #ca8a04;
         --surface:             #ffffff;
         --surface-soft:        #f8f9fc;
         --surface-border:      #e9ecef;
@@ -34,14 +34,14 @@
 
     /* ── Page Hero ─────────────────────────── */
     .page-hero {
-        background: linear-gradient(135deg, #1c3faa 0%, var(--brand-primary) 55%, #4f75ff 100%);
+        background: linear-gradient(135deg, #14532d 0%, #166534 55%, #16a34a 100%);
         border-radius: var(--radius-xl);
         padding: 26px 32px;
         margin-bottom: 24px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        box-shadow: 0 8px 32px rgba(59,91,219,.28);
+        box-shadow: 0 8px 32px rgba(22,101,52,.28);
         position: relative;
         overflow: hidden;
     }
@@ -100,7 +100,7 @@
         padding: 6px 16px; border-radius: 50px;
         background: var(--brand-primary-light); color: var(--brand-primary);
         font-size: .8rem; font-weight: 700;
-        border: 1px solid rgba(59,91,219,.15);
+        border: 1px solid rgba(22,163,74,.2);
     }
 
     /* ── Table ────────────────────────────── */
@@ -115,7 +115,7 @@
         white-space: nowrap;
     }
     .table-pro tbody tr { transition: background .15s; }
-    .table-pro tbody tr:hover { background: #f5f8ff; }
+    .table-pro tbody tr:hover { background: #f0fdf4; }
     .table-pro tbody td {
         padding: 14px 20px;
         border-bottom: 1px solid #f1f3f7;
@@ -151,7 +151,7 @@
         font-size: .78rem; font-weight: 700;
         display: grid; place-items: center;
         flex-shrink: 0;
-        border: 2px solid rgba(59,91,219,.12);
+        border: 2px solid rgba(22,163,74,.15);
     }
     .student-cell  { display: flex; align-items: center; gap: 10px; }
     .student-name  { font-weight: 600; color: var(--text-primary); font-size: .875rem; }
@@ -175,7 +175,7 @@
         font-size: .72rem; font-weight: 700; letter-spacing: .02em;
     }
     .badge-masuk        { background: #dbeafe; color: #1d4ed8; }
-    .badge-pulang       { background: #f3e8ff; color: #7c3aed; }
+    .badge-pulang       { background: #dcfce7; color: #166534; }
     .badge-hadir        { background: #d1fae5; color: #065f46; }
     .badge-terlambat    { background: #fef9c3; color: #92400e; }
     .badge-alpha        { background: #fee2e2; color: #991b1b; }

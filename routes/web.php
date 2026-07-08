@@ -7,15 +7,19 @@ use App\Http\Controllers\Admin\SiswaController;
 use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GuruController;
+use App\Http\Controllers\Admin\LaporanRfidAdminController;
+use App\Http\Controllers\Admin\NotifikasiController;
 use App\Http\Controllers\Admin\OrangTuaController;
 use App\Http\Controllers\Admin\PengaturanController;
 use App\Http\Controllers\Admin\TemplateWhatsappController;
 use App\Http\Controllers\Admin\NotifikasiWhatsappController;
+use App\Http\Controllers\Admin\PengaturanWaController;
 use App\Http\Controllers\Guru\AbsensiGuruController;
 use App\Http\Controllers\Guru\DashboardGuruController;
+use App\Http\Controllers\Guru\RfidGuruController;
 use App\Http\Controllers\Guru\SiswaGuruController;
-use App\Http\Controllers\Super\SuperAdminController;
-use App\Http\Controllers\Super\TambahUserController;
+// use App\Http\Controllers\Super\SuperAdminController;
+// use App\Http\Controllers\Super\TambahUserController;
 use App\Services\WhatsappService;
 use Illuminate\Support\Facades\Route;
 
@@ -75,10 +79,25 @@ Route::middleware(['auth', 'chaceLogout', 'role:admin'])->group(function () {
             Route::delete('delete/{kelas}', [KelasController::class, 'destroy'])->name('kelas.destroy');
         });
 
+        Route::prefix('notifikasi')->name('notifikasi.')->group(function () {
+            Route::get('/', [NotifikasiController::class, 'index'])->name('index');
+            Route::post('/mark-all-read', [NotifikasiController::class, 'markAllRead'])->name('markAllRead');
+
+            // WAJIB DITAMBAHKAN: Route untuk tombol Hapus
+            Route::delete('/{id}', [NotifikasiController::class, 'destroy'])->name('destroy');
+        });
+
         Route::prefix('siswa')->group(function () {
             Route::get('/', [SiswaController::class, 'index'])->name('siswa.index');
             Route::get('create', [SiswaController::class, 'create'])->name('siswa.create');
             Route::post('/', [SiswaController::class, 'store'])->name('siswa.store');
+
+            // Rute statis HARUS di atas rute wildcard {siswa}
+            Route::get('non_aktif', [SiswaController::class, 'non_aktif'])->name('siswa.non_aktif');
+            Route::get('luluskan', [SiswaController::class, 'formLuluskanAngkatan'])->name('siswa.luluskan.form');
+            Route::post('luluskan', [SiswaController::class, 'luluskanAngkatan'])->name('siswa.luluskan');
+            Route::post('{siswa}/batalkan-non_aktif', [SiswaController::class, 'batalkanAlumni'])->name('siswa.batalkan-non_aktif');
+
             Route::get('{siswa}/edit', [SiswaController::class, 'edit'])->name('siswa.edit');
             Route::put('{siswa}', [SiswaController::class, 'update'])->name('siswa.update');
             Route::delete('{siswa}', [SiswaController::class, 'destroy'])->name('siswa.destroy');
@@ -97,6 +116,16 @@ Route::middleware(['auth', 'chaceLogout', 'role:admin'])->group(function () {
             Route::get('/', [PengaturanController::class, 'edit'])->name('pengaturan.edit');
             Route::post('update', [PengaturanController::class, 'update'])->name('pengaturan.update');
             Route::get('check-jam-masuk', [PengaturanController::class, 'checkJamMasuk'])->name('pengaturan.checkJamMasuk');
+        });
+
+        Route::prefix('pengaturan-wa')->group(function () {
+            Route::get('/', [PengaturanWaController::class, 'index'])->name('pengaturan-wa.index');
+            Route::post('/update', [PengaturanWaController::class, 'updateToken'])->name('pengaturan-wa.update');
+            Route::post('/disconnect', [PengaturanWaController::class, 'disconnectDevice'])->name('pengaturan-wa.disconnect');
+            
+            // UBAH .name() di bawah ini menjadi 'pengaturan-wa.hapus-token'
+            Route::post('/hapus', [PengaturanWaController::class, 'hapusToken'])->name('pengaturan-wa.hapus-token');
+            Route::get('/cek-status', [PengaturanWaController::class, 'cekStatus'])->name('pengaturan-wa.cek-status');
         });
 
         Route::prefix('absensi')->group(function () {
@@ -140,6 +169,11 @@ Route::middleware(['auth', 'chaceLogout', 'role:admin'])->group(function () {
             Route::get('{notifikasi}', [NotifikasiWhatsappController::class, 'show'])->name('notifikasiwa.show');
             Route::delete('{notifikasi}', [NotifikasiWhatsappController::class, 'destroy'])->name('notifikasiwa.destroy');
         });
+
+        Route::prefix('rfid')->name('rfid.')->group(function () {
+            Route::get('/laporan-hilang', [LaporanRfidAdminController::class, 'index'])->name('laporan-hilang');
+            Route::get('/notifikasi/{id}', [LaporanRfidAdminController::class, 'readNotification'])->name('notifikasi.read');
+        });
     });
 });
 
@@ -158,7 +192,15 @@ Route::middleware(['auth', 'chaceLogout', 'role:guru'])->group(function () {
         Route::prefix('absensi')->name('absensi.')->group(function () {
             Route::get('/hari-ini', [AbsensiGuruController::class, 'hariIni'])->name('hari-ini'); // Live monitoring hari ini
             Route::post('/manual-update/{id}', [AbsensiGuruController::class, 'updateManual'])->name('update-manual'); // Override Izin/Sakit/Kartu Ketinggalan
-            Route::get('/rekap', [AbsensiGuruController::class, 'rekap'])->name('rekap'); // Rekap bulanan untuk laporan
+            Route::get('/rekap', [AbsensiGuruController::class, 'rekap'])->name('rekap');
+            Route::get('/rekap/export', [AbsensiGuruController::class, 'exportExcel'])->name('rekap.export');
+        });
+
+        Route::prefix('rfid')->name('rfid.')->group(function () {
+            Route::get('/belum-terdaftar', [RfidGuruController::class, 'belumTerdaftar'])->name('belum-terdaftar');
+
+            Route::get('/laporan-hilang', [RfidGuruController::class, 'laporanHilang'])->name('laporan-hilang');
+            Route::post('/laporan-hilang/{id}', [RfidGuruController::class, 'submitLaporanHilang'])->name('submit-laporan-hilang');
         });
     });
 });

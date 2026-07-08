@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('siswas', function (Blueprint $table) {
@@ -17,15 +16,17 @@ return new class extends Migration
                 ->constrained('kelas')
                 ->onDelete('cascade');
 
+            $table->year('angkatan')->nullable();
+
             $table->foreignId('orang_tua_id')
                 ->nullable()
                 ->constrained('orang_tuas')
                 ->nullOnDelete();
 
             $table->string('rfid')->nullable()->unique();
-            $table->enum('status', ['aktif', 'pending'])->default('aktif');
+            $table->enum('status', ['aktif', 'pending', 'non_aktif'])->default('aktif');
             $table->timestamps();
-        }); 
+        });
     }
 
     public function down(): void

@@ -12,13 +12,18 @@ class Absensi extends Model
     protected $table = 'absensis';
 
     protected $fillable = [
-        'siswa_id', 'jenis', 'status', 'rfid', 'keterangan', 'tanggal', 'jam'
+        'siswa_id',
+        'jenis',
+        'status',
+        'rfid',
+        'keterangan',
+        'tanggal',
+        'jam'
     ];
 
     public function siswa()
     {
         return $this->belongsTo(Siswa::class);
     }
-
 }
 

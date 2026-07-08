@@ -18,18 +18,19 @@
 
     <style>
         :root {
-            --blue-primary: #4154f1;
-            --blue-dark: #2c3cdd;
-            --blue-deeper: #1a2ab5;
-            --blue-light: #eef0fe;
-            --blue-glow: rgba(65, 84, 241, 0.18);
-            --ink: #012970;
-            --ink-soft: #344767;
-            --surface: #ffffff;
-            --bg-page: #f0f2ff;
-            --border-subtle: rgba(65, 84, 241, 0.12);
-            --success: #13c296;
-            --shadow-card: 0 20px 60px rgba(65, 84, 241, 0.13), 0 4px 16px rgba(0,0,0,0.06);
+            --brand:          #2f9e44;
+            --brand-dark:     #237032;
+            --brand-deeper:   #1a5c26;
+            --brand-mid:      #40c057;
+            --brand-light:    #ebfbee;
+            --brand-glow:     rgba(47, 158, 68, 0.18);
+            --ink:            #0d2b14;
+            --ink-soft:       #2d4a33;
+            --surface:        #ffffff;
+            --bg-page:        #f0faf2;
+            --border-subtle:  rgba(47, 158, 68, 0.14);
+            --success:        #0ca678;
+            --shadow-card:    0 20px 60px rgba(47, 158, 68, 0.13), 0 4px 16px rgba(0,0,0,0.06);
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -51,8 +52,8 @@
             position: fixed;
             inset: 0;
             background:
-                radial-gradient(ellipse 900px 600px at 110% 10%, rgba(65,84,241,0.10) 0%, transparent 70%),
-                radial-gradient(ellipse 700px 500px at -10% 90%, rgba(65,84,241,0.07) 0%, transparent 65%);
+                radial-gradient(ellipse 900px 600px at 110% 10%, rgba(47,158,68,0.10) 0%, transparent 70%),
+                radial-gradient(ellipse 700px 500px at -10% 90%, rgba(47,158,68,0.07) 0%, transparent 65%);
             pointer-events: none;
         }
 
@@ -60,8 +61,8 @@
             position: fixed;
             inset: 0;
             background-image:
-                linear-gradient(rgba(65,84,241,0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(65,84,241,0.04) 1px, transparent 1px);
+                linear-gradient(rgba(47,158,68,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(47,158,68,0.04) 1px, transparent 1px);
             background-size: 40px 40px;
             pointer-events: none;
         }
@@ -90,12 +91,12 @@
         .brand-logo {
             width: 36px;
             height: 36px;
-            background: linear-gradient(135deg, var(--blue-primary), var(--blue-deeper));
+            background: linear-gradient(135deg, var(--brand), var(--brand-deeper));
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 14px var(--blue-glow);
+            box-shadow: 0 4px 14px var(--brand-glow);
         }
 
         .brand-logo i { color: white; font-size: 18px; }
@@ -108,7 +109,7 @@
             letter-spacing: 0.02em;
         }
 
-        .brand-name span { color: var(--blue-primary); }
+        .brand-name span { color: var(--brand); }
 
         /* ─── Main card ─── */
         .scan-card {
@@ -125,13 +126,13 @@
         /* Top accent bar */
         .card-accent {
             height: 4px;
-            background: linear-gradient(90deg, var(--blue-primary), #818cf8, var(--blue-primary));
+            background: linear-gradient(90deg, var(--brand-deeper), var(--brand), var(--brand-mid), var(--brand));
             background-size: 200% 100%;
             animation: slide-gradient 3s linear infinite;
         }
 
         @keyframes slide-gradient {
-            0% { background-position: 0% 0%; }
+            0%   { background-position: 0% 0%; }
             100% { background-position: 200% 0%; }
         }
 
@@ -155,7 +156,7 @@
         .rfid-icon-bg {
             width: 80px;
             height: 80px;
-            background: var(--blue-light);
+            background: var(--brand-light);
             border-radius: 22px;
             display: flex;
             align-items: center;
@@ -166,7 +167,7 @@
 
         .rfid-icon-bg i {
             font-size: 36px;
-            color: var(--blue-primary);
+            color: var(--brand);
         }
 
         /* Ripple rings */
@@ -176,25 +177,25 @@
             position: absolute;
             inset: -8px;
             border-radius: 28px;
-            border: 1.5px solid rgba(65,84,241,0.20);
+            border: 1.5px solid rgba(47,158,68,0.22);
             animation: ring-pulse 2.8s ease-out infinite;
         }
         .rfid-icon-bg::after {
             inset: -16px;
             border-radius: 34px;
-            border-color: rgba(65,84,241,0.10);
+            border-color: rgba(47,158,68,0.10);
             animation-delay: 0.5s;
         }
 
         @keyframes ring-pulse {
-            0% { opacity: 1; transform: scale(1); }
-            70% { opacity: 0; transform: scale(1.12); }
+            0%   { opacity: 1; transform: scale(1); }
+            70%  { opacity: 0; transform: scale(1.12); }
             100% { opacity: 0; transform: scale(1.12); }
         }
 
         @keyframes icon-float {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
+            50%       { transform: translateY(-6px); }
         }
 
         .page-title {
@@ -228,13 +229,13 @@
             height: 7px;
             background: var(--success);
             border-radius: 50%;
-            box-shadow: 0 0 0 0 rgba(19,194,150,0.4);
+            box-shadow: 0 0 0 0 rgba(12,166,120,0.4);
             animation: dot-ping 1.8s ease-in-out infinite;
         }
 
         @keyframes dot-ping {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(19,194,150,0.5); }
-            50% { box-shadow: 0 0 0 6px rgba(19,194,150,0); }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(12,166,120,0.5); }
+            50%       { box-shadow: 0 0 0 6px rgba(12,166,120,0); }
         }
 
         .status-label {
@@ -249,13 +250,13 @@
             display: inline-block;
             padding: 5px 18px;
             border-radius: 100px;
-            background: linear-gradient(135deg, var(--blue-primary), var(--blue-dark));
+            background: linear-gradient(135deg, var(--brand), var(--brand-dark));
             color: white;
             font-size: 13px;
             font-weight: 800;
             letter-spacing: 0.08em;
             text-transform: uppercase;
-            box-shadow: 0 4px 14px var(--blue-glow);
+            box-shadow: 0 4px 14px var(--brand-glow);
         }
 
         /* ─── Divider ─── */
@@ -275,7 +276,7 @@
             width: 140px;
             height: auto;
             border-radius: 14px;
-            box-shadow: 0 10px 30px rgba(65,84,241,0.15), 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 30px rgba(47,158,68,0.16), 0 2px 8px rgba(0,0,0,0.08);
             border: 3px solid white;
             transition: transform 0.35s ease, box-shadow 0.35s ease;
             display: inline-block;
@@ -283,7 +284,7 @@
 
         .rfid-image:hover {
             transform: translateY(-4px) scale(1.03);
-            box-shadow: 0 16px 40px rgba(65,84,241,0.22), 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 16px 40px rgba(47,158,68,0.24), 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .tap-hint {
@@ -297,12 +298,12 @@
             gap: 6px;
         }
 
-        .tap-hint i { color: var(--blue-primary); font-size: 15px; }
+        .tap-hint i { color: var(--brand); font-size: 15px; }
 
         /* ─── Progress bar ─── */
         .progress-track {
             height: 5px;
-            background: #eef0fe;
+            background: var(--brand-light);
             border-radius: 100px;
             overflow: hidden;
             margin-bottom: 22px;
@@ -310,7 +311,7 @@
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--blue-primary), #818cf8);
+            background: linear-gradient(90deg, var(--brand-dark), var(--brand), var(--brand-mid));
             border-radius: 100px;
             transition: width 0.35s ease;
             position: relative;
@@ -325,7 +326,7 @@
         }
 
         @keyframes shimmer {
-            0% { transform: translateX(-100%); }
+            0%   { transform: translateX(-100%); }
             100% { transform: translateX(100%); }
         }
 
@@ -338,25 +339,25 @@
         .rfid-input {
             width: 100%;
             padding: 13px 50px 13px 18px;
-            border: 2px solid #e2e6ff;
+            border: 2px solid #d3f0da;
             border-radius: 12px;
             font-family: 'Nunito', sans-serif;
             font-size: 15px;
             font-weight: 600;
             color: var(--ink);
-            background: #fafbff;
+            background: #f6fdf8;
             transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
             outline: none;
             text-align: center;
-            caret-color: var(--blue-primary);
+            caret-color: var(--brand);
         }
 
-        .rfid-input::placeholder { color: #c0c9f0; font-weight: 500; }
+        .rfid-input::placeholder { color: #9ec9a4; font-weight: 500; }
 
         .rfid-input:focus {
-            border-color: var(--blue-primary);
+            border-color: var(--brand);
             background: white;
-            box-shadow: 0 0 0 4px rgba(65,84,241,0.10);
+            box-shadow: 0 0 0 4px rgba(47,158,68,0.12);
         }
 
         .input-icon {
@@ -364,21 +365,21 @@
             right: 16px;
             top: 50%;
             transform: translateY(-50%);
-            color: #c0c9f0;
+            color: #9ec9a4;
             font-size: 18px;
             pointer-events: none;
             transition: color 0.2s;
         }
 
-        .rfid-input:focus ~ .input-icon { color: var(--blue-primary); }
+        .rfid-input:focus ~ .input-icon { color: var(--brand); }
 
         /* Loading spinner */
         .loading-spinner {
             display: none;
             width: 20px;
             height: 20px;
-            border: 2.5px solid #e2e6ff;
-            border-top-color: var(--blue-primary);
+            border: 2.5px solid #d3f0da;
+            border-top-color: var(--brand);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
             position: absolute;
@@ -403,7 +404,7 @@
             align-items: center;
             justify-content: space-between;
             padding: 14px 40px;
-            background: #fafbff;
+            background: #f6fdf8;
             border-top: 1px solid var(--border-subtle);
         }
 

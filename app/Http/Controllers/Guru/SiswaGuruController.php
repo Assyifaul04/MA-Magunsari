@@ -13,23 +13,30 @@ class SiswaGuruController extends Controller
     /**
      * Menampilkan daftar siswa di kelas yang diampu oleh guru ini.
      */
-    public function index()
+    public function index(Request $request)
     {
         // Ambil data guru yang login beserta kelasnya
         $guru = Guru::with('kelas')->where('user_id', Auth::id())->first();
 
         if (!$guru || $guru->kelas->isEmpty()) {
-            return redirect()->route('guru.dashboard')->with('error', 'Anda belum ditugaskan menjadi Wali Kelas.');
+            return redirect()->route('guru.dashboard')
+                             ->with('error', 'Anda belum ditugaskan menjadi Wali Kelas.');
         }
 
-        // Ambil ID semua kelas yang diampu oleh guru ini (bisa 1 atau 2 kelas)
+        // Ambil ID semua kelas yang diampu oleh guru ini
         $kelasIds = $guru->kelas->pluck('id');
+        $filterKelasId = $request->query('kelas_id');
 
-        // Ambil data siswa yang berada di kelas-kelas tersebut
-        $siswas = Siswa::with('kelas')
-            ->whereIn('kelas_id', $kelasIds)
-            ->orderBy('nama', 'asc')
-            ->get();
+        $query = Siswa::with('kelas')->orderBy('nama', 'asc');
+
+        // Jika kelas_id diklik dari sidebar, filter ke kelas itu saja
+        if ($filterKelasId && $kelasIds->contains($filterKelasId)) {
+            $query->where('kelas_id', $filterKelasId);
+        } else {
+            $query->whereIn('kelas_id', $kelasIds);
+        }
+
+        $siswas = $query->get();
 
         return view('guru.siswa.index', compact('guru', 'siswas'));
     }
@@ -53,7 +60,7 @@ class SiswaGuruController extends Controller
         // Kembalikan data dalam bentuk JSON untuk dibaca oleh AJAX/Javascript di modal
         return response()->json([
             'siswa' => $siswa,
-            'kelas' => $siswa->kelas->nama,
+            'kelas' => $siswa->kelas->nama, // Sudah menggunakan properti 'nama' yang benar
             'absensi' => $riwayatAbsensi
         ]);
     }

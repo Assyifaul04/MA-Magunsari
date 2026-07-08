@@ -133,6 +133,12 @@ $(document).ready(function () {
                     alertTitle = "Sudah Tercatat";
                     ttsMessage = "Absensi sudah tercatat";
 
+                } else if (msgLower.includes("non_aktif")) {
+                    /* ── non_aktif Ditolak ── */
+                    alertType  = "error";
+                    alertTitle = "Akses Ditolak";
+                    ttsMessage = "Akses ditolak, kartu ini milik non_aktif";
+
                 } else if (
                     msgLower.includes("tidak dikenal") ||
                     msgLower.includes("tidak terdaftar") ||
@@ -197,7 +203,7 @@ $(document).ready(function () {
         clearInterval(intervalId);
     });
 
-    /* ── Text-to-Speech Indonesia ─────────── */
+    /* ── Text-to-Speech Indonesia / Local Audio ── */
     if ("speechSynthesis" in window) {
         window.speechSynthesis.getVoices();
         window.speechSynthesis.onvoiceschanged = function () {
@@ -224,6 +230,19 @@ $(document).ready(function () {
     }
 
     function speakMessage(message) {
+        // --- LOGIKA AUDIO LOKAL ---
+        if (message === "Oke") {
+            const audioOke = new Audio('/suara/oke.mp3');
+            audioOke.play().catch(e => console.error("[Audio LOKAL] Error:", e));
+            return; // Hentikan eksekusi agar tidak lanjut ke TTS
+        } else if (message === "Sampai jumpa") {
+            const audioPulang = new Audio('/suara/sampaijumpa.mp3');
+            audioPulang.play().catch(e => console.error("[Audio LOKAL] Error:", e));
+            return; // Hentikan eksekusi agar tidak lanjut ke TTS
+        }
+        // --------------------------
+
+        // --- FALLBACK KE TTS UNTUK PESAN LAIN (MISAL: ERROR) ---
         if (!("speechSynthesis" in window)) {
             console.warn("Browser tidak mendukung Speech Synthesis API");
             return;

@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('notifikasi_whatsapps', function (Blueprint $table) {
@@ -30,9 +27,8 @@ return new class extends Migration
                 ->nullOnDelete();
 
             $table->string('nomor_whatsapp');
-
             $table->text('pesan');
-
+            
             $table->enum('status', [
                 'pending',
                 'terkirim',
@@ -40,16 +36,11 @@ return new class extends Migration
             ])->default('pending');
 
             $table->text('response_gateway')->nullable();
-
             $table->timestamp('dikirim_pada')->nullable();
-
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('notifikasi_whatsapps');

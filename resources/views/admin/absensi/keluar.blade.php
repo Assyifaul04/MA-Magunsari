@@ -6,15 +6,15 @@
 
 <style>
     :root {
-        --brand-primary:       #3b5bdb;
-        --brand-primary-light: #eef2ff;
-        --brand-primary-dark:  #2f4ac2;
-        --brand-success-light: #e6fcf5;
-        --brand-success:       #0ca678;
+        --brand-primary:       #166534;
+        --brand-primary-light: #f0fdf4;
+        --brand-primary-dark:  #14532d;
+        --brand-success-light: #dcfce7;
+        --brand-success:       #16a34a;
         --brand-danger:        #e03131;
         --brand-danger-light:  #fff5f5;
-        --brand-warning-light: #fff9db;
-        --brand-warning:       #f59f00;
+        --brand-warning-light: #fefce8;
+        --brand-warning:       #ca8a04;
         --surface:             #ffffff;
         --surface-soft:        #f8f9fc;
         --surface-border:      #e9ecef;
@@ -34,14 +34,14 @@
 
     /* ── Page Hero ─────────────────────────── */
     .page-hero {
-        background: linear-gradient(135deg, #92400e 0%, #b45309 45%, #d97706 100%);
+        background: linear-gradient(135deg, #14532d 0%, #166534 45%, #16a34a 100%);
         border-radius: var(--radius-xl);
         padding: 26px 32px;
         margin-bottom: 24px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        box-shadow: 0 8px 32px rgba(180,83,9,.28);
+        box-shadow: 0 8px 32px rgba(22,101,52,.28);
         position: relative;
         overflow: hidden;
     }
@@ -86,10 +86,10 @@
     .data-card-header-left { display: flex; align-items: center; gap: 12px; }
     .header-icon {
         width: 42px; height: 42px;
-        background: #fff9db;
+        background: #dcfce7;
         border-radius: var(--radius-md);
         display: grid; place-items: center;
-        color: #b45309; font-size: 1.1rem;
+        color: #166534; font-size: 1.1rem;
         flex-shrink: 0;
     }
     .data-card-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0; }
@@ -99,17 +99,17 @@
     .filter-bar {
         display: flex; align-items: center; justify-content: space-between; gap: 12px;
         padding: 12px 24px;
-        background: #fffbeb;
-        border-bottom: 1px solid #fde68a;
+        background: #f0fdf4;
+        border-bottom: 1px solid #bbf7d0;
         font-size: .82rem;
         flex-wrap: wrap;
     }
-    .filter-bar-left { display: flex; align-items: center; gap: 8px; color: #92400e; }
+    .filter-bar-left { display: flex; align-items: center; gap: 8px; color: #14532d; }
     .filter-bar-left i { font-size: .9rem; }
     .filter-badge {
         display: inline-flex; align-items: center; gap: 5px;
         padding: 4px 12px; border-radius: 50px;
-        background: #d97706; color: #fff;
+        background: #16a34a; color: #fff;
         font-size: .72rem; font-weight: 700;
     }
     .time-chip {
@@ -117,7 +117,7 @@
         padding: 2px 8px; border-radius: 4px;
         font-weight: 700;
     }
-    .time-chip-jam { background: #fee2e2; color: #b91c1c; }
+    .time-chip-jam { background: #dcfce7; color: #15803d; }
 
     /* ── Table ────────────────────────────── */
     .table-pro { width: 100%; border-collapse: separate; border-spacing: 0; }
@@ -131,7 +131,7 @@
         white-space: nowrap;
     }
     .table-pro tbody tr { transition: background .15s; }
-    .table-pro tbody tr:hover { background: #fffbeb; }
+    .table-pro tbody tr:hover { background: #f0fdf4; }
     .table-pro tbody td {
         padding: 14px 20px;
         border-bottom: 1px solid #f1f3f7;
@@ -148,15 +148,15 @@
         display: grid; place-items: center;
     }
 
-    /* avatar — amber tint untuk pulang */
+    /* avatar — green tint */
     .avatar-circle {
         width: 38px; height: 38px; border-radius: 50%;
-        background: #fff9db;
-        color: #b45309;
+        background: #dcfce7;
+        color: #166534;
         font-size: .78rem; font-weight: 700;
         display: grid; place-items: center;
         flex-shrink: 0;
-        border: 2px solid rgba(217,119,6,.15);
+        border: 2px solid rgba(22,163,74,.15);
     }
     .student-cell { display: flex; align-items: center; gap: 10px; }
     .student-name { font-weight: 600; color: var(--text-primary); font-size: .875rem; }
@@ -170,7 +170,7 @@
     }
 
     .jam-cell { text-align: center; }
-    .jam-val { font-weight: 700; color: #b45309; font-size: .9rem; }
+    .jam-val { font-weight: 700; color: #166534; font-size: .9rem; }
     .jam-sub { font-size: .68rem; color: var(--text-muted); }
 
     .tgl-val { font-weight: 600; color: var(--text-primary); font-size: .82rem; }
@@ -183,7 +183,7 @@
         font-size: .72rem; font-weight: 700; letter-spacing: .02em;
     }
     .badge-masuk              { background: #dbeafe; color: #1d4ed8; }
-    .badge-pulang             { background: #fef9c3; color: #92400e; }
+    .badge-pulang             { background: #dcfce7; color: #166534; }
     .badge-pulang-tepat-waktu { background: #d1fae5; color: #065f46; }
     .badge-pulang-lebih-awal  { background: #e0f2fe; color: #075985; }
     .badge-pulang-terlambat   { background: #fef9c3; color: #92400e; }
@@ -199,9 +199,9 @@
     .total-chip {
         display: inline-flex; align-items: center; gap: 6px;
         padding: 6px 16px; border-radius: 50px;
-        background: #fff9db; color: #b45309;
+        background: #dcfce7; color: #166534;
         font-size: .8rem; font-weight: 700;
-        border: 1px solid rgba(217,119,6,.2);
+        border: 1px solid rgba(22,163,74,.2);
     }
 
     .empty-state { text-align: center; padding: 56px 24px; }
@@ -252,7 +252,7 @@
                             <i class="bi bi-funnel-fill"></i>
                             <strong>Filter Hari Ini:</strong>
                             <span>{{ \Carbon\Carbon::parse($pengaturan->tanggal)->format('d M Y') }}</span>
-                            <span style="color:#d97706;">|</span>
+                            <span style="color:#16a34a;">|</span>
                             <span>Jam Pulang:</span>
                             <span class="time-chip time-chip-jam">{{ $pengaturan->jam_pulang }}</span>
                         </div>

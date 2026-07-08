@@ -6,9 +6,9 @@
 
 <style>
     :root {
-        --brand-primary:       #3b5bdb;
-        --brand-primary-light: #eef2ff;
-        --brand-primary-dark:  #2f4ac2;
+        --brand-primary:       #2f9e44;
+        --brand-primary-light: #ebfbee;
+        --brand-primary-dark:  #237032;
         --brand-success-light: #e6fcf5;
         --brand-success:       #0ca678;
         --brand-danger:        #e03131;
@@ -16,7 +16,7 @@
         --brand-warning-light: #fff9db;
         --brand-warning:       #f59f00;
         --surface:             #ffffff;
-        --surface-soft:        #f8f9fc;
+        --surface-soft:        #f8fdf9;
         --surface-border:      #e9ecef;
         --text-primary:        #1a1d23;
         --text-secondary:      #6c757d;
@@ -35,14 +35,14 @@
 
     /* ── Page Hero ─────────────────────────── */
     .page-hero {
-        background: linear-gradient(135deg, #1c3faa 0%, var(--brand-primary) 55%, #4f75ff 100%);
+        background: linear-gradient(135deg, #1a5c2a 0%, var(--brand-primary) 55%, #52c46a 100%);
         border-radius: var(--radius-xl);
         padding: 26px 32px;
         margin-bottom: 24px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        box-shadow: 0 8px 32px rgba(59,91,219,.28);
+        box-shadow: 0 8px 32px rgba(47,158,68,.28);
         position: relative;
         overflow: hidden;
     }
@@ -79,7 +79,7 @@
         background: #fff; color: var(--brand-primary);
     }
     .btn-hero:hover {
-        background: #f0f4ff; color: var(--brand-primary-dark);
+        background: #f0fdf4; color: var(--brand-primary-dark);
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(0,0,0,.12);
     }
@@ -133,7 +133,7 @@
         white-space: nowrap;
     }
     .table-pro tbody tr { transition: background .15s; }
-    .table-pro tbody tr:hover { background: #f5f8ff; }
+    .table-pro tbody tr:hover { background: #f0fdf4; }
     .table-pro tbody td,
     .table-pro tbody th {
         padding: 14px 20px;
@@ -189,7 +189,7 @@
         transition: all .2s;
     }
     .btn-act-edit {
-        border-color: #74c0fc; color: var(--brand-primary);
+        border-color: #8ce99a; color: var(--brand-primary);
         background: var(--brand-primary-light);
     }
     .btn-act-edit:hover {
@@ -243,7 +243,6 @@
         text-transform: uppercase; letter-spacing: .04em;
         color: var(--text-secondary); margin-bottom: 6px; display: block;
     }
-    /* Ditambahkan class .form-select agar desainnya sama persis dengan form-control */
     .form-control, .form-select {
         font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: .875rem;
@@ -257,7 +256,7 @@
     }
     .form-control:focus, .form-select:focus {
         border-color: var(--brand-primary);
-        box-shadow: 0 0 0 3px rgba(59,91,219,.1);
+        box-shadow: 0 0 0 3px rgba(47,158,68,.12);
         outline: none;
     }
     .form-control.is-invalid, .form-select.is-invalid { border-color: var(--brand-danger); }
@@ -272,7 +271,7 @@
     .btn-mc { background: var(--surface-border); color: var(--text-secondary); }
     .btn-mc:hover { background: #dee2e6; color: var(--text-primary); }
     .btn-mp { background: var(--brand-primary); color: #fff; }
-    .btn-mp:hover { background: var(--brand-primary-dark); box-shadow: 0 4px 12px rgba(59,91,219,.3); }
+    .btn-mp:hover { background: var(--brand-primary-dark); box-shadow: 0 4px 12px rgba(47,158,68,.3); }
 </style>
 
 <div class="page-hero">
@@ -344,7 +343,7 @@
                                     <td>
                                         @if($k->waliKelas)
                                             <span class="wali-badge">
-                                                <i class="bi bi-person-fill text-primary"></i> 
+                                                <i class="bi bi-person-fill" style="color: var(--brand-primary)"></i> 
                                                 {{ $k->waliKelas->nama }}
                                             </span>
                                         @else

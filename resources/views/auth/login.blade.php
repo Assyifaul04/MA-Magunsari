@@ -18,14 +18,15 @@
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
-            --brand:        #3b5bdb;
-            --brand-dark:   #2f4ac2;
-            --brand-light:  #eef2ff;
+            --brand:        #2f9e44;
+            --brand-dark:   #237032;
+            --brand-mid:    #40c057;
+            --brand-light:  #ebfbee;
             --danger:       #e03131;
             --danger-bg:    #fff5f5;
             --surface:      #ffffff;
-            --surface-soft: #f8f9fc;
-            --border:       #e4e8f0;
+            --surface-soft: #f6fdf8;
+            --border:       #e3f0e6;
             --text-primary: #1a1d23;
             --text-muted:   #6c757d;
             --radius:       10px;
@@ -34,7 +35,7 @@
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background: #eef1f8;
+            background: #eef7f0;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -49,13 +50,13 @@
             content: '';
             position: fixed; inset: 0;
             background-image:
-                linear-gradient(rgba(59,91,219,.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(59,91,219,.04) 1px, transparent 1px);
+                linear-gradient(rgba(47,158,68,.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(47,158,68,.04) 1px, transparent 1px);
             background-size: 40px 40px;
             pointer-events: none;
         }
 
-        /* decorative blobs */
+        /* Decorative blobs */
         .blob {
             position: fixed;
             border-radius: 50%;
@@ -63,8 +64,8 @@
             pointer-events: none;
             z-index: 0;
         }
-        .blob-1 { width: 400px; height: 400px; background: rgba(59,91,219,.10); top: -120px; right: -100px; }
-        .blob-2 { width: 320px; height: 320px; background: rgba(100,200,255,.08); bottom: -80px; left: -80px; }
+        .blob-1 { width: 400px; height: 400px; background: rgba(47,158,68,.10); top: -120px; right: -100px; }
+        .blob-2 { width: 320px; height: 320px; background: rgba(82,196,106,.08); bottom: -80px; left: -80px; }
 
         /* ── Card ── */
         .login-card {
@@ -73,7 +74,7 @@
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 20px;
-            box-shadow: 0 8px 40px rgba(59,91,219,.12), 0 2px 8px rgba(0,0,0,.06);
+            box-shadow: 0 8px 40px rgba(47,158,68,.13), 0 2px 8px rgba(0,0,0,.05);
             overflow: hidden;
             animation: slideUp .5s cubic-bezier(.22,1,.36,1) both;
         }
@@ -83,21 +84,19 @@
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* top accent bar */
+        /* Top accent bar */
         .login-card::before {
             content: '';
             display: block;
             height: 3px;
-            background: linear-gradient(90deg, var(--brand) 0%, #7ca4f4 100%);
+            background: linear-gradient(90deg, #237032 0%, #2f9e44 50%, #74c88a 100%);
         }
 
         .card-body { padding: 36px 36px 32px; }
 
         /* ── Brand header ── */
         .brand-header {
-            display: flex;
-            align-items: center;
-            gap: 14px;
+            display: flex; align-items: center; gap: 14px;
             margin-bottom: 28px;
         }
         .brand-icon-wrap {
@@ -108,8 +107,9 @@
             flex-shrink: 0;
             transition: var(--transition);
             cursor: pointer;
+            border: 1px solid rgba(47,158,68,.15);
         }
-        .brand-icon-wrap:hover { background: #dde6ff; transform: rotate(-6deg) scale(1.05); }
+        .brand-icon-wrap:hover { background: #d3f9d8; transform: rotate(-6deg) scale(1.05); }
         .brand-icon-wrap img { width: 30px; height: 30px; object-fit: contain; }
 
         .brand-info { line-height: 1.25; }
@@ -152,10 +152,7 @@
             font-weight: 500;
         }
         .alert-pro i { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
-        .alert-pro .btn-close {
-            margin-left: auto; flex-shrink: 0;
-            font-size: .7rem; opacity: .6;
-        }
+        .alert-pro .btn-close { margin-left: auto; flex-shrink: 0; font-size: .7rem; opacity: .6; }
         .alert-pro .btn-close:hover { opacity: 1; }
 
         /* ── Form ── */
@@ -164,8 +161,7 @@
             display: block;
             font-size: .75rem; font-weight: 700;
             color: var(--text-primary);
-            letter-spacing: .03em;
-            text-transform: uppercase;
+            letter-spacing: .03em; text-transform: uppercase;
             margin-bottom: 7px;
         }
 
@@ -179,33 +175,24 @@
         }
         .field-input-wrap:focus-within {
             border-color: var(--brand);
-            box-shadow: 0 0 0 3px rgba(59,91,219,.1);
+            box-shadow: 0 0 0 3px rgba(47,158,68,.12);
         }
-        .field-input-wrap.is-error {
-            border-color: var(--danger);
-        }
-        .field-input-wrap.is-error:focus-within {
-            box-shadow: 0 0 0 3px rgba(224,49,49,.1);
-        }
+        .field-input-wrap.is-error { border-color: var(--danger); }
+        .field-input-wrap.is-error:focus-within { box-shadow: 0 0 0 3px rgba(224,49,49,.10); }
 
         .field-icon {
             width: 44px; height: 44px;
             display: grid; place-items: center;
-            color: var(--text-muted);
-            font-size: .95rem;
-            flex-shrink: 0;
-            transition: color .2s;
+            color: var(--text-muted); font-size: .95rem;
+            flex-shrink: 0; transition: color .2s;
         }
         .field-input-wrap:focus-within .field-icon { color: var(--brand); }
 
         .field-input-wrap input {
-            flex: 1;
-            height: 44px;
-            border: none; outline: none;
-            background: transparent;
+            flex: 1; height: 44px;
+            border: none; outline: none; background: transparent;
             font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: .875rem;
-            color: var(--text-primary);
+            font-size: .875rem; color: var(--text-primary);
             padding: 0 14px 0 0;
         }
         .field-input-wrap input::placeholder { color: #bec5d0; }
@@ -218,20 +205,17 @@
 
         /* ── Submit Button ── */
         .btn-submit {
-            width: 100%;
-            height: 46px;
-            background: var(--brand);
-            color: #fff;
-            border: none;
+            width: 100%; height: 46px;
+            background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 60%, var(--brand-mid) 100%);
+            color: #fff; border: none;
             border-radius: var(--radius);
             font-family: 'Plus Jakarta Sans', sans-serif;
             font-size: .9rem; font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
+            cursor: pointer; transition: var(--transition);
             display: flex; align-items: center; justify-content: center; gap: 8px;
-            letter-spacing: .01em;
-            margin-top: 6px;
+            letter-spacing: .01em; margin-top: 6px;
             position: relative; overflow: hidden;
+            box-shadow: 0 4px 14px rgba(47,158,68,.25);
         }
         .btn-submit::after {
             content: '';
@@ -241,9 +225,9 @@
             transition: transform .5s ease;
         }
         .btn-submit:hover {
-            background: var(--brand-dark);
+            background: linear-gradient(135deg, #1a5c26 0%, var(--brand-dark) 60%, var(--brand) 100%);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(59,91,219,.3);
+            box-shadow: 0 8px 22px rgba(47,158,68,.35);
         }
         .btn-submit:hover::after { transform: translateX(100%); }
         .btn-submit:active { transform: translateY(-1px); }
@@ -259,7 +243,6 @@
         }
         .card-footer-note i { color: var(--brand); }
 
-        /* responsive */
         @media (max-width: 480px) {
             body { padding: 16px; }
             .card-body { padding: 24px 20px; }
@@ -383,7 +366,7 @@
                 form.classList.add('was-validated');
             });
 
-            // Input focus - highlight wrap
+            // Input focus highlight
             document.querySelectorAll('.field-input-wrap input').forEach(input => {
                 input.addEventListener('focus', () => input.closest('.field-input-wrap').classList.add('focused'));
                 input.addEventListener('blur',  () => input.closest('.field-input-wrap').classList.remove('focused'));

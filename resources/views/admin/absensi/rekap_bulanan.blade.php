@@ -6,11 +6,11 @@
 
 <style>
     :root {
-        --brand-primary:       #3b5bdb;
-        --brand-primary-light: #eef2ff;
-        --brand-primary-dark:  #2f4ac2;
-        --brand-success:       #0ca678;
-        --brand-success-light: #e6fcf5;
+        --brand-primary:       #166534;
+        --brand-primary-light: #f0fdf4;
+        --brand-primary-dark:  #14532d;
+        --brand-success:       #16a34a;
+        --brand-success-light: #dcfce7;
         --brand-warning:       #f59f00;
         --brand-warning-light: #fff9db;
         --brand-danger:        #e03131;
@@ -37,12 +37,12 @@
 
     /* ── Page Hero ─────────────────────── */
     .page-hero {
-        background: linear-gradient(135deg, #1c3faa 0%, var(--brand-primary) 55%, #4f75ff 100%);
+        background: linear-gradient(135deg, #14532d 0%, #166534 55%, #22c55e 100%);
         border-radius: var(--radius-xl);
         padding: 26px 32px;
         margin-bottom: 24px;
         display: flex; align-items: center; justify-content: space-between;
-        box-shadow: 0 8px 32px rgba(59,91,219,.28);
+        box-shadow: 0 8px 32px rgba(22,101,52,.28);
         position: relative; overflow: hidden;
     }
     .page-hero::before {
@@ -99,7 +99,7 @@
     }
     .form-select:focus {
         border-color:var(--brand-primary);
-        box-shadow:0 0 0 3px rgba(59,91,219,.1); outline:none;
+        box-shadow:0 0 0 3px rgba(22,101,52,.12); outline:none;
     }
     .form-select:disabled { background:var(--surface-soft); cursor:not-allowed; }
 
@@ -118,15 +118,15 @@
     .btn-filter-export {
         border-color:var(--brand-success); color:#fff; background:var(--brand-success);
     }
-    .btn-filter-export:hover { background:#099268; border-color:#099268; box-shadow:0 4px 12px rgba(12,166,120,.3); }
+    .btn-filter-export:hover { background:#15803d; border-color:#15803d; box-shadow:0 4px 12px rgba(22,163,74,.3); }
 
     /* ── Student Profile Banner ────────── */
     .student-banner {
         display:flex; align-items:center; justify-content:space-between;
         flex-wrap:wrap; gap:12px;
         padding:16px 22px;
-        background:linear-gradient(135deg,var(--brand-primary-light),#f5f8ff);
-        border-bottom:1px solid var(--surface-border);
+        background:linear-gradient(135deg, var(--brand-primary-light), #f0fdf4);
+        border-bottom:1px solid #bbf7d0;
     }
     .student-avatar {
         width:48px; height:48px; border-radius:50%;
@@ -190,10 +190,10 @@
     .cal-label { font-size:.6rem; font-weight:600; text-transform:uppercase; letter-spacing:.04em; display:block; }
 
     /* Status colours */
-    .cal-hadir   { background:#d3f9d8; }  /* light green */
-    .cal-izin    { background:#fff3bf; }  /* light yellow */
-    .cal-sakit   { background:#d0ebff; }  /* light blue */
-    .cal-absen   { background:#ffe3e3; }  /* light red */
+    .cal-hadir   { background:#d3f9d8; }
+    .cal-izin    { background:#fff3bf; }
+    .cal-sakit   { background:#d0ebff; }
+    .cal-absen   { background:#ffe3e3; }
     .cal-empty   { background:var(--surface-soft); }
 
     .cal-hadir  .cal-day { color:#2b8a3e; }

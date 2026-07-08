@@ -3,19 +3,22 @@
 @section('content')
 
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
     :root {
-        --brand-primary:       #3b5bdb;
-        --brand-primary-light: #eef2ff;
-        --brand-primary-dark:  #2f4ac2;
+        --brand-primary:       #2b8a3e;        /* hijau utama */
+        --brand-primary-light: #e8f5e9;        /* hijau sangat terang */
+        --brand-primary-dark:  #237a35;        /* hijau gelap */
         --brand-success:       #0ca678;
         --brand-success-light: #e6fcf5;
         --brand-warning:       #f59f00;
         --brand-warning-light: #fff9db;
         --brand-danger:        #e03131;
         --brand-danger-light:  #fff5f5;
-        --brand-info:          #1c7ed6;
+        --brand-info:          #339af0;        /* biru info tetap biar beda */
         --brand-info-light:    #e7f5ff;
         --surface:             #ffffff;
         --surface-soft:        #f8f9fc;
@@ -34,14 +37,14 @@
 
     body, .section, .card { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-    /* ── Page Hero ────────────────────────────────── */
+    /* ── Page Hero (gradient hijau) ────────────────────────────────── */
     .page-hero {
-        background: linear-gradient(135deg, #1c3faa 0%, var(--brand-primary) 55%, #4f75ff 100%);
+        background: linear-gradient(135deg, #1e6b2f 0%, var(--brand-primary) 55%, #40c057 100%);
         border-radius: var(--radius-xl);
         padding: 26px 32px;
         margin-bottom: 24px;
         display: flex; align-items: center;
-        box-shadow: 0 8px 32px rgba(59,91,219,.28);
+        box-shadow: 0 8px 32px rgba(43,138,62,.28);
         position: relative; overflow: hidden;
     }
     .page-hero::before {
@@ -86,7 +89,7 @@
     .data-card-sub   { font-size: .75rem; color: var(--text-muted); margin: 0; }
     .data-card-body  { padding: 28px; }
 
-    /* ── Alert Banner ─────────────────────────────── */
+    /* ── Alert Banner (tetap untuk peringatan jam terkunci) ────────── */
     .alert-banner {
         display: flex; align-items: flex-start; gap: 12px;
         padding: 14px 18px; border-radius: var(--radius-md);
@@ -132,7 +135,7 @@
     }
     .time-input-wrap input[type="time"]:focus {
         border-color: var(--brand-primary);
-        box-shadow: 0 0 0 3px rgba(59,91,219,.1);
+        box-shadow: 0 0 0 3px rgba(43,138,62,.15);
         outline: none;
     }
     .time-input-wrap input[type="time"]:disabled {
@@ -146,7 +149,6 @@
         margin-top: 6px; display: flex; align-items: center; gap: 5px;
     }
 
-    /* inline warning below time field */
     #jamMasukAlert {
         font-size: .82rem;
         border-radius: var(--radius-sm);
@@ -176,7 +178,7 @@
         display: inline-flex; align-items: center; gap: 8px;
         transition: all .2s; cursor: pointer;
     }
-    .btn-save:hover { background: var(--brand-primary-dark); box-shadow: 0 4px 14px rgba(59,91,219,.35); transform: translateY(-1px); }
+    .btn-save:hover { background: var(--brand-primary-dark); box-shadow: 0 4px 14px rgba(43,138,62,.35); transform: translateY(-1px); }
     .btn-reset {
         font-family: 'Plus Jakarta Sans', sans-serif;
         font-size: .875rem; font-weight: 600;
@@ -189,13 +191,13 @@
     .btn-reset:hover { border-color: var(--brand-primary); color: var(--brand-primary); background: var(--brand-primary-light); }
 
     /* ── Right sidebar cards ──────────────────────── */
-    /* Clock card */
+    /* Clock card dengan gradien hijau */
     .clock-card {
-        background: linear-gradient(135deg, #1c3faa 0%, var(--brand-primary) 55%, #4f75ff 100%);
+        background: linear-gradient(135deg, #1e6b2f 0%, var(--brand-primary) 55%, #40c057 100%);
         border-radius: var(--radius-xl);
         padding: 28px 24px;
         text-align: center;
-        box-shadow: 0 8px 28px rgba(59,91,219,.25);
+        box-shadow: 0 8px 28px rgba(43,138,62,.25);
         position: relative; overflow: hidden; margin-bottom: 20px;
     }
     .clock-card::before {
@@ -235,7 +237,6 @@
     .info-card-title { font-size: .9rem; font-weight: 700; color: var(--text-primary); margin: 0; }
     .info-card-body  { padding: 6px 0; }
 
-    /* accordion items */
     .acc-item {
         border-bottom: 1px solid var(--surface-border);
     }
@@ -421,18 +422,6 @@
                         </div>
                     </form>
 
-                    <!-- Alert Messages -->
-                    <div id="alertSuccess" class="alert-banner alert-banner-success mt-4 d-none" role="alert">
-                        <i class="bi bi-check-circle-fill"></i>
-                        <span class="alert-message"></span>
-                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                    <div id="alertError" class="alert-banner alert-banner-danger mt-4 d-none" role="alert">
-                        <i class="bi bi-exclamation-octagon-fill"></i>
-                        <span class="alert-message"></span>
-                        <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-
                 </div><!-- /data-card-body -->
             </div>
         </div>
@@ -444,7 +433,7 @@
             <div class="clock-card">
                 <div class="clock-label"><i class="bi bi-clock me-1"></i>Waktu Saat Ini</div>
                 <div id="currentTime">--:--:--</div>
-                <div id="currentDate">Memuat…</div>
+                <div id="currentDate">Memuat...</div>
             </div>
 
             <!-- Info Accordion -->
@@ -537,7 +526,6 @@
 @endsection
 
 @push('scripts')
-<script src="{{ asset('js/pengaturan.js') }}"></script>
 <script>
     // Real-time clock
     function updateClock() {
@@ -564,5 +552,117 @@
             });
         });
     });
+</script>
+
+<script>
+$(document).ready(function () {
+    $.ajaxSetup({
+        headers: {
+            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+        },
+    });
+
+    function checkJamMasuk() {
+        $.get("/admin/pengaturan/check-jam-masuk", function (res) {
+            if (res.jam_masuk_locked) {
+                $("#jam_masuk_awal, #jam_masuk_akhir")
+                    .prop("disabled", true)
+                    .addClass("is-invalid");
+                $("#jamMasukAlert").removeClass("d-none");
+                $("#btnSimpan").html('<i class="bi bi-save"></i> Update jam pulang saja');
+                $("#jamMasukInfo").text("Jam masuk terkunci karena siswa sudah mulai absen hari ini");
+            } else {
+                $("#jam_masuk_awal, #jam_masuk_akhir")
+                    .prop("disabled", false)
+                    .removeClass("is-invalid");
+                $("#jamMasukAlert").addClass("d-none");
+                $("#btnSimpan").html('<i class="bi bi-save"></i> Simpan / Update');
+                $("#jamMasukInfo").text("Jika dikosongkan, otomatis pakai default 05:00–07:00");
+            }
+        });
+    }
+
+    checkJamMasuk();
+    setInterval(checkJamMasuk, 3000);
+
+    $("#formPengaturan").on("submit", function (e) {
+        e.preventDefault();
+
+        // Format time values
+        let formatTime = function (val) {
+            let parts = val.split(":");
+            if (parts.length > 1) {
+                return parts[0].padStart(2, "0") + ":" + parts[1].padStart(2, "0");
+            }
+            return val;
+        };
+        $("#jam_masuk_awal").val(formatTime($("#jam_masuk_awal").val()));
+        $("#jam_masuk_akhir").val(formatTime($("#jam_masuk_akhir").val()));
+        $("#jam_pulang").val(formatTime($("#jam_pulang").val()));
+
+        let formData = $(this).serialize();
+
+        $.ajax({
+            url: "/admin/pengaturan/update",
+            method: "POST",
+            data: formData + "&_token=" + $('meta[name="csrf-token"]').attr("content"),
+            success: function (response) {
+                if (response.success) {
+                    let message = response.message;
+                    if (response.jam_masuk_locked) {
+                        message += " (Jam masuk tidak bisa diubah karena siswa sudah absen masuk hari ini)";
+                    }
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: message,
+                        confirmButtonColor: '#2b8a3e',
+                        timer: 3000,
+                        showConfirmButton: true
+                    });
+                    checkJamMasuk(); // refresh status
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: response.message || 'Terjadi kesalahan saat menyimpan.',
+                        confirmButtonColor: '#2b8a3e'
+                    });
+                }
+            },
+            error: function (xhr) {
+                let errorMsg = "Terjadi kesalahan.";
+                if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    errorMsg = "";
+                    $.each(xhr.responseJSON.errors, function (key, value) {
+                        errorMsg += value[0] + "<br>";
+                    });
+                } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal',
+                    html: errorMsg,
+                    confirmButtonColor: '#2b8a3e'
+                });
+            }
+        });
+    });
+
+    // Reset button
+    $(".btn-reset").on("click", function () {
+        $("#formPengaturan")[0].reset();
+        // Trigger change on locked fields if any
+        checkJamMasuk();
+        Swal.fire({
+            icon: 'info',
+            title: 'Reset Form',
+            text: 'Form telah direset ke nilai awal.',
+            confirmButtonColor: '#2b8a3e',
+            timer: 2000
+        });
+    });
+});
 </script>
 @endpush

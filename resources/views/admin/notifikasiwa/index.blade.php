@@ -3,6 +3,9 @@
 @section('content')
 
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
     :root {
@@ -75,7 +78,7 @@
     .page-hero-left .breadcrumb-item.active { color: rgba(255,255,255,.75); }
     .page-hero-left .breadcrumb-item + .breadcrumb-item::before { color: rgba(255,255,255,.4); }
 
-    /* ── Alert ────────────────────────────────────── */
+    /* ── Alert (fallback) ────────────────────────────────────── */
     .alert-pro {
         border: none; border-radius: var(--radius-md);
         padding: 14px 18px; font-size: .875rem; font-weight: 500;
@@ -342,13 +345,8 @@
     <div class="row">
         <div class="col-lg-12">
 
-            @if(session('success'))
-                <div class="alert-pro alert-pro-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle-fill"></i>
-                    <span>{{ session('success') }}</span>
-                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
+            {{-- Tempat session flash untuk SweetAlert --}}
+            <div id="flashData" data-success="{{ session('success') }}" data-error="{{ session('error') }}"></div>
 
             <div class="data-card">
 
@@ -418,12 +416,11 @@
                                                 title="Lihat Detail">
                                             <i class="bi bi-eye"></i>
                                         </button>
-                                        <form action="{{ route('notifikasiwa.destroy', $notif->id) }}"
-                                              method="POST" class="d-inline"
-                                              onsubmit="return confirm('Apakah Anda yakin ingin menghapus log notifikasi ini?');">
+                                        {{-- Form hapus dengan SweetAlert --}}
+                                        <form class="form-delete" action="{{ route('notifikasiwa.destroy', $notif->id) }}" method="POST" style="display:inline;">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn-act btn-act-delete" title="Hapus Log">
+                                            <button type="button" class="btn-act btn-act-delete btn-delete" title="Hapus Log">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </form>
@@ -539,7 +536,51 @@
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
         tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el); });
 
-        // Detail button click
+        // ========== SWEETALERT UNTUK SESSION FLASH ==========
+        let flashDiv = $('#flashData');
+        let successMsg = flashDiv.data('success');
+        let errorMsg = flashDiv.data('error');
+
+        if (successMsg) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: successMsg,
+                confirmButtonColor: '#25d366',
+                timer: 4000,
+                showConfirmButton: true
+            });
+        }
+        if (errorMsg) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: errorMsg,
+                confirmButtonColor: '#d33'
+            });
+        }
+
+        // ========== KONFIRMASI HAPUS DENGAN SWEETALERT ==========
+        $(document).on('click', '.btn-delete', function(e) {
+            e.preventDefault();
+            let form = $(this).closest('.form-delete');
+            Swal.fire({
+                title: 'Hapus Log Notifikasi?',
+                text: "Data log yang dihapus tidak dapat dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+
+        // ========== DETAIL MODAL (AJAX) ==========
         $('.btn-detail').on('click', function () {
             let url   = $(this).data('url');
             let modal = $('#detailNotifModal');
@@ -589,8 +630,12 @@
                     }
                 },
                 error: function () {
-                    $('#modalLoading').addClass('d-none');
-                    alert('Gagal mengambil detail data! Pastikan koneksi internet Anda stabil.');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Gagal mengambil detail data! Pastikan koneksi internet Anda stabil.',
+                        confirmButtonColor: '#d33'
+                    });
                     modal.modal('hide');
                 }
             });

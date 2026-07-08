@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -83,7 +84,7 @@ class AdminController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Admin berhasil dihapus.'

@@ -3,6 +3,9 @@
 @section('content')
 
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- SweetAlert2 -->
+<link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <style>
     :root {
@@ -99,7 +102,7 @@
         transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.12);
     }
 
-    /* ── Alert ────────────────────────────────────── */
+    /* ── Alert (untuk fallback jika JS mati) ───────────────── */
     .alert-pro {
         border: none; border-radius: var(--radius-md);
         padding: 14px 18px; font-size: .875rem; font-weight: 500;
@@ -179,11 +182,7 @@
         padding: 4px 10px; border-radius: 50px;
         display: inline-flex; align-items: center; gap: 4px;
     }
-    .badge-masuk     { background: var(--brand-primary-light); color: var(--brand-primary); }
-    .badge-pulang    { background: var(--brand-info-light);    color: var(--brand-info); }
-    .badge-izin      { background: var(--brand-warning-light); color: #b45309; }
-    .badge-sakit     { background: var(--brand-danger-light);  color: var(--brand-danger); }
-    .badge-terlambat { background: #fff0f6; color: #c2255c; }
+    .badge-rekap { background: var(--brand-primary-light); color: var(--brand-primary); }
 
     /* wa bubble preview */
     .wa-bubble {
@@ -302,6 +301,11 @@
         box-shadow: 0 0 0 3px rgba(37,211,102,.12);
         outline: none;
     }
+    .form-select[disabled] {
+        background-color: var(--surface-soft);
+        opacity: 1;
+        color: var(--text-secondary);
+    }
     .input-group .input-group-text {
         border: 1.5px solid var(--surface-border);
         background: var(--surface-soft);
@@ -391,10 +395,10 @@
         </nav>
     </div>
     <div class="page-hero-actions">
-        <form action="{{ route('templatewa.generate') }}" method="POST" class="d-inline"
-              onsubmit="return confirm('Sistem akan membuat otomatis template untuk jenis absensi yang kosong. Lanjutkan?');">
+        {{-- Form Generate Default dengan SweetAlert --}}
+        <form id="formGenerateDefault" action="{{ route('templatewa.generate') }}" method="POST" class="d-inline">
             @csrf
-            <button type="submit" class="btn-hero btn-hero-white">
+            <button type="button" id="btnGenerateDefault" class="btn-hero btn-hero-white">
                 <i class="bi bi-magic"></i> Generate Default
             </button>
         </form>
@@ -408,36 +412,8 @@
     <div class="row">
         <div class="col-lg-12">
 
-            @if(session('success'))
-                <div class="alert-pro alert-pro-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle-fill"></i>
-                    <span>{{ session('success') }}</span>
-                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-
-            @if(session('info'))
-                <div class="alert-pro alert-pro-info alert-dismissible fade show" role="alert">
-                    <i class="bi bi-info-circle-fill"></i>
-                    <span>{{ session('info') }}</span>
-                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-
-            @if($errors->any())
-                <div class="alert-pro alert-pro-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill" style="flex-shrink:0"></i>
-                    <div>
-                        <div style="font-weight:700;margin-bottom:4px;">Terjadi Kesalahan</div>
-                        <ul style="margin:0;padding-left:16px;font-size:.82rem;">
-                            @foreach($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
+            {{-- Session flash messages akan ditampilkan oleh SweetAlert via script --}}
+            <div id="flashData" data-success="{{ session('success') }}" data-info="{{ session('info') }}" data-error="{{ session('error') }}" data-errors="{{ json_encode($errors->all()) }}"></div>
 
             <div class="data-card">
 
@@ -459,7 +435,7 @@
                             <tr>
                                 <th style="width:4%">#</th>
                                 <th style="width:20%">Nama Template</th>
-                                <th style="width:12%">Jenis Absen</th>
+                                <th style="width:12%">Jenis</th>
                                 <th style="width:36%">Preview Pesan</th>
                                 <th style="width:10%;text-align:center">Status</th>
                                 <th style="width:14%;text-align:center">Aksi</th>
@@ -474,27 +450,9 @@
                                     <div class="tpl-id">ID: #{{ $template->id }}</div>
                                 </td>
                                 <td>
-                                    @php
-                                        $jenisClass = match($template->jenis) {
-                                            'masuk'     => 'badge-masuk',
-                                            'pulang'    => 'badge-pulang',
-                                            'izin'      => 'badge-izin',
-                                            'sakit'     => 'badge-sakit',
-                                            'terlambat' => 'badge-terlambat',
-                                            default     => 'badge-masuk',
-                                        };
-                                        $jenisIcon = match($template->jenis) {
-                                            'masuk'     => 'bi-box-arrow-in-right',
-                                            'pulang'    => 'bi-box-arrow-right',
-                                            'izin'      => 'bi-calendar-check',
-                                            'sakit'     => 'bi-heart-pulse',
-                                            'terlambat' => 'bi-clock-history',
-                                            default     => 'bi-tag',
-                                        };
-                                    @endphp
-                                    <span class="badge-jenis {{ $jenisClass }}">
-                                        <i class="bi {{ $jenisIcon }}"></i>
-                                        {{ ucfirst($template->jenis) }}
+                                    <span class="badge-jenis badge-rekap">
+                                        <i class="bi bi-journal-text"></i>
+                                        Rekap Harian
                                     </span>
                                 </td>
                                 <td>
@@ -518,12 +476,11 @@
                                                 title="Edit Template">
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
-                                        <form action="{{ route('templatewa.destroy', $template->id) }}"
-                                              method="POST" class="d-inline"
-                                              onsubmit="return confirm('Yakin ingin menghapus template ini? Tindakan ini tidak dapat dibatalkan.');">
+                                        {{-- Form hapus dengan SweetAlert --}}
+                                        <form class="form-delete" action="{{ route('templatewa.destroy', $template->id) }}" method="POST" style="display:inline;">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn-act btn-act-delete" title="Hapus Template">
+                                            <button type="button" class="btn-act btn-act-delete btn-delete" title="Hapus Template">
                                                 <i class="bi bi-trash"></i>
                                             </button>
                                         </form>
@@ -562,7 +519,7 @@
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form action="{{ route('templatewa.store') }}" method="POST">
+            <form id="formTambahTemplate" action="{{ route('templatewa.store') }}" method="POST">
                 @csrf
                 <div class="modal-body">
                     <div class="row g-3">
@@ -571,7 +528,7 @@
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-tag"></i></span>
                                 <input type="text" name="nama_template" class="form-control" required
-                                       placeholder="Contoh: Info Masuk Pagi">
+                                       placeholder="Contoh: Rekap Absensi Harian">
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -579,18 +536,13 @@
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-list-check"></i></span>
                                 <select name="jenis" class="form-select" required>
-                                    <option value="" disabled selected>— Pilih Jenis —</option>
-                                    <option value="masuk">Masuk</option>
-                                    <option value="pulang">Pulang</option>
-                                    <option value="izin">Izin</option>
-                                    <option value="sakit">Sakit</option>
-                                    <option value="terlambat">Terlambat</option>
+                                    <option value="rekap_harian" selected>Rekap Harian (Masuk &amp; Pulang)</option>
                                 </select>
                             </div>
                         </div>
                         <div class="col-12">
                             <label class="flabel">Isi Pesan <span class="req">*</span></label>
-                            <textarea name="isi_pesan" class="form-control" rows="5" required
+                            <textarea name="isi_pesan" class="form-control" rows="6" required
                                       placeholder="Ketik format pesan WhatsApp di sini..."></textarea>
                             <div class="var-hint">
                                 <h6><i class="bi bi-info-circle me-1"></i>Variabel Otomatis yang Tersedia</h6>
@@ -599,13 +551,13 @@
                                         <ul>
                                             <li><code>{nama_siswa}</code> — Nama Siswa</li>
                                             <li><code>{kelas}</code> — Kelas</li>
-                                            <li><code>{status}</code> — Status Kehadiran</li>
+                                            <li><code>{tanggal}</code> — Tanggal (ex: 21-05-2026)</li>
                                         </ul>
                                     </div>
                                     <div class="col-sm-6">
                                         <ul>
-                                            <li><code>{tanggal}</code> — Tgl (ex: 21-05-2026)</li>
-                                            <li><code>{jam}</code> — Jam (ex: 07:15)</li>
+                                            <li><code>{jam_masuk}</code> — Jam Masuk (ex: 07:15)</li>
+                                            <li><code>{jam_pulang}</code> — Jam Pulang (ex: 15:00)</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -669,17 +621,13 @@
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="bi bi-list-check"></i></span>
                                     <select name="jenis" id="edit_jenis" class="form-select" required>
-                                        <option value="masuk">Masuk</option>
-                                        <option value="pulang">Pulang</option>
-                                        <option value="izin">Izin</option>
-                                        <option value="sakit">Sakit</option>
-                                        <option value="terlambat">Terlambat</option>
+                                        <option value="rekap_harian">Rekap Harian (Masuk &amp; Pulang)</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-12">
                                 <label class="flabel">Isi Pesan <span class="req">*</span></label>
-                                <textarea name="isi_pesan" id="edit_pesan" class="form-control" rows="5" required></textarea>
+                                <textarea name="isi_pesan" id="edit_pesan" class="form-control" rows="6" required></textarea>
                                 <div class="var-hint">
                                     <h6><i class="bi bi-info-circle me-1"></i>Variabel Otomatis yang Tersedia</h6>
                                     <div class="row">
@@ -687,13 +635,13 @@
                                             <ul>
                                                 <li><code>{nama_siswa}</code> — Nama Siswa</li>
                                                 <li><code>{kelas}</code> — Kelas</li>
-                                                <li><code>{status}</code> — Status Kehadiran</li>
+                                                <li><code>{tanggal}</code> — Tanggal (ex: 21-05-2026)</li>
                                             </ul>
                                         </div>
                                         <div class="col-sm-6">
                                             <ul>
-                                                <li><code>{tanggal}</code> — Tgl (ex: 21-05-2026)</li>
-                                                <li><code>{jam}</code> — Jam (ex: 07:15)</li>
+                                                <li><code>{jam_masuk}</code> — Jam Masuk (ex: 07:15)</li>
+                                                <li><code>{jam_pulang}</code> — Jam Pulang (ex: 15:00)</li>
                                             </ul>
                                         </div>
                                     </div>
@@ -728,13 +676,98 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function () {
-        // Bootstrap tooltips
+        // Tooltips Bootstrap
         if (typeof bootstrap !== 'undefined') {
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el); });
         }
 
-        // Edit button click
+        // ========== SWEETALERT UNTUK SESSION FLASH ==========
+        let flashDiv = $('#flashData');
+        let successMsg = flashDiv.data('success');
+        let infoMsg = flashDiv.data('info');
+        let errorMsg = flashDiv.data('error');
+        let errorsArray = flashDiv.data('errors');
+
+        if (successMsg) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: successMsg,
+                confirmButtonColor: '#25d366',
+                timer: 4000,
+                showConfirmButton: true
+            });
+        }
+        if (infoMsg) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Informasi',
+                text: infoMsg,
+                confirmButtonColor: '#25d366'
+            });
+        }
+        if (errorMsg) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal',
+                text: errorMsg,
+                confirmButtonColor: '#d33'
+            });
+        }
+        if (errorsArray && errorsArray.length > 0) {
+            let errorList = '';
+            $.each(errorsArray, function(i, err) {
+                errorList += `<li>${err}</li>`;
+            });
+            Swal.fire({
+                icon: 'error',
+                title: 'Validasi Gagal',
+                html: `<ul style="text-align:left;">${errorList}</ul>`,
+                confirmButtonColor: '#d33'
+            });
+        }
+
+        // ========== KONFIRMASI HAPUS DENGAN SWEETALERT ==========
+        $(document).on('click', '.btn-delete', function(e) {
+            e.preventDefault();
+            let form = $(this).closest('.form-delete');
+            Swal.fire({
+                title: 'Hapus Template?',
+                text: "Template yang dihapus tidak dapat dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+
+        // ========== GENERATE DEFAULT DENGAN SWEETALERT ==========
+        $('#btnGenerateDefault').on('click', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Generate Default Template?',
+                text: "Sistem akan membuat template rekap harian otomatis jika belum ada. Lanjutkan?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#25d366',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, Generate!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $('#formGenerateDefault').submit();
+                }
+            });
+        });
+
+        // ========== EDIT MODAL (AJAX) ==========
         $('.btn-edit').on('click', function () {
             let fetchUrl  = $(this).data('url');
             let updateUrl = $(this).data('update-url');
@@ -763,11 +796,20 @@
                     }
                 },
                 error: function () {
-                    alert('Terjadi kesalahan! Gagal mengambil data template dari server.');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: 'Gagal mengambil data template dari server.',
+                        confirmButtonColor: '#d33'
+                    });
                     modal.modal('hide');
                 }
             });
         });
+
+        // ========== NOTIFIKASI UNTUK SIMPAN/UPDATE DARI FORM BIASA ==========
+        // Karena store/update menggunakan redirect biasa (bukan AJAX),
+        // notifikasi sudah ditangani oleh session flash di atas.
     });
 </script>
 @endpush
